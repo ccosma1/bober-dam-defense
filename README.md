@@ -4,7 +4,7 @@ Fan game by a holder. Not affiliated with any token, studio, or official Bober p
 
 **Play online:** https://ccosma1.github.io/bober-dam-defense/
 
-A mobile-first tower defense in **one HTML page**. 12-level campaign. Hold the wooden dam.
+A mobile-first tower defense in **one HTML page**. 20-level campaign. Hold the wooden dam.
 
 No install. No wallet. No login. No leaderboard.
 

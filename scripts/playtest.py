@@ -117,6 +117,61 @@ LEVELS = [
         wv(0.12, 2.88, 1.64, "rrococrrococrrooccoorrccrro"),
         wv(0.10, 3.19, 1.72, "rrococrrococrrooccoorrccrrooccoor"),
     ]},
+    {"name": "Spring Leak", "wood": 110, "dam": 100, "waves": [
+        wv(0.50, 1.70, 1.18, "rrrrrrrrr"),
+        wv(0.38, 1.90, 1.22, "rrrrcrrrrr"),
+        wv(0.28, 2.12, 1.26, "rrrcrrrcrrrr"),
+        wv(0.20, 2.36, 1.30, "rrrrcrrrrcrrrrr"),
+    ]},
+    {"name": "Twin Bend", "wood": 100, "dam": 100, "waves": [
+        wv(0.52, 1.75, 1.38, "rroorroor"),
+        wv(0.38, 1.95, 1.48, "roorroorroo"),
+        wv(0.26, 2.18, 1.56, "rrooorrrooorro"),
+        wv(0.18, 2.42, 1.64, "oorrooorrooorroo"),
+    ]},
+    {"name": "Armor Night", "wood": 110, "dam": 100, "waves": [
+        wv(0.62, 1.80, 1.08, "rccrccrcc"),
+        wv(0.48, 2.00, 1.12, "ccrccrccrc"),
+        wv(0.36, 2.22, 1.16, "crcccrcccrc"),
+        wv(0.26, 2.46, 1.20, "cccrcccrcccrcc"),
+        wv(0.20, 2.70, 1.24, "ccccrccccrcccc"),
+    ]},
+    {"name": "Timber Tax", "wood": 70, "dam": 100, "waves": [
+        wv(0.82, 1.55, 1.12, "rrrrrr"),
+        wv(0.55, 1.80, 1.20, "rrcrrcrr"),
+        wv(0.36, 2.08, 1.26, "rrocrrocrr"),
+        wv(0.24, 2.36, 1.32, "rrococrrococrro"),
+    ]},
+    {"name": "Flood Gate", "wood": 100, "dam": 90, "waves": [
+        wv(0.55, 1.90, 1.22, "rrcrrcocr"),
+        wv(0.40, 2.12, 1.28, "rrocrrcocrro"),
+        wv(0.30, 2.34, 1.34, "rrococrrococr"),
+        wv(0.22, 2.58, 1.40, "rrococrrooccoorr"),
+        wv(0.16, 2.84, 1.46, "rrococrrococrroocco"),
+    ]},
+    {"name": "Cone Drill", "wood": 105, "dam": 100, "waves": [
+        wv(0.42, 1.88, 1.30, "rrrrrrrrrrr"),
+        wv(0.28, 2.10, 1.36, "rrroorrrroorr"),
+        wv(0.18, 2.34, 1.42, "rrrrrroorrrrrrro"),
+        wv(0.12, 2.60, 1.48, "rrrooorrrrooorrrrooo"),
+        wv(0.09, 2.88, 1.54, "rrrrrrrooorrrrrrrooorrrr"),
+    ]},
+    {"name": "Cracked Wall", "wood": 100, "dam": 60, "waves": [
+        wv(0.50, 2.00, 1.28, "rrcrrcocr"),
+        wv(0.36, 2.22, 1.34, "rrocrrcocrro"),
+        wv(0.26, 2.48, 1.40, "rrococrrococrro"),
+        wv(0.18, 2.74, 1.46, "rrococrrooccoorr"),
+        wv(0.13, 3.02, 1.52, "rrococrrococrrooccoorr"),
+    ]},
+    {"name": "Red Planet Dam", "wood": 110, "dam": 80, "waves": [
+        wv(0.48, 2.10, 1.30, "rrcrrcocr"),
+        wv(0.34, 2.34, 1.36, "rrocrrcocrro"),
+        wv(0.24, 2.60, 1.42, "rrococrrococrro"),
+        wv(0.18, 2.88, 1.48, "ccrrooccoorrccrro"),
+        wv(0.13, 3.16, 1.54, "rrococrrococrrooccoorr"),
+        wv(0.10, 3.46, 1.60, "rrococrrococrrooccoorrccrro"),
+        wv(0.08, 3.78, 1.68, "rrococrrococrrooccoorrccrrooccoor"),
+    ]},
 ]
 
 
@@ -321,7 +376,7 @@ def main():
     print("Lv  name          twoSticks              greedy                 greedy+repair")
     rows = []
     for i, lv in enumerate(LEVELS):
-        hp_scale = 1.08 if i >= 9 else 1.0
+        hp_scale = 1.08 if 9 <= i <= 11 else 1.0
         two = simulate(lv, TWO, hp_scale=hp_scale)
         g = simulate(lv, GREEDY, hp_scale=hp_scale)
         r = simulate(lv, GREEDY, repair_below=35, hp_scale=hp_scale)
@@ -340,11 +395,15 @@ def main():
         g = rows[i][3]
         assert g["win"], (LEVELS[i]["name"], "early greedy should hold", g)
 
+    assert len(LEVELS) == 20, len(LEVELS)
     # 10-12 unupgraded greedy must not steamroll
     late = [rows[i][3] for i in range(9, 12)]
     for g in late:
         assert pct(g) < 0.85, ("late full HP", g)
     assert any(not g["win"] for g in late), "10-12 should be able to burst greedy"
+    # 18-20 even harder without evolves
+    endgame = [rows[i][3] for i in range(17, 20)]
+    assert any(not g["win"] for g in endgame), "18-20 should burst unupgraded greedy"
     print("OK")
 
 

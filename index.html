@@ -341,14 +341,14 @@
     }
     #history .hist-bar {
       flex: 0 0 auto;
-      min-height: 80px;
+      min-height: 96px;
       background: #3A2A6A;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      padding: 8px 14px 8px;
+      gap: 5px;
+      padding: 10px 14px 12px;
     }
     #hist-skip {
       appearance: none;
@@ -377,20 +377,23 @@
     }
     #history .hist-sub {
       margin: 0;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
       color: var(--cream);
       letter-spacing: 0.04em;
       min-height: 1em;
+      text-align: center;
     }
     #history .hist-line {
       margin: 0;
-      max-width: 22em;
-      font-size: clamp(18px, 4.6vw, 26px);
+      max-width: 30em;
+      width: 100%;
+      font-size: clamp(13px, 3.2vw, 18px);
       font-weight: 900;
-      line-height: 1.2;
+      line-height: 1.25;
       color: var(--yellow);
       text-shadow: 0 2px 0 #1A1028;
+      text-align: center;
     }
     #cameo {
       z-index: 20;
@@ -886,14 +889,9 @@
       o.start(); o.stop(this.ctx.currentTime + dur);
     }
   };
-  let histAudio = null;
   function syncMute() {
     btnMute.textContent = SFX.muted ? "🔇" : "🔊";
     btnMute.setAttribute("aria-label", SFX.muted ? "Unmute" : "Mute");
-    if (histAudio) {
-      histAudio.muted = !!SFX.muted;
-      histAudio.volume = SFX.muted ? 0 : 1;
-    }
   }
   syncMute();
 
@@ -1013,22 +1011,21 @@
     else if (kind === "doge") { SFX.tone(330, 0.12, "triangle", 0.04); SFX.tone(392, 0.16, "sine", 0.03); }
     else { SFX.tone(392, 0.12, "square", 0.05); SFX.tone(523, 0.18, "square", 0.05, 784); }
   }
-  const HIST_ANTHEM = "assets/history/anthem.mp3";
   const HIST_BEATS = [
-    { src: "assets/history/h0.jpg", line: "BOBER: A SHORT HISTORY", sub: "AIN'T NO LEAK · a fan game tale · not official", t: 0.0, chorus: false },
-    { src: "assets/history/h1.jpg", line: "Once, a beaver found a river worth protecting.", sub: "", t: 12.5, chorus: false },
-    { src: "assets/history/h2.jpg", line: "So he built. And built.", sub: "", t: 22.5, chorus: false },
-    { src: "assets/history/h3.jpg", line: "And yeeted a few sticks for luck.", sub: "", t: 27.5, chorus: false },
-    { src: "assets/history/h4.jpg", line: "Then the river got… ideas.", sub: "", t: 32.5, chorus: true },
-    { src: "assets/history/h5.jpg", line: "Even Mars sent a shiny truck. Nobody asked.", sub: "", t: 52.5, chorus: false },
-    { src: "assets/history/h6.jpg", line: "Otters got maps. Crabs flew a pirate mast.", sub: "", t: 57.5, chorus: false },
-    { src: "assets/history/h7.jpg", line: "Legends don’t wait. Beavers dig in.", sub: "", t: 67.5, chorus: false },
-    { src: "assets/history/h8.jpg", line: "This dam's our home — we ain't alone.", sub: "", t: 72.5, chorus: true },
-    { src: "assets/history/h9.jpg", line: "Fix the cracks and keep the woodwork clean.", sub: "", t: 92.5, chorus: false },
-    { src: "assets/history/h10.jpg", line: "Still we stand where the timber stacks.", sub: "", t: 112.5, chorus: true },
-    { src: "assets/history/h11.jpg", line: "DEFEND THE DAM.", sub: "", t: 132.5, chorus: true }
+    { src: "assets/history/h0.jpg", line: "BOBER: A SHORT HISTORY", sub: "a fan game tale · not official", t: 0.0, chorus: false },
+    { src: "assets/history/h1.jpg", line: "Once, a beaver found a river worth protecting.", sub: "", t: 4.0, chorus: false },
+    { src: "assets/history/h2.jpg", line: "So he built. And built.", sub: "", t: 8.0, chorus: false },
+    { src: "assets/history/h3.jpg", line: "And yeeted a few sticks for luck.", sub: "", t: 12.0, chorus: false },
+    { src: "assets/history/h4.jpg", line: "Then the river got… ideas.", sub: "", t: 16.0, chorus: true },
+    { src: "assets/history/h5.jpg", line: "Mars sent a shiny truck. Nobody asked.", sub: "", t: 20.0, chorus: false },
+    { src: "assets/history/h6.jpg", line: "Otters got maps. Crabs flew a pirate mast.", sub: "", t: 24.0, chorus: false },
+    { src: "assets/history/h7.jpg", line: "Legends don’t wait. Beavers dig in.", sub: "", t: 28.0, chorus: false },
+    { src: "assets/history/h8.jpg", line: "This dam's our home. We ain't alone.", sub: "", t: 33.0, chorus: true },
+    { src: "assets/history/h9.jpg", line: "Fix the cracks. Keep the woodwork clean.", sub: "", t: 38.0, chorus: false },
+    { src: "assets/history/h10.jpg", line: "Still we stand where the timber stacks.", sub: "", t: 43.0, chorus: true },
+    { src: "assets/history/h11.jpg", line: "DEFEND THE DAM.", sub: "", t: 48.0, chorus: true }
   ];
-  const HIST_END = 142.5;
+  const HIST_END = 52.0;
   let histTimer = 0;
   let histRaf = 0;
   let histI = -1;
@@ -1039,44 +1036,22 @@
   function historyOpen() {
     return !!(histEl && !histEl.classList.contains("hidden"));
   }
-  function haltAnthem() {
+  function haltHistory() {
     if (histRaf) { cancelAnimationFrame(histRaf); histRaf = 0; }
     if (histTimer) { clearTimeout(histTimer); histTimer = 0; }
-    if (histAudio) {
-      try {
-        histAudio.pause();
-        histAudio.loop = false;
-        histAudio.currentTime = 0;
-      } catch (err) {}
-    }
   }
   function closeHistorySilent() {
-    haltAnthem();
+    haltHistory();
     if (histEl) {
       histEl.classList.add("hidden");
       histEl.classList.remove("chorus");
     }
     histAfter = null;
   }
-  function ensureHistAudio() {
-    if (!histAudio) {
-      histAudio = new Audio(HIST_ANTHEM);
-      histAudio.preload = "auto";
-      histAudio.loop = false;
-      histAudio.addEventListener("ended", function () {
-        if (historyOpen()) stopHistory();
-        else haltAnthem();
-      });
-    }
-    histAudio.loop = false;
-    histAudio.muted = !!SFX.muted;
-    histAudio.volume = SFX.muted ? 0 : 1;
-    return histAudio;
-  }
   function stopHistory() {
     if (histStopping) return;
     histStopping = true;
-    haltAnthem();
+    haltHistory();
     if (histEl) {
       histEl.classList.add("hidden");
       histEl.classList.remove("chorus");
@@ -1095,6 +1070,7 @@
     if (!historyOpen()) return;
     if (Date.now() < histSkipArmed) return;
     SFX.ensure();
+    SFX.tone(330, 0.08, "square", 0.03);
     stopHistory();
   }
   function applyHistBeat(i) {
@@ -1115,14 +1091,13 @@
   }
   function histTick() {
     if (!historyOpen()) {
-      haltAnthem();
+      haltHistory();
       return;
     }
-    let t = (performance.now() - histT0) / 1000;
-    if (histAudio && !histAudio.paused && histAudio.currentTime > 0.05) t = histAudio.currentTime;
+    const t = (performance.now() - histT0) / 1000;
     const i = histFrameAt(t);
     if (i !== histI) applyHistBeat(i);
-    if (t >= HIST_END - 0.05 || (histAudio && histAudio.ended)) {
+    if (t >= HIST_END - 0.05) {
       stopHistory();
       return;
     }
@@ -1143,19 +1118,13 @@
     histEl.classList.remove("hidden");
     document.getElementById("app").classList.add("booting");
     SFX.ensure();
-    ensureHistAudio();
+    SFX.tone(392, 0.08, "square", 0.03);
     applyHistBeat(0);
     histT0 = performance.now();
     if (!historyOpen()) {
-      haltAnthem();
+      haltHistory();
       return;
     }
-    try {
-      histAudio.loop = false;
-      histAudio.currentTime = 0;
-      const p = histAudio.play();
-      if (p && p.catch) p.catch(function () {});
-    } catch (err) {}
     if (histRaf) cancelAnimationFrame(histRaf);
     histRaf = requestAnimationFrame(histTick);
   }

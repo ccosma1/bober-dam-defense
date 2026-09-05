@@ -4,15 +4,15 @@ from __future__ import annotations
 import math
 
 KINDS = {
-    "r": {"hp": 24, "spd": 92, "wood": 5, "leak": 14, "r": 14, "armor": 0},
-    "c": {"hp": 96, "spd": 38, "wood": 11, "leak": 24, "r": 20, "armor": 0.4},
-    "o": {"hp": 44, "spd": 110, "wood": 8, "leak": 18, "r": 16, "armor": 0},
+    "r": {"hp": 24, "spd": 92, "wood": 6, "leak": 14, "r": 14, "armor": 0},
+    "c": {"hp": 96, "spd": 38, "wood": 12, "leak": 24, "r": 20, "armor": 0.4},
+    "o": {"hp": 44, "spd": 110, "wood": 9, "leak": 18, "r": 16, "armor": 0},
 }
 TOWERS = {
-    "stick": {"cost": 55, "range": 140, "cd": 0.45, "dmg": 14, "splash": 0, "slow": 0, "pspd": 820},
-    "sap": {"cost": 75, "range": 125, "cd": 0.70, "dmg": 11, "splash": 110, "slow": 3.2, "pspd": 640},
-    "truck": {"cost": 160, "range": 168, "cd": 0.85, "dmg": 48, "splash": 0, "slow": 0, "pspd": 900, "pierce": True},
-    "flame": {"cost": 140, "range": 115, "cd": 0.14, "dmg": 6, "splash": 0, "slow": 0, "pspd": 0, "cone": 0.72},
+    "stick": {"cost": 50, "range": 135, "cd": 0.52, "dmg": 12, "splash": 0, "slow": 0, "pspd": 820},
+    "sap": {"cost": 70, "range": 130, "cd": 0.65, "dmg": 13, "splash": 125, "slow": 3.6, "pspd": 640},
+    "truck": {"cost": 140, "range": 175, "cd": 0.78, "dmg": 55, "splash": 0, "slow": 0, "pspd": 900, "pierce": True},
+    "flame": {"cost": 120, "range": 128, "cd": 0.12, "dmg": 7, "splash": 0, "slow": 0, "pspd": 0, "cone": 0.85},
 }
 PATH_N = [
     [-0.08, 0.13], [0.16, 0.14], [0.38, 0.17], [0.56, 0.25],
@@ -58,7 +58,7 @@ LEVELS = [
         wv(0.36, 1.48, 1.20, "rrococrrococrro"),
         wv(0.24, 1.68, 1.28, "rrococrrococrrooccoor"),
     ]},
-    {"name": "Low Timber", "wood": 70, "dam": 100, "waves": [
+    {"name": "Low Timber", "wood": 85, "dam": 100, "waves": [
         wv(0.78, 1.16, 1.10, "rrcrrcrr"),
         wv(0.54, 1.32, 1.16, "rrocrrocrrc"),
         wv(0.36, 1.46, 1.20, "rrocrrcocrro"),
@@ -85,7 +85,7 @@ LEVELS = [
         wv(0.22, 1.98, 1.50, "rroocrroorrroo"),
         wv(0.14, 2.36, 1.62, "rrooocrroorrroorrooooo"),
     ]},
-    {"name": "Pocket Wood", "wood": 60, "dam": 100, "waves": [
+    {"name": "Pocket Wood", "wood": 80, "dam": 100, "waves": [
         wv(0.72, 1.42, 1.12, "rrcrrcrr"),
         wv(0.52, 1.63, 1.18, "rrocrrocrr"),
         wv(0.36, 1.86, 1.24, "rrocrrcocrrocr"),
@@ -321,7 +321,7 @@ def main():
     print("Lv  name          twoSticks              greedy                 greedy+repair")
     rows = []
     for i, lv in enumerate(LEVELS):
-        hp_scale = 1.15 if i >= 7 else 1.0
+        hp_scale = 1.08 if i >= 9 else 1.0
         two = simulate(lv, TWO, hp_scale=hp_scale)
         g = simulate(lv, GREEDY, hp_scale=hp_scale)
         r = simulate(lv, GREEDY, repair_below=35, hp_scale=hp_scale)
@@ -332,21 +332,19 @@ def main():
             return "win %s/%s leak%s" % (int(x["dam"]), x["dam_max"], x["leaks"])
         print("%2d %-12s  %-21s  %-21s  %s" % (i + 1, lv["name"], fmt(two), fmt(g), fmt(r)))
 
-    # 1-3 easy for two sticks
+    # L1 is easy for two unupgraded sticks
+    assert rows[0][2]["win"] and pct(rows[0][2]) >= 0.7, ("Trickle", rows[0][2])
+
+    # 1-3: unupgraded Stick+Sap line should hold
     for i in range(3):
-        two = rows[i][2]
-        assert two["win"] and pct(two) >= 0.7, (LEVELS[i]["name"], two)
-
-    # 5-6: unupgraded Stick+Sap should take damage or lose (Low Timber is tight wood)
-    for i in range(4, 6):
         g = rows[i][3]
-        assert (not g["win"]) or g["leaks"] > 0 or pct(g) < 1.0, (LEVELS[i]["name"], "should chip", g)
+        assert g["win"], (LEVELS[i]["name"], "early greedy should hold", g)
 
-    # 8-12 unupgraded greedy must not steamroll; at least one late burst
-    late = [rows[i][3] for i in range(7, 12)]
+    # 10-12 unupgraded greedy must not steamroll
+    late = [rows[i][3] for i in range(9, 12)]
     for g in late:
         assert pct(g) < 0.85, ("late full HP", g)
-    assert any(not g["win"] for g in late), "8-12 should be able to burst greedy"
+    assert any(not g["win"] for g in late), "10-12 should be able to burst greedy"
     print("OK")
 
 

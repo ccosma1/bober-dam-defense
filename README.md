@@ -15,14 +15,15 @@ Run `START.bat` or open `index.html` in a browser.
 ## How to play
 
 1. Tap **HOLD THE DAM**.
-2. During the short **build** window (and during a wave), tap a **bank pad** to place a tower.
-3. **Stick Thrower** (50 wood) — single-target sticks.
-4. **Sap Sprayer** (100 wood) — splash sap that slows a pack.
-5. Enemies that reach the dam **leak** and chew dam HP.
-6. Optional: **Repair Dam** (35 wood) for a little HP back.
-7. Survive **5 waves**. Dam HP 0 is a loss.
+2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause** and **Restart** always work.
+3. Tap a **bank pad** to place the selected tower (cost is on the pad). Tap an existing tower to upgrade it.
+4. **Stick Thrower** (50 wood) — cheap single-target DPS.
+5. **Sap Sprayer** (100 wood) — splash sap that slows a pack.
+6. Leaks **flash the dam** and drop HP. Low HP shows cracks.
+7. Optional: **Repair Dam** (30 wood) for HP back.
+8. Survive **5 waves**. Dam HP 0 is a loss.
 
-Mute and restart sit in the top-right.
+Pause, mute, and restart sit in the top-right.
 
 ### Enemies
 

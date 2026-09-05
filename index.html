@@ -76,7 +76,7 @@
     .chip.flash { animation: shake 0.35s ease; background: #6a2a3a; }
     .btns { display: flex; gap: 6px; flex: 0 0 auto; }
     .icon-btn {
-      width: 42px; height: 42px;
+      width: 44px; height: 44px;
       border: 2px solid var(--cream);
       background: var(--fur);
       color: var(--cream);
@@ -86,8 +86,9 @@
       cursor: pointer;
     }
     .icon-btn:active { transform: translateY(1px); filter: brightness(0.85); }
+    .icon-btn.on { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
     #stage { flex: 1; min-height: 0; min-width: 0; position: relative; background: var(--sky); }
-    canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
+    canvas { width: 100%; height: 100%; display: block; cursor: pointer; touch-action: none; }
     footer {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -114,13 +115,13 @@
       font-weight: 800;
     }
     .card .name { font-size: 10px; letter-spacing: 0.01em; line-height: 1.15; text-align: center; }
-    .card .cost { font-size: 12px; color: var(--yellow); }
+    .card .cost { font-size: 13px; color: var(--yellow); }
     .card.on { border-color: var(--yellow); box-shadow: 0 0 0 2px #F5C40088; background: #a06a34; }
     .card:disabled { opacity: 0.45; }
     .card.repair { background: #4a3a28; }
     #btn-go {
       grid-column: 1 / -1;
-      height: 44px;
+      min-height: 48px;
       border: 3px solid var(--yellow);
       background: var(--yellow);
       color: var(--ink);
@@ -130,7 +131,6 @@
       cursor: pointer;
       letter-spacing: 0.04em;
     }
-    #btn-go.hidden { display: none; }
     .overlay {
       position: absolute;
       inset: 0;
@@ -145,6 +145,7 @@
       text-align: center;
     }
     .overlay.hidden { display: none; }
+    #paused { justify-content: center; background: #1a1028e6; }
     .overlay img.hero {
       position: absolute;
       inset: 0;
@@ -218,6 +219,7 @@
         <div class="chip" id="chip-hp">Dam 100</div>
       </div>
       <div class="btns">
+        <button class="icon-btn" id="btn-pause" type="button" aria-label="Pause">⏸</button>
         <button class="icon-btn" id="btn-mute" type="button" aria-label="Mute">🔊</button>
         <button class="icon-btn" id="btn-restart" type="button" aria-label="Restart">↻</button>
       </div>
@@ -228,7 +230,7 @@
         <img class="hero" src="assets/splash.jpg" alt="" />
         <h1>BOBER DAM<br>DEFENSE</h1>
         <p class="tagline">Fan game by a holder.</p>
-        <p class="how">Tap a yellow pad. Stick Thrower hits one. Sap Sprayer slows the pack. Leaks chew the dam. Hold five waves.</p>
+        <p class="how">Tap a yellow pad (cost shows on the pad). Stick Thrower is cheap DPS. Sap Sprayer slows packs. Repair or upgrade if the dam cracks. Hold five waves.</p>
         <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
       </div>
       <div id="endcard" class="overlay hidden">
@@ -238,9 +240,14 @@
         <p class="tagline">Fan game by a holder.</p>
         <button class="play" id="btn-again" type="button">PLAY AGAIN</button>
       </div>
+      <div id="paused" class="overlay hidden">
+        <h2>PAUSED</h2>
+        <p class="end-msg">Restart and Next Wave still work.</p>
+        <button class="play" id="btn-resume" type="button">RESUME</button>
+      </div>
     </div>
     <footer id="shop">
-      <button id="btn-go" type="button">GO</button>
+      <button id="btn-go" type="button">START WAVE</button>
       <button class="card on" id="btn-stick" type="button">
         <span class="name">Stick Thrower</span>
         <span class="cost">50 wood</span>
@@ -251,7 +258,7 @@
       </button>
       <button class="card repair" id="btn-repair" type="button">
         <span class="name">Repair Dam</span>
-        <span class="cost">35 wood</span>
+        <span class="cost">30 wood</span>
       </button>
     </footer>
   </div>
@@ -270,28 +277,31 @@
   const START_WOOD = 100;
   const COST_STICK = 50;
   const COST_SAP = 100;
-  const COST_REPAIR = 35;
-  const REPAIR_HP = 18;
+  const COST_REPAIR = 30;
+  const COST_UP_STICK = 40;
+  const COST_UP_SAP = 70;
+  const REPAIR_HP = 24;
   const BUILD_FIRST = 12;
   const BUILD_NEXT = 8;
+  const MAX_RANK = 2;
 
   const KINDS = {
-    rat:   { hp: 26, spd: 96, wood: 8,  leak: 8,  r: 13, armor: 0 },
-    crab:  { hp: 90, spd: 40, wood: 18, leak: 16, r: 18, armor: 0.4 },
-    otter: { hp: 44, spd: 112, wood: 14, leak: 12, r: 15, armor: 0 }
+    rat:   { hp: 22, spd: 92, wood: 8,  leak: 12, r: 14, armor: 0 },
+    crab:  { hp: 86, spd: 38, wood: 18, leak: 22, r: 20, armor: 0.38 },
+    otter: { hp: 40, spd: 108, wood: 14, leak: 16, r: 16, armor: 0 }
   };
 
   const TOWERS = {
-    stick: { cost: COST_STICK, range: 138, cd: 0.58, dmg: 16, splash: 0, slow: 0, pspd: 440 },
-    sap:   { cost: COST_SAP,   range: 108, cd: 1.12, dmg: 8,  splash: 74, slow: 2.2, pspd: 340 }
+    stick: { cost: COST_STICK, range: 150, cd: 0.38, dmg: 18, splash: 0, slow: 0, pspd: 820, upCost: COST_UP_STICK },
+    sap:   { cost: COST_SAP,   range: 120, cd: 0.82, dmg: 7,  splash: 96, slow: 2.8, pspd: 640, upCost: COST_UP_SAP }
   };
 
   const WAVES = [
-    { interval: 0.88, hpMul: 1.00, spdMul: 1.00, seq: "rrrrrrrr" },
-    { interval: 0.76, hpMul: 1.08, spdMul: 1.04, seq: "rrcrrcrrc" },
-    { interval: 0.66, hpMul: 1.18, spdMul: 1.08, seq: "rocrorcrocror" },
-    { interval: 0.54, hpMul: 1.32, spdMul: 1.12, seq: "rrocrrcocrrocrocr" },
-    { interval: 0.38, hpMul: 1.62, spdMul: 1.16, seq: "rrococrrococrrooccoorrccro" }
+    { interval: 0.95, hpMul: 1.00, spdMul: 1.00, seq: "rrrrrrrr" },
+    { interval: 0.82, hpMul: 1.04, spdMul: 1.02, seq: "rrcrrcrr" },
+    { interval: 0.72, hpMul: 1.10, spdMul: 1.05, seq: "rrocrrocrr" },
+    { interval: 0.48, hpMul: 1.36, spdMul: 1.12, seq: "rrocrrcocrrocrro" },
+    { interval: 0.28, hpMul: 1.82, spdMul: 1.20, seq: "rrococrrococrrooccoorrccrroocco" }
   ];
 
   const PATH_N = [
@@ -301,11 +311,11 @@
     [0.72, 0.68], [0.76, 0.56]
   ];
   const PAD_N = [
-    [0.433, 0.099],
-    [0.580, 0.220],
-    [0.139, 0.552],
-    [0.489, 0.762],
-    [0.560, 0.640]
+    [0.36, 0.09],
+    [0.66, 0.26],
+    [0.12, 0.52],
+    [0.40, 0.82],
+    [0.58, 0.58]
   ];
 
   const canvas = document.getElementById("game");
@@ -314,7 +324,10 @@
   const chipWave = document.getElementById("chip-wave");
   const chipHp = document.getElementById("chip-hp");
   const btnMute = document.getElementById("btn-mute");
+  const btnPause = document.getElementById("btn-pause");
   const btnRestart = document.getElementById("btn-restart");
+  const btnResume = document.getElementById("btn-resume");
+  const pausedEl = document.getElementById("paused");
   const btnPlay = document.getElementById("btn-play");
   const btnAgain = document.getElementById("btn-again");
   const btnStick = document.getElementById("btn-stick");
@@ -340,9 +353,12 @@
   let riverW = 46;
 
   let running = false;
+  let paused = false;
   let phase = "splash";
   let wood = START_WOOD;
   let damHp = DAM_MAX;
+  let hpShown = DAM_MAX;
+  let damFlash = 0;
   let wave = 0;
   let buildT = 0;
   let selected = "stick";
@@ -355,6 +371,7 @@
   let towers = [];
   let shots = [];
   let fx = [];
+  let puddles = [];
   let floaters = [];
   let banner = "";
   let bannerT = 0;
@@ -420,7 +437,7 @@
     dam.y = Math.max(8, last.y - dam.h * 0.42);
     pads = PAD_N.map(function (p, i) {
       const t = towers.find(function (tw) { return tw.pad === i; });
-      return { x: p[0] * viewW, y: p[1] * viewH, r: Math.max(26, Math.min(viewW, viewH) * 0.055), type: t ? t.type : null };
+      return { x: p[0] * viewW, y: p[1] * viewH, r: Math.max(42, Math.min(viewW, viewH) * 0.08), type: t ? t.type : null, rank: t ? t.rank : 0 };
     });
   }
 
@@ -450,27 +467,38 @@
     chipHp.textContent = "Dam " + Math.max(0, Math.ceil(damHp));
     btnStick.classList.toggle("on", selected === "stick");
     btnSap.classList.toggle("on", selected === "sap");
-    btnGo.classList.toggle("hidden", !(running && phase === "build"));
-    if (running && phase === "build") {
-      btnGo.textContent = "GO " + Math.ceil(Math.max(0, buildT));
+    btnPause.classList.toggle("on", paused);
+    btnPause.textContent = paused ? "▶" : "⏸";
+    btnPause.setAttribute("aria-label", paused ? "Resume" : "Pause");
+    if (!running || phase === "splash") {
+      btnGo.textContent = "START WAVE";
+    } else if (phase === "build") {
+      btnGo.textContent = (wave === 0 ? "START WAVE" : "NEXT WAVE") + " · " + Math.ceil(Math.max(0, buildT)) + "s";
+    } else {
+      btnGo.textContent = "WAVE " + wave;
     }
   }
 
   function resetRun() {
     wood = START_WOOD;
     damHp = DAM_MAX;
+    hpShown = DAM_MAX;
+    damFlash = 0;
     wave = 0;
     selected = "stick";
     enemies = [];
     towers = [];
     shots = [];
     fx = [];
+    puddles = [];
     floaters = [];
     spawnQ = [];
     banner = "";
     bannerT = 0;
     shake = 0;
     hoverPad = -1;
+    paused = false;
+    pausedEl.classList.add("hidden");
     phase = "build";
     buildT = BUILD_FIRST;
     running = true;
@@ -484,8 +512,32 @@
     hud();
   }
 
+  function setPaused(on) {
+    if (!running || phase === "win" || phase === "lose" || phase === "splash") return;
+    paused = !!on;
+    pausedEl.classList.toggle("hidden", !paused);
+    last = performance.now();
+    hud();
+  }
+
+  function requestNextWave() {
+    SFX.ensure();
+    if (phase === "splash" || phase === "win" || phase === "lose") {
+      resetRun();
+      return;
+    }
+    if (!running) return;
+    setPaused(false);
+    if (phase === "build") startWave();
+    else if (phase === "wave" && spawnQ.length === 0 && enemies.length === 0 && shots.length === 0) {
+      if (wave >= WAVES.length) win();
+      else startWave();
+    }
+  }
+
   function startWave() {
     if (wave >= WAVES.length) return win();
+    if (phase === "wave" && (spawnQ.length || enemies.length)) return;
     wave += 1;
     const w = WAVES[wave - 1];
     spawnQ = w.seq.split("");
@@ -504,6 +556,8 @@
   function win() {
     phase = "win";
     running = false;
+    paused = false;
+    pausedEl.classList.add("hidden");
     endTitle.textContent = "DAM HELD";
     endMsg.textContent = "Five waves. The logs still stand. Bober keeps the river.";
     endcard.classList.remove("hidden");
@@ -515,6 +569,8 @@
   function lose() {
     phase = "lose";
     running = false;
+    paused = false;
+    pausedEl.classList.add("hidden");
     damHp = 0;
     endTitle.textContent = "THE DAM BURST";
     endMsg.textContent = "The river punched through. Patch it up and hold the line again.";
@@ -542,7 +598,24 @@
     });
   }
 
-  function firstInRange(x, y, range) {
+  function specFor(tw) {
+    const b = TOWERS[tw.type];
+    const r = tw.rank || 0;
+    return {
+      range: b.range + r * 14,
+      cd: Math.max(0.2, b.cd * (1 - r * 0.14)),
+      dmg: b.dmg + r * (tw.type === "stick" ? 7 : 3),
+      splash: b.splash + r * 20,
+      slow: b.slow + r * 0.45,
+      pspd: b.pspd
+    };
+  }
+
+  function firstInRange(x, y, range, prefer) {
+    if (prefer && prefer.hp > 0) {
+      const p = pointAt(prefer.dist);
+      if (Math.hypot(p.x - x, p.y - y) <= range + prefer.r) return prefer;
+    }
     let best = null, bestD = -1;
     for (let i = 0; i < enemies.length; i++) {
       const e = enemies[i];
@@ -570,32 +643,47 @@
     }
   }
 
-  function placeTower(padIndex, type) {
-    const spec = TOWERS[type];
-    if (!spec || pads[padIndex].type) return false;
-    if (wood < spec.cost) {
-      chipWood.classList.remove("flash");
-      void chipWood.offsetWidth;
-      chipWood.classList.add("flash");
-      SFX.tone(90, 0.1, "square", 0.04);
-      return false;
+  function cantAfford() {
+    chipWood.classList.remove("flash");
+    void chipWood.offsetWidth;
+    chipWood.classList.add("flash");
+    SFX.tone(90, 0.1, "square", 0.04);
+  }
+
+  function tapPad(padIndex) {
+    if (!running || phase === "win" || phase === "lose") return;
+    const pad = pads[padIndex];
+    if (pad.type) {
+      const tw = towers.find(function (t) { return t.pad === padIndex; });
+      if (!tw || (tw.rank || 0) >= MAX_RANK) return;
+      const cost = TOWERS[tw.type].upCost;
+      if (wood < cost) { cantAfford(); return; }
+      wood -= cost;
+      tw.rank = (tw.rank || 0) + 1;
+      pad.rank = tw.rank;
+      floaters.push({ x: pad.x, y: pad.y - 18, text: "UP " + tw.rank, t: 0.8, col: YEL });
+      SFX.tone(260, 0.07, "triangle", 0.05);
+      SFX.tone(340, 0.1, "triangle", 0.03);
+      hud();
+      return;
     }
+    const spec = TOWERS[selected];
+    if (!spec) return;
+    if (wood < spec.cost) { cantAfford(); return; }
     wood -= spec.cost;
-    pads[padIndex].type = type;
-    towers.push({ pad: padIndex, type: type, cd: 0, ang: -0.4, recoil: 0 });
+    pad.type = selected;
+    pad.rank = 0;
+    towers.push({ pad: padIndex, type: selected, cd: 0, ang: -0.4, recoil: 0, rank: 0, lock: null });
     SFX.tone(180, 0.07, "triangle", 0.05);
     SFX.tone(240, 0.1, "triangle", 0.03);
     hud();
-    return true;
   }
 
   function repairDam() {
     if (!running || phase === "win" || phase === "lose") return;
     if (damHp >= DAM_MAX) return;
     if (wood < COST_REPAIR) {
-      chipWood.classList.remove("flash");
-      void chipWood.offsetWidth;
-      chipWood.classList.add("flash");
+      cantAfford();
       return;
     }
     wood -= COST_REPAIR;
@@ -606,9 +694,21 @@
     hud();
   }
 
+  function hitDam(amount) {
+    damHp -= amount;
+    damFlash = 0.5;
+    shake = 1.2;
+    chipHp.classList.remove("flash");
+    void chipHp.offsetWidth;
+    chipHp.classList.add("flash");
+    SFX.tone(110, 0.18, "sine", 0.06, 60);
+    hud();
+    if (damHp <= 0) lose();
+  }
+
   function update(dt) {
     tWorld += dt;
-    if (shake > 0) shake = Math.max(0, shake - dt * 8);
+    if (shake > 0) shake = Math.max(0, shake - dt * 6);
     if (bannerT > 0) bannerT -= dt;
 
     if (phase === "build") {
@@ -628,47 +728,52 @@
       const e = enemies[i];
       e.bob += dt * (e.kind === "crab" ? 6 : 14);
       if (e.slowT > 0) e.slowT -= dt;
-      const slow = e.slowT > 0 ? 0.45 : 1;
+      const pNow = pointAt(e.dist);
+      for (let p = 0; p < puddles.length; p++) {
+        const u = puddles[p];
+        if (Math.hypot(pNow.x - u.x, pNow.y - u.y) <= u.r + e.r) e.slowT = Math.max(e.slowT, 0.35);
+      }
+      const slow = e.slowT > 0 ? 0.42 : 1;
       e.dist += e.spd * slow * dt;
       if (e.dist >= pathLen) {
-        damHp -= e.leak;
-        shake = 1;
+        const leak = e.leak;
         const p = pointAt(pathLen);
-        for (let n = 0; n < 10; n++) {
+        for (let n = 0; n < 14; n++) {
           fx.push({
             kind: "water",
             x: p.x, y: p.y,
-            vx: 20 + Math.random() * 50,
-            vy: (Math.random() - 0.5) * 80,
-            t: 0.5 + Math.random() * 0.3,
+            vx: 30 + Math.random() * 70,
+            vy: (Math.random() - 0.5) * 90,
+            t: 0.55 + Math.random() * 0.3,
             col: "#8ab4ff"
           });
         }
-        floaters.push({ x: p.x, y: p.y - 16, text: "-" + e.leak, t: 0.8, col: "#E85D4C" });
-        SFX.tone(110, 0.16, "sine", 0.05, 70);
+        floaters.push({ x: p.x, y: p.y - 18, text: "-" + leak, t: 0.9, col: "#E85D4C" });
         enemies.splice(i, 1);
-        hud();
-        if (damHp <= 0) { lose(); return; }
+        hitDam(leak);
+        if (phase === "lose") return;
       }
     }
 
     for (let i = 0; i < towers.length; i++) {
       const tw = towers[i];
       const pad = pads[tw.pad];
-      const spec = TOWERS[tw.type];
+      const spec = specFor(tw);
       tw.cd -= dt;
       if (tw.recoil > 0) tw.recoil -= dt;
-      const tgt = firstInRange(pad.x, pad.y, spec.range);
+      const tgt = firstInRange(pad.x, pad.y, spec.range, tw.lock);
+      tw.lock = tgt;
       if (tgt) {
-        const p = pointAt(tgt.dist);
+        const lead = tgt.spd * 0.07;
+        const p = pointAt(tgt.dist + lead);
         tw.ang = Math.atan2(p.y - pad.y, p.x - pad.x);
         if (tw.cd <= 0) {
           tw.cd = spec.cd;
-          tw.recoil = 0.12;
+          tw.recoil = 0.08;
           shots.push({
             type: tw.type,
-            x: pad.x + Math.cos(tw.ang) * 18,
-            y: pad.y + Math.sin(tw.ang) * 18,
+            x: pad.x + Math.cos(tw.ang) * 20,
+            y: pad.y + Math.sin(tw.ang) * 20,
             tx: p.x, ty: p.y,
             target: tgt,
             spd: spec.pspd,
@@ -676,8 +781,8 @@
             splash: spec.splash,
             slow: spec.slow
           });
-          if (tw.type === "stick") SFX.tone(320, 0.05, "square", 0.03);
-          else SFX.tone(210, 0.08, "sine", 0.03, 140);
+          if (tw.type === "stick") SFX.tone(380, 0.04, "square", 0.035);
+          else SFX.tone(210, 0.07, "sine", 0.035, 140);
         }
       }
     }
@@ -693,7 +798,8 @@
       const step = s.spd * dt;
       if (step >= dist) {
         if (s.splash > 0) {
-          fx.push({ kind: "sap", x: s.tx, y: s.ty, t: 0.35, r: s.splash });
+          fx.push({ kind: "sap", x: s.tx, y: s.ty, t: 0.4, r: s.splash });
+          puddles.push({ x: s.tx, y: s.ty, r: s.splash * 0.72, t: 1.35 });
           for (let j = enemies.length - 1; j >= 0; j--) {
             const e = enemies[j];
             const p = pointAt(e.dist);
@@ -704,6 +810,15 @@
           }
         } else if (s.target && s.target.hp > 0) {
           hurt(s.target, s.dmg);
+        } else {
+          for (let j = enemies.length - 1; j >= 0; j--) {
+            const e = enemies[j];
+            const p = pointAt(e.dist);
+            if (Math.hypot(p.x - s.tx, p.y - s.ty) <= e.r + 10) {
+              hurt(e, s.dmg);
+              break;
+            }
+          }
         }
         shots.splice(i, 1);
       } else {
@@ -712,6 +827,10 @@
       }
     }
 
+    for (let i = puddles.length - 1; i >= 0; i--) {
+      puddles[i].t -= dt;
+      if (puddles[i].t <= 0) puddles.splice(i, 1);
+    }
     for (let i = fx.length - 1; i >= 0; i--) {
       fx[i].t -= dt;
       if (fx[i].vx) { fx[i].x += fx[i].vx * dt; fx[i].y += fx[i].vy * dt; fx[i].vy += 80 * dt; }
@@ -807,62 +926,67 @@
   function drawEnemy(e) {
     const p = pointAt(e.dist);
     const ang = tangentAt(e.dist);
-    const bob = Math.sin(e.bob) * (e.kind === "crab" ? 1 : 2.4);
+    const bob = Math.sin(e.bob) * (e.kind === "crab" ? 1 : 2.6);
     ctx.save();
     ctx.translate(p.x, p.y + bob);
-    ctx.rotate(ang);
+    if (e.kind === "crab") ctx.rotate(ang * 0.15);
+    else ctx.rotate(ang);
     if (e.slowT > 0) {
-      ctx.fillStyle = "rgba(245,196,0,0.28)";
-      ctx.beginPath(); ctx.arc(0, 0, e.r + 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(245,196,0,0.32)";
+      ctx.beginPath(); ctx.arc(0, 0, e.r + 10, 0, Math.PI * 2); ctx.fill();
     }
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.4;
     ctx.strokeStyle = INK;
     if (e.kind === "rat") {
-      ctx.fillStyle = "#6a4422";
-      ctx.beginPath(); ctx.ellipse(0, 0, 12, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = "#4a2e16";
-      ctx.beginPath(); ctx.moveTo(10, -2); ctx.lineTo(18, 0); ctx.lineTo(10, 2); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = CREAM;
-      ctx.fillRect(16, -2, 5, 2.2);
-      ctx.strokeRect(16, -2, 5, 2.2);
+      ctx.fillStyle = "#C9B89A";
+      ctx.beginPath(); ctx.ellipse(0, 1, 11, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#8A7A5C";
+      ctx.beginPath(); ctx.moveTo(8, -3); ctx.lineTo(20, 0); ctx.lineTo(8, 3); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = YEL;
+      roundRect(ctx, 16, -2.4, 8, 2.6, 1); ctx.fill(); ctx.stroke();
       ctx.fillStyle = INK;
-      ctx.beginPath(); ctx.arc(4, -2, 1.3, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "#3a2412";
-      ctx.beginPath(); ctx.moveTo(-10, 0); ctx.quadraticCurveTo(-18, -6, -22, 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(3, -2, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#5A4A32";
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-10, 1); ctx.quadraticCurveTo(-20, -8, -26, 3); ctx.stroke();
     } else if (e.kind === "crab") {
-      ctx.fillStyle = "#a06a3a";
-      roundRect(ctx, -16, -8, 32, 16, 5); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = "#7a4a22";
-      ctx.fillRect(-10, -4, 20, 3);
-      ctx.beginPath(); ctx.arc(-18, -2, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.arc(18, -2, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#E07030";
+      roundRect(ctx, -20, -10, 40, 20, 6); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#B44A18";
+      ctx.fillRect(-12, -5, 24, 4);
+      ctx.beginPath(); ctx.arc(-22, -2, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(22, -2, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = YEL;
+      ctx.fillRect(-26, -5, 7, 4);
+      ctx.fillRect(19, -5, 7, 4);
       ctx.fillStyle = INK;
-      ctx.fillRect(-6, -6, 3, 3);
-      ctx.fillRect(3, -6, 3, 3);
+      ctx.fillRect(-7, -7, 4, 4);
+      ctx.fillRect(3, -7, 4, 4);
     } else {
-      ctx.fillStyle = FUR;
-      ctx.beginPath(); ctx.ellipse(0, 0, 16, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#3A2214";
+      ctx.beginPath(); ctx.ellipse(0, 0, 18, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = CREAM;
-      ctx.beginPath(); ctx.ellipse(2, 3, 10, 4, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = FUR;
-      ctx.beginPath(); ctx.arc(12, -2, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(3, 3, 12, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#3A2214";
+      ctx.beginPath(); ctx.arc(14, -2, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#2A8A8A";
+      ctx.beginPath(); ctx.arc(16, -6, 3.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = INK;
-      ctx.beginPath(); ctx.arc(14, -3, 1.3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(16, -3, 1.5, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = CREAM;
-      ctx.fillRect(16, 0, 3, 3);
-      ctx.strokeRect(16, 0, 3, 3);
+      roundRect(ctx, 18, 1, 4, 3.5, 1); ctx.fill(); ctx.stroke();
     }
     ctx.restore();
     const hpPct = Math.max(0, e.hp / e.max);
-    ctx.fillStyle = "#1A102888";
-    ctx.fillRect(p.x - 12, p.y - e.r - 10, 24, 4);
+    ctx.fillStyle = "#1A1028cc";
+    ctx.fillRect(p.x - 14, p.y - e.r - 12, 28, 5);
     ctx.fillStyle = hpPct > 0.4 ? "#7ED957" : "#E85D4C";
-    ctx.fillRect(p.x - 12, p.y - e.r - 10, 24 * hpPct, 4);
+    ctx.fillRect(p.x - 14, p.y - e.r - 12, 28 * hpPct, 5);
   }
 
   function drawTower(tw) {
     const pad = pads[tw.pad];
-    const spec = TOWERS[tw.type];
+    const spec = specFor(tw);
     ctx.save();
     ctx.strokeStyle = "rgba(244,230,195,0.18)";
     ctx.lineWidth = 2;
@@ -893,6 +1017,37 @@
       roundRect(ctx, 10, -4, 16, 7, 3); ctx.fill(); ctx.stroke();
     }
     ctx.restore();
+    if (tw.rank) {
+      ctx.fillStyle = YEL;
+      ctx.font = "bold 12px Trebuchet MS, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("+" + tw.rank, 0, 20);
+    }
+    ctx.restore();
+  }
+
+  function drawCracks(x, y, w, h, sev) {
+    ctx.save();
+    ctx.strokeStyle = sev > 1 ? "#120804" : "#1a100c";
+    ctx.lineWidth = 1.8 + sev;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    const lines = sev > 1
+      ? [[0.18, 0.12, 0.32, 0.28, 0.22, 0.48], [0.62, 0.18, 0.78, 0.36, 0.70, 0.58], [0.30, 0.55, 0.48, 0.72, 0.40, 0.90], [0.12, 0.70, 0.28, 0.82], [0.72, 0.68, 0.88, 0.86]]
+      : [[0.22, 0.20, 0.34, 0.38], [0.68, 0.28, 0.80, 0.46], [0.40, 0.62, 0.52, 0.80]];
+    for (let i = 0; i < lines.length; i++) {
+      const L = lines[i];
+      ctx.beginPath();
+      ctx.moveTo(x + L[0] * w, y + L[1] * h);
+      for (let k = 2; k < L.length; k += 2) ctx.lineTo(x + L[k] * w, y + L[k + 1] * h);
+      ctx.stroke();
+    }
+    if (sev > 1) {
+      ctx.fillStyle = "rgba(40,70,130,0.35)";
+      ctx.beginPath(); ctx.ellipse(x + w * 0.28, y + h * 0.42, 7, 4, 0.4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(x + w * 0.66, y + h * 0.70, 8, 5, -0.3, 0, Math.PI * 2); ctx.fill();
+    }
     ctx.restore();
   }
 
@@ -925,6 +1080,18 @@
     ctx.lineTo(x + logW - 10, y + h - 6);
     ctx.stroke();
 
+    const pctHp = Math.max(0, damHp / DAM_MAX);
+    if (pctHp <= 0.66) drawCracks(x, y, logW, h, pctHp <= 0.33 ? 2 : 1);
+
+    if (damFlash > 0) {
+      ctx.fillStyle = "rgba(255, 90, 70," + (damFlash * 0.55) + ")";
+      roundRect(ctx, x - 6, y - 8, logW + 16, h + 16, 10);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255," + (damFlash * 0.35) + ")";
+      roundRect(ctx, x, y, logW, h, 8);
+      ctx.fill();
+    }
+
     const mood = damHp < 30 ? "wow" : damHp < 70 ? "mad" : "ok";
     drawBeaver(ctx, x + logW * 0.5, y + 36, 1.45, mood);
 
@@ -933,8 +1100,8 @@
     const bh = h - 16;
     ctx.fillStyle = "#1A1028";
     roundRect(ctx, bx - 10, by - 4, 18, bh + 8, 6); ctx.fill();
-    ctx.strokeStyle = CREAM; ctx.lineWidth = 2; ctx.stroke();
-    const pct = Math.max(0, damHp / DAM_MAX);
+    ctx.strokeStyle = damFlash > 0 ? "#E85D4C" : CREAM; ctx.lineWidth = 2; ctx.stroke();
+    const pct = Math.max(0, hpShown / DAM_MAX);
     const fh = bh * pct;
     ctx.fillStyle = pct > 0.45 ? "#7ED957" : pct > 0.2 ? YEL : "#E85D4C";
     ctx.fillRect(bx - 7, by + bh - fh, 12, fh);
@@ -950,8 +1117,8 @@
   }
 
   function render() {
-    const ox = (Math.random() - 0.5) * shake * 8;
-    const oy = (Math.random() - 0.5) * shake * 8;
+    const ox = (Math.random() - 0.5) * shake * 16;
+    const oy = (Math.random() - 0.5) * shake * 16;
     ctx.save();
     ctx.translate(ox, oy);
     const g = ctx.createLinearGradient(0, 0, 0, viewH);
@@ -1004,24 +1171,44 @@
 
     drawDam();
 
+    for (let i = 0; i < puddles.length; i++) {
+      const u = puddles[i];
+      ctx.globalAlpha = Math.min(0.45, u.t);
+      ctx.fillStyle = "rgba(196,220,80,0.45)";
+      ctx.beginPath(); ctx.arc(u.x, u.y, u.r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = YEL; ctx.lineWidth = 2; ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
     for (let i = 0; i < pads.length; i++) {
       const p = pads[i];
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      const pulse = p.type ? 1 : 0.55 + 0.45 * Math.sin(tWorld * 4 + i);
+      const pulse = p.type ? 1 : 0.6 + 0.4 * Math.sin(tWorld * 4 + i);
       ctx.fillStyle = p.type ? "#5C3A1A" : (hoverPad === i ? "#a07a40" : "#6e5230");
       ctx.fill();
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 4;
       ctx.strokeStyle = p.type ? INK : YEL;
       ctx.globalAlpha = pulse;
       ctx.stroke();
       ctx.globalAlpha = 1;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
       if (!p.type) {
         ctx.fillStyle = CREAM;
-        ctx.font = "bold 18px Trebuchet MS, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("+", p.x, p.y + 1);
+        ctx.font = "bold 20px Trebuchet MS, sans-serif";
+        ctx.fillText("+", p.x, p.y - 8);
+        ctx.fillStyle = YEL;
+        ctx.font = "bold 13px Trebuchet MS, sans-serif";
+        ctx.fillText(String(TOWERS[selected].cost), p.x, p.y + 12);
+      } else {
+        const tw = towers.find(function (t) { return t.pad === i; });
+        const rank = tw ? (tw.rank || 0) : 0;
+        if (rank < MAX_RANK) {
+          ctx.fillStyle = YEL;
+          ctx.font = "bold 12px Trebuchet MS, sans-serif";
+          ctx.fillText("▲ " + TOWERS[p.type].upCost, p.x, p.y + p.r - 12);
+        }
       }
     }
 
@@ -1034,15 +1221,18 @@
       ctx.translate(s.x, s.y);
       ctx.rotate(Math.atan2(s.ty - s.y, s.tx - s.x));
       if (s.type === "stick") {
-        ctx.fillStyle = "#c48a4a";
+        ctx.fillStyle = "#E8C07A";
         ctx.strokeStyle = INK;
-        ctx.lineWidth = 1.5;
-        roundRect(ctx, -10, -2.5, 20, 5, 2); ctx.fill(); ctx.stroke();
+        ctx.lineWidth = 2;
+        roundRect(ctx, -16, -4, 32, 8, 3); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = CREAM;
+        roundRect(ctx, 8, -3, 10, 6, 2); ctx.fill();
       } else {
         ctx.fillStyle = YEL;
-        ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#c4dc6a";
-        ctx.beginPath(); ctx.arc(-1, -1, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = "#d4f06a";
+        ctx.beginPath(); ctx.arc(-2, -2, 4, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
     }
@@ -1111,7 +1301,7 @@
     let best = -1, bestD = 1e9;
     for (let i = 0; i < pads.length; i++) {
       const d = Math.hypot(pads[i].x - x, pads[i].y - y);
-      if (d < pads[i].r + 14 && d < bestD) { best = i; bestD = d; }
+      if (d < pads[i].r + 22 && d < bestD) { best = i; bestD = d; }
     }
     return best;
   }
@@ -1123,10 +1313,10 @@
   }
 
   canvas.addEventListener("pointerdown", function (ev) {
-    if (!running) return;
+    if (!running || paused) return;
     const p = canvasXY(ev);
     const i = padAt(p.x, p.y);
-    if (i >= 0) placeTower(i, selected);
+    if (i >= 0) tapPad(i);
   });
   canvas.addEventListener("pointermove", function (ev) {
     const p = canvasXY(ev);
@@ -1136,21 +1326,18 @@
   btnStick.addEventListener("click", function () { selected = "stick"; SFX.ensure(); hud(); });
   btnSap.addEventListener("click", function () { selected = "sap"; SFX.ensure(); hud(); });
   btnRepair.addEventListener("click", function () { SFX.ensure(); repairDam(); });
-  btnGo.addEventListener("click", function () {
-    SFX.ensure();
-    if (running && phase === "build") startWave();
-  });
+  btnGo.addEventListener("click", function () { requestNextWave(); });
   btnPlay.addEventListener("click", function () { SFX.ensure(); resetRun(); });
   btnAgain.addEventListener("click", function () { SFX.ensure(); resetRun(); });
+  btnResume.addEventListener("click", function () { SFX.ensure(); setPaused(false); });
+  btnPause.addEventListener("click", function () {
+    SFX.ensure();
+    if (!running || phase === "splash" || phase === "win" || phase === "lose") return;
+    setPaused(!paused);
+  });
   btnRestart.addEventListener("click", function () {
     SFX.ensure();
-    splash.classList.remove("hidden");
-    endcard.classList.add("hidden");
-    document.getElementById("app").classList.add("booting");
-    running = false;
-    phase = "splash";
-    enemies = []; towers = []; shots = []; fx = [];
-    hud();
+    resetRun();
   });
   btnMute.addEventListener("click", function () {
     SFX.muted = !SFX.muted;
@@ -1163,10 +1350,13 @@
   function loop(now) {
     const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
     last = now;
-    if (running && (phase === "build" || phase === "wave")) update(dt);
+    if (damFlash > 0) damFlash = Math.max(0, damFlash - dt * 2.4);
+    if (hpShown > damHp) hpShown = Math.max(damHp, hpShown - 420 * dt);
+    else hpShown += (damHp - hpShown) * Math.min(1, 10 * dt);
+    if (running && !paused && (phase === "build" || phase === "wave")) update(dt);
     else {
       tWorld += dt;
-      if (shake > 0) shake = Math.max(0, shake - dt * 8);
+      if (shake > 0) shake = Math.max(0, shake - dt * 6);
     }
     render();
     requestAnimationFrame(loop);
@@ -1175,7 +1365,8 @@
   window.addEventListener("resize", layout);
   window.addEventListener("orientationchange", function () { setTimeout(layout, 80); });
   document.addEventListener("visibilitychange", function () {
-    if (document.hidden) last = performance.now();
+    if (document.hidden && running && phase !== "win" && phase !== "lose") setPaused(true);
+    last = performance.now();
   });
 
   layout();

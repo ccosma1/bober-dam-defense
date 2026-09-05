@@ -4,20 +4,20 @@ from __future__ import annotations
 import math
 
 KINDS = {
-    "r": {"hp": 26, "spd": 96, "wood": 8, "leak": 8, "r": 13, "armor": 0},
-    "c": {"hp": 90, "spd": 40, "wood": 18, "leak": 16, "r": 18, "armor": 0.4},
-    "o": {"hp": 44, "spd": 112, "wood": 14, "leak": 12, "r": 15, "armor": 0},
+    "r": {"hp": 22, "spd": 92, "wood": 8, "leak": 12, "r": 14, "armor": 0},
+    "c": {"hp": 86, "spd": 38, "wood": 18, "leak": 22, "r": 20, "armor": 0.38},
+    "o": {"hp": 40, "spd": 108, "wood": 14, "leak": 16, "r": 16, "armor": 0},
 }
 TOWERS = {
-    "stick": {"cost": 50, "range": 138, "cd": 0.58, "dmg": 16, "splash": 0, "slow": 0, "pspd": 440},
-    "sap": {"cost": 100, "range": 108, "cd": 1.12, "dmg": 8, "splash": 74, "slow": 2.2, "pspd": 340},
+    "stick": {"cost": 50, "range": 150, "cd": 0.38, "dmg": 18, "splash": 0, "slow": 0, "pspd": 820},
+    "sap": {"cost": 100, "range": 120, "cd": 0.82, "dmg": 7, "splash": 96, "slow": 2.8, "pspd": 640},
 }
 WAVES = [
-    {"interval": 0.88, "hpMul": 1.00, "spdMul": 1.00, "seq": "rrrrrrrr"},
-    {"interval": 0.76, "hpMul": 1.08, "spdMul": 1.04, "seq": "rrcrrcrrc"},
-    {"interval": 0.66, "hpMul": 1.18, "spdMul": 1.08, "seq": "rocrorcrocror"},
-    {"interval": 0.54, "hpMul": 1.32, "spdMul": 1.12, "seq": "rrocrrcocrrocrocr"},
-    {"interval": 0.38, "hpMul": 1.62, "spdMul": 1.16, "seq": "rrococrrococrrooccoorrccro"},
+    {"interval": 0.95, "hpMul": 1.00, "spdMul": 1.00, "seq": "rrrrrrrr"},
+    {"interval": 0.82, "hpMul": 1.04, "spdMul": 1.02, "seq": "rrcrrcrr"},
+    {"interval": 0.72, "hpMul": 1.10, "spdMul": 1.05, "seq": "rrocrrocrr"},
+    {"interval": 0.48, "hpMul": 1.36, "spdMul": 1.12, "seq": "rrocrrcocrrocrro"},
+    {"interval": 0.28, "hpMul": 1.82, "spdMul": 1.20, "seq": "rrococrrococrrooccoorrccrroocco"},
 ]
 PATH_N = [
     [-0.08, 0.13], [0.16, 0.14], [0.38, 0.17], [0.56, 0.25],
@@ -26,8 +26,8 @@ PATH_N = [
     [0.72, 0.68], [0.76, 0.56],
 ]
 PAD_N = [
-    [0.433, 0.099], [0.580, 0.220], [0.139, 0.552],
-    [0.489, 0.762], [0.560, 0.640],
+    [0.36, 0.09], [0.66, 0.26], [0.12, 0.52],
+    [0.40, 0.82], [0.58, 0.58],
 ]
 W, H = 390.0, 640.0
 
@@ -55,8 +55,7 @@ def point_at(pts, cum, plen, dist):
     return pts[-1]
 
 
-def simulate(plan):
-    """plan: list of (pad_index, type) bought as soon as wood allows, in order."""
+def simulate(plan, stop_after=None, repair_below=None, repair_cost=30, repair_hp=24):
     pts, cum, plen = build_path()
     pads = [(x * W, y * H) for x, y in PAD_N]
     wood = 100
@@ -66,6 +65,7 @@ def simulate(plan):
     dt = 1 / 30
     leaks = 0
     kills = 0
+    wave_end_dam = {}
 
     def try_buy():
         nonlocal wood, buy_i
@@ -87,6 +87,7 @@ def simulate(plan):
         spawn_t = 0.25
         enemies = []
         shots = []
+        puddles = []
         while q or enemies or shots:
             spawn_t -= dt
             if spawn_t <= 0 and q:
@@ -104,17 +105,27 @@ def simulate(plan):
                     "slow": 0.0,
                 })
                 spawn_t = wave["interval"]
+            for u in list(puddles):
+                u["t"] -= dt
+            puddles = [u for u in puddles if u["t"] > 0]
             for e in enemies:
                 if e["slow"] > 0:
                     e["slow"] -= dt
-                e["dist"] += e["spd"] * (0.45 if e["slow"] > 0 else 1.0) * dt
+                x, y = point_at(pts, cum, plen, e["dist"])
+                for u in puddles:
+                    if math.hypot(x - u["x"], y - u["y"]) <= u["r"] + e["r"]:
+                        e["slow"] = max(e["slow"], 0.35)
+                e["dist"] += e["spd"] * (0.42 if e["slow"] > 0 else 1.0) * dt
             still = []
             for e in enemies:
                 if e["dist"] >= plen:
                     dam -= e["leak"]
                     leaks += 1
+                    if repair_below is not None and dam < repair_below and wood >= repair_cost:
+                        wood -= repair_cost
+                        dam = min(100, dam + repair_hp)
                     if dam <= 0:
-                        return {"win": False, "wave": wi, "dam": 0, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers)}
+                        return {"win": False, "wave": wi, "dam": 0, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers), "wave_end_dam": wave_end_dam}
                 else:
                     still.append(e)
             enemies = still
@@ -130,7 +141,7 @@ def simulate(plan):
                         tgt, best = e, e["dist"]
                 if tgt is not None and tw["cd"] <= 0:
                     tw["cd"] = spec["cd"]
-                    tx, ty = point_at(pts, cum, plen, tgt["dist"])
+                    tx, ty = point_at(pts, cum, plen, tgt["dist"] + tgt["spd"] * 0.07)
                     shots.append({
                         "type": tw["type"], "x": px, "y": py, "tx": tx, "ty": ty,
                         "target": tgt, **{k: spec[k] for k in ("pspd", "dmg", "splash", "slow")},
@@ -144,6 +155,7 @@ def simulate(plan):
                 step = s["pspd"] * dt
                 if step >= dist:
                     if s["splash"] > 0:
+                        puddles.append({"x": s["tx"], "y": s["ty"], "r": s["splash"] * 0.72, "t": 1.35})
                         for e in list(enemies):
                             x, y = point_at(pts, cum, plen, e["dist"])
                             if math.hypot(x - s["tx"], y - s["ty"]) <= s["splash"] + e["r"]:
@@ -165,7 +177,10 @@ def simulate(plan):
                     s["y"] += dy / dist * step
                     live_shots.append(s)
             shots = live_shots
-    return {"win": True, "wave": 5, "dam": dam, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers)}
+        wave_end_dam[wi] = dam
+        if stop_after == wi:
+            return {"win": dam > 0, "wave": wi, "dam": dam, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers), "wave_end_dam": wave_end_dam}
+    return {"win": True, "wave": 5, "dam": dam, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers), "wave_end_dam": wave_end_dam}
 
 
 def main():
@@ -173,13 +188,23 @@ def main():
     assert none["win"] is False, none
     assert none["wave"] <= 2, none
 
-    greedy = simulate([
-        (0, "stick"), (1, "stick"), (4, "sap"), (2, "stick"), (3, "sap"),
-    ])
+    two = simulate([(0, "stick"), (1, "stick")])
+    two3 = simulate([(0, "stick"), (1, "stick")], stop_after=3)
+    sap = simulate([(0, "stick"), (1, "stick"), (4, "sap")])
+    greedy = simulate([(0, "stick"), (1, "stick"), (4, "sap"), (2, "stick"), (3, "sap")])
+    repaired = simulate([(0, "stick"), (1, "stick"), (4, "sap"), (2, "stick")], repair_below=40)
+
     print("no-towers", none)
-    print("greedy   ", greedy)
-    assert greedy["win"], greedy
-    assert greedy["towers"] >= 3, greedy
+    print("2 sticks w3", two3)
+    print("2 sticks   ", two)
+    print("2stick+sap ", sap)
+    print("greedy     ", greedy)
+    print("repair     ", repaired)
+
+    assert two3["win"] and two3["dam"] >= 50, two3
+    assert two["win"] is False and two["wave"] >= 4, two
+    assert greedy["win"] or repaired["win"], (greedy, repaired)
+    assert sap["win"] or sap["wave"] >= 5, sap
     print("OK")
 
 

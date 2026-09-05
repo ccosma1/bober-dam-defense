@@ -213,6 +213,58 @@
       color: var(--cream);
       text-shadow: 0 1px 6px #000;
     }
+    .name-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+      max-width: 16em;
+      margin: 0 0 14px;
+    }
+    .name-wrap label {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--yellow);
+      text-shadow: 0 2px 0 #1A1028;
+    }
+    .name-wrap input {
+      width: 100%;
+      appearance: none;
+      border: 3px solid var(--yellow);
+      background: #1A1028ee;
+      color: var(--cream);
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 18px;
+      text-align: center;
+      padding: 10px 12px;
+      border-radius: 14px;
+      letter-spacing: 0.04em;
+      outline: none;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .name-wrap input::placeholder {
+      color: var(--cream);
+      opacity: 0.45;
+    }
+    .name-wrap input:focus {
+      box-shadow: 0 0 0 3px #F5C40088;
+    }
+    .chip.name {
+      max-width: 9.5em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .end-hero-name {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--yellow);
+      text-shadow: 0 2px 0 #1A1028;
+    }
     .play {
       appearance: none;
       border: 3px solid #1A1028;
@@ -441,6 +493,7 @@
   <div id="app" class="booting">
     <header>
       <div class="chips">
+        <div class="chip name" id="chip-name">Bober</div>
         <div class="chip wood" id="chip-wood">Wood 100</div>
         <div class="chip" id="chip-wave">Wave 0/5</div>
         <div class="chip" id="chip-hp">Dam 100</div>
@@ -458,6 +511,10 @@
         <h1>BOBER DAM<br>DEFENSE</h1>
         <p class="tagline">Fan game by a holder.</p>
         <p class="how">20 levels. Stick Thrower is cheap DPS. Sap Sprayer slows packs. Upgrade twice, then tap to evolve. Earn 1–3 stars from dam HP left. Beat a level to unlock the next.</p>
+        <div class="name-wrap">
+          <label for="player-name">Your Bober name</label>
+          <input id="player-name" type="text" maxlength="16" placeholder="Bober" autocomplete="off" spellcheck="false" enterkeyhint="done" />
+        </div>
         <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
         <button class="play ghost reset-sm" id="btn-history" type="button">HISTORY</button>
         <button class="play ghost reset-sm" id="btn-reset-splash" type="button">Reset</button>
@@ -472,6 +529,7 @@
       <div id="endcard" class="overlay hidden">
         <img class="hero" src="assets/splash.jpg" alt="" />
         <h2 id="end-title">DAM HELD</h2>
+        <p class="end-hero-name" id="end-hero-name"></p>
         <div id="end-stars" class="end-stars"></div>
         <p class="end-msg" id="end-msg"></p>
         <p class="tagline">Fan game by a holder.</p>
@@ -551,6 +609,8 @@
   const BUILD_NEXT = 15;
   const MAX_RANK = 2;
   const SAVE_KEY = "bober-dam-campaign-v1";
+  const NAME_MAX = 16;
+  const HIST_SEEN_KEY = "bober-dam-history-seen";
 
   const KINDS = {
     rat:   { hp: 24, spd: 92, wood: 6,  leak: 14, r: 14, armor: 0 },
@@ -749,9 +809,11 @@
   function sprReady(im) {
     return !!(im && im.complete && im.naturalWidth > 0);
   }
+  const chipName = document.getElementById("chip-name");
   const chipWood = document.getElementById("chip-wood");
   const chipWave = document.getElementById("chip-wave");
   const chipHp = document.getElementById("chip-hp");
+  const nameInput = document.getElementById("player-name");
   const btnMute = document.getElementById("btn-mute");
   const btnPause = document.getElementById("btn-pause");
   const btnRestart = document.getElementById("btn-restart");
@@ -781,6 +843,7 @@
   const levelGrid = document.getElementById("level-grid");
   const endcard = document.getElementById("endcard");
   const endTitle = document.getElementById("end-title");
+  const endHeroName = document.getElementById("end-hero-name");
   const endMsg = document.getElementById("end-msg");
   const endStars = document.getElementById("end-stars");
 
@@ -865,6 +928,14 @@
   }
   syncMute();
 
+  function clampName(s) {
+    s = String(s == null ? "" : s).replace(/[<>]/g, "").replace(/\s+/g, " ").trim();
+    if (s.length > NAME_MAX) s = s.slice(0, NAME_MAX).trim();
+    return s || "Bober";
+  }
+  function defaultSave() {
+    return { unlocked: 1, stars: Array(LEVELS.length).fill(0), cameos: {}, unlockTruck: false, unlockFlame: false, playerName: "Bober", historySeen: false };
+  }
   function loadSave() {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
@@ -881,16 +952,42 @@
           s.cameos = s.cameos || {};
           s.unlockTruck = !!s.unlockTruck;
           s.unlockFlame = !!s.unlockFlame;
+          s.playerName = clampName(s.playerName);
+          s.historySeen = !!s.historySeen || localStorage.getItem(HIST_SEEN_KEY) === "1";
           return s;
         }
       }
     } catch (err) {}
-    return { unlocked: 1, stars: Array(LEVELS.length).fill(0), cameos: {}, unlockTruck: false, unlockFlame: false };
+    return defaultSave();
   }
   function writeSave() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   }
   let save = loadSave();
+  function playerName() {
+    return clampName(save && save.playerName);
+  }
+  function fillNameInput() {
+    if (!nameInput) return;
+    const n = playerName();
+    nameInput.value = n === "Bober" ? "" : n;
+  }
+  function persistName() {
+    const raw = nameInput ? nameInput.value : "";
+    save.playerName = clampName(raw);
+    writeSave();
+    if (chipName) chipName.textContent = save.playerName;
+    return save.playerName;
+  }
+  function historySeen() {
+    return !!save.historySeen || localStorage.getItem(HIST_SEEN_KEY) === "1";
+  }
+  function markHistorySeen() {
+    save.historySeen = true;
+    localStorage.setItem(HIST_SEEN_KEY, "1");
+    writeSave();
+  }
+  fillNameInput();
 
   function starString(n) {
     n = Math.max(0, Math.min(3, n | 0));
@@ -981,7 +1078,8 @@
   function stopHistory() {
     if (histTimer) { clearTimeout(histTimer); histTimer = 0; }
     if (histEl) histEl.classList.add("hidden");
-    localStorage.setItem("bober-dam-history-seen", "1");
+    markHistorySeen();
+    fillNameInput();
     const cb = histAfter;
     histAfter = null;
     if (cb) cb();
@@ -1301,6 +1399,7 @@
   }
 
   function hud() {
+    if (chipName) chipName.textContent = playerName();
     chipWood.textContent = "Wood " + wood;
     const waveShown = phase === "build" ? Math.min(WAVES.length, wave + 1) : Math.max(1, wave);
     chipWave.textContent = "L" + (levelIndex + 1) + " · " + waveShown + "/" + WAVES.length;
@@ -1456,11 +1555,12 @@
     const beat = cameoForClear(levelIndex);
     writeSave();
     endTitle.textContent = "DAM HELD";
+    if (endHeroName) endHeroName.textContent = playerName();
     endStars.textContent = starString(earned);
-    endMsg.textContent = LEVELS[levelIndex].name + " · " + earned + " star" + (earned === 1 ? "" : "s") + ". Next level unlocked.";
+    endMsg.textContent = playerName() + " held " + LEVELS[levelIndex].name + " · " + earned + " star" + (earned === 1 ? "" : "s") + ". Next level unlocked.";
     if (pendingUnlock === "CYBERTRUCK UNLOCKED") endMsg.textContent += " Upgrade Stick twice, then tap to evolve.";
     if (pendingUnlock === "FLAME BEAVER UNLOCKED") endMsg.textContent += " Upgrade Sap twice, then tap to evolve.";
-    if (levelIndex + 1 >= LEVELS.length) endMsg.textContent = LEVELS[levelIndex].name + " held. " + earned + " star" + (earned === 1 ? "" : "s") + ". Campaign clear.";
+    if (levelIndex + 1 >= LEVELS.length) endMsg.textContent = playerName() + " held " + LEVELS[levelIndex].name + ". " + earned + " star" + (earned === 1 ? "" : "s") + ". Campaign clear.";
     btnAgain.textContent = "LEVELS";
     document.getElementById("app").classList.add("booting");
     if (beat) {
@@ -1479,8 +1579,9 @@
     pausedEl.classList.add("hidden");
     damHp = 0;
     endTitle.textContent = "THE DAM BURST";
+    if (endHeroName) endHeroName.textContent = playerName();
     endStars.textContent = "";
-    endMsg.textContent = LEVELS[levelIndex].name + " broke. Try again from the map.";
+    endMsg.textContent = playerName() + " — " + LEVELS[levelIndex].name + " broke. Try again from the map.";
     btnAgain.textContent = "LEVELS";
     hideMenus();
     endcard.classList.remove("hidden");
@@ -2759,9 +2860,28 @@
     histEl.addEventListener("click", function () { SFX.ensure(); stopHistory(); });
     histEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); stopHistory(); }, { passive: false });
   }
+  if (nameInput) {
+    nameInput.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
+    nameInput.addEventListener("click", function (ev) { ev.stopPropagation(); });
+    nameInput.addEventListener("input", function () {
+      let v = nameInput.value.replace(/[<>]/g, "");
+      if (v.length > NAME_MAX) v = v.slice(0, NAME_MAX);
+      if (v !== nameInput.value) nameInput.value = v;
+    });
+    nameInput.addEventListener("keydown", function (ev) {
+      ev.stopPropagation();
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        persistName();
+        nameInput.blur();
+      }
+    });
+    nameInput.addEventListener("blur", function () { persistName(); });
+  }
   btnPlay.addEventListener("click", function () {
     SFX.ensure();
-    if (!localStorage.getItem("bober-dam-history-seen")) {
+    persistName();
+    if (!historySeen()) {
       playHistory(function () { showLevels(); });
     } else {
       showLevels();
@@ -2771,10 +2891,12 @@
     btnHistory.addEventListener("click", function (ev) {
       ev.stopPropagation();
       SFX.ensure();
+      persistName();
       playHistory(function () {
         hideMenus();
         splash.classList.remove("hidden");
         document.getElementById("app").classList.add("booting");
+        fillNameInput();
       });
     });
   }

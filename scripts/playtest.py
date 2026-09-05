@@ -1,27 +1,17 @@
-"""Headless balance check for Bober Dam Defense.
-
-Mirrors Pack Night (campaign level 4) combat constants from index.html.
-"""
+"""Headless campaign balance for Bober Dam Defense (mirrors index.html)."""
 from __future__ import annotations
 
 import math
 
 KINDS = {
-    "r": {"hp": 22, "spd": 92, "wood": 8, "leak": 12, "r": 14, "armor": 0},
-    "c": {"hp": 86, "spd": 38, "wood": 18, "leak": 22, "r": 20, "armor": 0.38},
-    "o": {"hp": 40, "spd": 108, "wood": 14, "leak": 16, "r": 16, "armor": 0},
+    "r": {"hp": 24, "spd": 92, "wood": 6, "leak": 14, "r": 14, "armor": 0},
+    "c": {"hp": 96, "spd": 38, "wood": 12, "leak": 24, "r": 20, "armor": 0.4},
+    "o": {"hp": 44, "spd": 110, "wood": 9, "leak": 18, "r": 16, "armor": 0},
 }
 TOWERS = {
     "stick": {"cost": 50, "range": 150, "cd": 0.38, "dmg": 18, "splash": 0, "slow": 0, "pspd": 820},
     "sap": {"cost": 100, "range": 120, "cd": 0.82, "dmg": 7, "splash": 96, "slow": 2.8, "pspd": 640},
 }
-WAVES = [
-    {"interval": 0.95, "hpMul": 1.00, "spdMul": 1.00, "seq": "rrrrrrrr"},
-    {"interval": 0.82, "hpMul": 1.04, "spdMul": 1.02, "seq": "rrcrrcrr"},
-    {"interval": 0.72, "hpMul": 1.10, "spdMul": 1.05, "seq": "rrocrrocrr"},
-    {"interval": 0.48, "hpMul": 1.36, "spdMul": 1.12, "seq": "rrocrrcocrrocrro"},
-    {"interval": 0.28, "hpMul": 1.82, "spdMul": 1.20, "seq": "rrococrrococrrooccoorrccrroocco"},
-]
 PATH_N = [
     [-0.08, 0.13], [0.16, 0.14], [0.38, 0.17], [0.56, 0.25],
     [0.66, 0.36], [0.58, 0.47], [0.40, 0.53], [0.24, 0.60],
@@ -33,6 +23,98 @@ PAD_N = [
     [0.40, 0.82], [0.58, 0.58],
 ]
 W, H = 390.0, 640.0
+GREEDY = [(0, "stick"), (1, "stick"), (4, "sap"), (2, "stick"), (3, "sap")]
+TWO = [(0, "stick"), (1, "stick")]
+
+
+def wv(interval, hp, spd, seq):
+    return {"interval": interval, "hpMul": hp, "spdMul": spd, "seq": seq}
+
+
+LEVELS = [
+    {"name": "Trickle", "wood": 120, "dam": 100, "waves": [
+        wv(1.10, 1.00, 1.00, "rrrrrr"),
+        wv(1.00, 1.00, 1.00, "rrrrrrr"),
+        wv(0.92, 1.00, 1.00, "rrrrrrrr"),
+    ]},
+    {"name": "Driftwood", "wood": 110, "dam": 100, "waves": [
+        wv(0.95, 1.00, 1.00, "rrrrrrr"),
+        wv(0.88, 1.02, 1.00, "rrcrrrr"),
+        wv(0.80, 1.06, 1.02, "rrcrrcrr"),
+    ]},
+    {"name": "Scout Line", "wood": 100, "dam": 100, "waves": [
+        wv(0.92, 1.00, 1.00, "rrrrrrrr"),
+        wv(0.82, 1.04, 1.02, "rrcrrcrr"),
+        wv(0.74, 1.08, 1.04, "rrocrroc"),
+        wv(0.68, 1.12, 1.06, "rrocrrocrr"),
+    ]},
+    {"name": "Pack Night", "wood": 100, "dam": 100, "waves": [
+        wv(0.85, 1.10, 1.06, "rrcrrcrr"),
+        wv(0.68, 1.22, 1.10, "rrocrrcocr"),
+        wv(0.50, 1.38, 1.16, "rrocrrcocrrocr"),
+        wv(0.32, 1.58, 1.24, "rrococrrococrroocoo"),
+        wv(0.16, 1.92, 1.40, "rrococrrococrrooccoorrccrrooooo"),
+    ]},
+    {"name": "Low Timber", "wood": 70, "dam": 100, "waves": [
+        wv(0.78, 1.16, 1.10, "rrcrrcrr"),
+        wv(0.54, 1.32, 1.16, "rrocrrocrrc"),
+        wv(0.36, 1.52, 1.24, "rrocrrcocrrocrro"),
+        wv(0.12, 2.05, 1.48, "rrococrrococrrooccoorrccrroooooooo"),
+    ]},
+    {"name": "Thin Dam", "wood": 100, "dam": 75, "waves": [
+        wv(0.78, 1.18, 1.10, "rrcrrcrr"),
+        wv(0.54, 1.34, 1.16, "rrocrrocrr"),
+        wv(0.36, 1.54, 1.24, "rrocrrcocrrocr"),
+        wv(0.22, 1.76, 1.32, "rrococrrococrroocoo"),
+        wv(0.13, 2.05, 1.46, "rrooocrrococrrooccoorrccroooooooo"),
+    ]},
+    {"name": "Crab Walk", "wood": 100, "dam": 100, "waves": [
+        wv(0.78, 1.22, 1.02, "rccrrccr"),
+        wv(0.58, 1.40, 1.08, "rccrccrccr"),
+        wv(0.40, 1.58, 1.12, "crroccrccroc"),
+        wv(0.26, 1.78, 1.16, "rccocrccrococr"),
+        wv(0.16, 2.05, 1.26, "ccrococrccrroccrocooooo"),
+    ]},
+    {"name": "Fast Water", "wood": 95, "dam": 100, "waves": [
+        wv(0.58, 1.14, 1.26, "rrrrrrrrr"),
+        wv(0.44, 1.30, 1.34, "rroorrorro"),
+        wv(0.32, 1.48, 1.42, "rrocrroorrro"),
+        wv(0.22, 1.68, 1.50, "rroocrroorrroo"),
+        wv(0.14, 2.00, 1.62, "rrooocrroorrroorrooooo"),
+    ]},
+    {"name": "Pocket Wood", "wood": 60, "dam": 100, "waves": [
+        wv(0.72, 1.20, 1.12, "rrcrrcrr"),
+        wv(0.52, 1.38, 1.18, "rrocrrocrr"),
+        wv(0.36, 1.58, 1.24, "rrocrrcocrrocr"),
+        wv(0.24, 1.80, 1.32, "rrococrrococrro"),
+        wv(0.16, 2.05, 1.40, "rrococrrococrrooccoor"),
+    ]},
+    {"name": "Night Rush", "wood": 100, "dam": 100, "waves": [
+        wv(0.60, 1.28, 1.20, "rrcrrcocr"),
+        wv(0.44, 1.46, 1.28, "rrocrrcocrro"),
+        wv(0.30, 1.66, 1.36, "rrococrrococrro"),
+        wv(0.22, 1.88, 1.44, "rrococrrooccoorr"),
+        wv(0.16, 2.12, 1.52, "rrococrrococrrooccoorr"),
+        wv(0.12, 2.36, 1.60, "rrococrrococrrooccoorrccrrooc"),
+    ]},
+    {"name": "Hairline", "wood": 100, "dam": 70, "waves": [
+        wv(0.58, 1.32, 1.22, "rrcrrcocr"),
+        wv(0.42, 1.50, 1.30, "rrocrrcocrro"),
+        wv(0.28, 1.72, 1.38, "rrococrrococrro"),
+        wv(0.20, 1.96, 1.46, "rrococrrooccoorr"),
+        wv(0.14, 2.22, 1.54, "rrococrrococrrooccoorr"),
+        wv(0.11, 2.48, 1.64, "rrococrrococrrooccoorrccrroocco"),
+    ]},
+    {"name": "Last Stand", "wood": 100, "dam": 80, "waves": [
+        wv(0.54, 1.36, 1.24, "rrcrrcocr"),
+        wv(0.40, 1.54, 1.32, "rrocrrcocrro"),
+        wv(0.28, 1.74, 1.40, "rrococrrococrro"),
+        wv(0.20, 1.96, 1.48, "rrococrrooccoorr"),
+        wv(0.15, 2.20, 1.56, "rrococrrococrrooccoorr"),
+        wv(0.12, 2.44, 1.64, "rrococrrococrrooccoorrccrro"),
+        wv(0.10, 2.70, 1.72, "rrococrrococrrooccoorrccrrooccoor"),
+    ]},
+]
 
 
 def build_path():
@@ -58,17 +140,18 @@ def point_at(pts, cum, plen, dist):
     return pts[-1]
 
 
-def simulate(plan, stop_after=None, repair_below=None, repair_cost=30, repair_hp=24):
+def simulate(level, plan, repair_below=None, repair_cost=30, repair_hp=24):
     pts, cum, plen = build_path()
     pads = [(x * W, y * H) for x, y in PAD_N]
-    wood = 100
-    dam = 100
+    wood = level["wood"]
+    dam_max = level["dam"]
+    dam = dam_max
     towers = []
     buy_i = 0
     dt = 1 / 30
     leaks = 0
     kills = 0
-    wave_end_dam = {}
+    repairs = 0
 
     def try_buy():
         nonlocal wood, buy_i
@@ -85,7 +168,7 @@ def simulate(plan, stop_after=None, repair_below=None, repair_cost=30, repair_hp
             buy_i += 1
 
     try_buy()
-    for wi, wave in enumerate(WAVES, 1):
+    for wi, wave in enumerate(level["waves"], 1):
         q = list(wave["seq"])
         spawn_t = 0.25
         enemies = []
@@ -98,7 +181,6 @@ def simulate(plan, stop_after=None, repair_below=None, repair_cost=30, repair_hp
                 k = KINDS[ch]
                 enemies.append({
                     "hp": k["hp"] * wave["hpMul"],
-                    "max": k["hp"] * wave["hpMul"],
                     "spd": k["spd"] * wave["spdMul"],
                     "wood": k["wood"],
                     "leak": k["leak"],
@@ -124,11 +206,12 @@ def simulate(plan, stop_after=None, repair_below=None, repair_cost=30, repair_hp
                 if e["dist"] >= plen:
                     dam -= e["leak"]
                     leaks += 1
-                    if repair_below is not None and dam < repair_below and wood >= repair_cost:
+                    if repair_below is not None and dam < repair_below and wood >= repair_cost and dam > 0:
                         wood -= repair_cost
-                        dam = min(100, dam + repair_hp)
+                        dam = min(dam_max, dam + repair_hp)
+                        repairs += 1
                     if dam <= 0:
-                        return {"win": False, "wave": wi, "dam": 0, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers), "wave_end_dam": wave_end_dam}
+                        return {"win": False, "wave": wi, "dam": 0, "dam_max": dam_max, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers), "repairs": repairs}
                 else:
                     still.append(e)
             enemies = still
@@ -180,34 +263,50 @@ def simulate(plan, stop_after=None, repair_below=None, repair_cost=30, repair_hp
                     s["y"] += dy / dist * step
                     live_shots.append(s)
             shots = live_shots
-        wave_end_dam[wi] = dam
-        if stop_after == wi:
-            return {"win": dam > 0, "wave": wi, "dam": dam, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers), "wave_end_dam": wave_end_dam}
-    return {"win": True, "wave": 5, "dam": dam, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers), "wave_end_dam": wave_end_dam}
+    return {"win": True, "wave": len(level["waves"]), "dam": dam, "dam_max": dam_max, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers), "repairs": repairs}
+
+
+def pct(r):
+    return 0 if r["dam_max"] <= 0 else r["dam"] / r["dam_max"]
 
 
 def main():
-    none = simulate([])
-    assert none["win"] is False, none
-    assert none["wave"] <= 2, none
+    print("Lv  name          twoSticks              greedy                 greedy+repair")
+    rows = []
+    for i, lv in enumerate(LEVELS):
+        two = simulate(lv, TWO)
+        g = simulate(lv, GREEDY)
+        r = simulate(lv, GREEDY, repair_below=35)
+        rows.append((i, lv, two, g, r))
+        def fmt(x):
+            if not x["win"]:
+                return "LOSE@w%s" % x["wave"]
+            return "win %s/%s leak%s" % (int(x["dam"]), x["dam_max"], x["leaks"])
+        print("%2d %-12s  %-21s  %-21s  %s" % (i + 1, lv["name"], fmt(two), fmt(g), fmt(r)))
 
-    two = simulate([(0, "stick"), (1, "stick")])
-    two3 = simulate([(0, "stick"), (1, "stick")], stop_after=3)
-    sap = simulate([(0, "stick"), (1, "stick"), (4, "sap")])
-    greedy = simulate([(0, "stick"), (1, "stick"), (4, "sap"), (2, "stick"), (3, "sap")])
-    repaired = simulate([(0, "stick"), (1, "stick"), (4, "sap"), (2, "stick")], repair_below=40)
+    # 1-3 easy for two sticks
+    for i in range(3):
+        two = rows[i][2]
+        assert two["win"] and pct(two) >= 0.7, (LEVELS[i]["name"], two)
 
-    print("no-towers", none)
-    print("2 sticks w3", two3)
-    print("2 sticks   ", two)
-    print("2stick+sap ", sap)
-    print("greedy     ", greedy)
-    print("repair     ", repaired)
+    # 4-6 greedy chips the dam
+    for i in range(3, 6):
+        g = rows[i][3]
+        assert g["win"], (LEVELS[i]["name"], "greedy should still win", g)
+        assert pct(g) < 1.0 and g["leaks"] > 0, (LEVELS[i]["name"], "should chip dam", g)
 
-    assert two3["win"] and two3["dam"] >= 50, two3
-    assert two["win"] is False and two["wave"] >= 4, two
-    assert greedy["win"] or repaired["win"], (greedy, repaired)
-    assert sap["win"] or sap["wave"] >= 5, sap
+    # 10-12 greedy must not finish at full HP; at least one can burst
+    late = [rows[i][3] for i in range(9, 12)]
+    for g in late:
+        assert pct(g) < 0.85, ("late full HP", g)
+    assert any(not g["win"] for g in late), "10-12 should be able to burst greedy"
+
+    # repair useful, not a free full-heal win on last stand
+    last_r = rows[11][4]
+    last_g = rows[11][3]
+    if last_g["win"]:
+        assert last_r["dam"] >= last_g["dam"]
+    assert not (last_r["win"] and pct(last_r) >= 0.95), ("repair free win", last_r)
     print("OK")
 
 

@@ -351,9 +351,9 @@
   const SAVE_KEY = "bober-dam-campaign-v1";
 
   const KINDS = {
-    rat:   { hp: 22, spd: 92, wood: 8,  leak: 12, r: 14, armor: 0 },
-    crab:  { hp: 86, spd: 38, wood: 18, leak: 22, r: 20, armor: 0.38 },
-    otter: { hp: 40, spd: 108, wood: 14, leak: 16, r: 16, armor: 0 }
+    rat:   { hp: 24, spd: 92, wood: 6,  leak: 14, r: 14, armor: 0 },
+    crab:  { hp: 96, spd: 38, wood: 12, leak: 24, r: 20, armor: 0.4 },
+    otter: { hp: 44, spd: 110, wood: 9, leak: 18, r: 16, armor: 0 }
   };
 
   const TOWERS = {
@@ -383,70 +383,70 @@
       wv(0.68, 1.12, 1.06, "rrocrrocrr")
     ]},
     { name: "Pack Night", wood: 100, dam: 100, waves: [
-      wv(0.95, 1.00, 1.00, "rrrrrrrr"),
-      wv(0.82, 1.04, 1.02, "rrcrrcrr"),
-      wv(0.72, 1.10, 1.05, "rrocrrocrr"),
-      wv(0.48, 1.36, 1.12, "rrocrrcocrrocrro"),
-      wv(0.28, 1.82, 1.20, "rrococrrococrrooccoorrccrroocco")
+      wv(0.85, 1.10, 1.06, "rrcrrcrr"),
+      wv(0.68, 1.22, 1.10, "rrocrrcocr"),
+      wv(0.50, 1.38, 1.16, "rrocrrcocrrocr"),
+      wv(0.32, 1.58, 1.24, "rrococrrococrroocoo"),
+      wv(0.16, 1.92, 1.40, "rrococrrococrrooccoorrccrrooooo")
     ]},
     { name: "Low Timber", wood: 70, dam: 100, waves: [
-      wv(0.88, 1.04, 1.02, "rrcrrrrr"),
-      wv(0.76, 1.10, 1.05, "rrocrroc"),
-      wv(0.62, 1.20, 1.08, "rrocrrcocr"),
-      wv(0.48, 1.32, 1.12, "rrocrrcocrro")
+      wv(0.78, 1.16, 1.10, "rrcrrcrr"),
+      wv(0.54, 1.32, 1.16, "rrocrrocrrc"),
+      wv(0.36, 1.52, 1.24, "rrocrrcocrrocrro"),
+      wv(0.12, 2.05, 1.48, "rrococrrococrrooccoorrccrroooooooo")
     ]},
-    { name: "Thin Dam", wood: 100, dam: 70, waves: [
-      wv(0.90, 1.05, 1.02, "rrrrrrrr"),
-      wv(0.78, 1.10, 1.05, "rrcrrcrr"),
-      wv(0.66, 1.18, 1.08, "rrocrrocrr"),
-      wv(0.50, 1.34, 1.12, "rrocrrcocrro"),
-      wv(0.36, 1.50, 1.16, "rrococrroccrro")
+    { name: "Thin Dam", wood: 100, dam: 75, waves: [
+      wv(0.78, 1.18, 1.10, "rrcrrcrr"),
+      wv(0.54, 1.34, 1.16, "rrocrrocrr"),
+      wv(0.36, 1.54, 1.24, "rrocrrcocrrocr"),
+      wv(0.22, 1.76, 1.32, "rrococrrococrroocoo"),
+      wv(0.13, 2.05, 1.46, "rrooocrrococrrooccoorrccroooooooo")
     ]},
-    { name: "Crab Walk", wood: 110, dam: 100, waves: [
-      wv(0.90, 1.08, 0.98, "rccrrc"),
-      wv(0.78, 1.16, 1.00, "rccrccrr"),
-      wv(0.64, 1.28, 1.04, "crroccrcr"),
-      wv(0.50, 1.40, 1.08, "rccocrccro"),
-      wv(0.38, 1.55, 1.12, "ccrococrccro")
+    { name: "Crab Walk", wood: 100, dam: 100, waves: [
+      wv(0.78, 1.22, 1.02, "rccrrccr"),
+      wv(0.58, 1.40, 1.08, "rccrccrccr"),
+      wv(0.40, 1.58, 1.12, "crroccrccroc"),
+      wv(0.26, 1.78, 1.16, "rccocrccrococr"),
+      wv(0.16, 2.05, 1.26, "ccrococrccrroccrocooooo")
     ]},
-    { name: "Fast Water", wood: 100, dam: 100, waves: [
-      wv(0.72, 1.00, 1.18, "rrrrrrrr"),
-      wv(0.62, 1.08, 1.22, "rroorro"),
-      wv(0.54, 1.16, 1.26, "rrocrroorr"),
-      wv(0.44, 1.28, 1.30, "rroocrroor"),
-      wv(0.34, 1.42, 1.36, "rrooocrroorro")
+    { name: "Fast Water", wood: 95, dam: 100, waves: [
+      wv(0.58, 1.14, 1.26, "rrrrrrrrr"),
+      wv(0.44, 1.30, 1.34, "rroorrorro"),
+      wv(0.32, 1.48, 1.42, "rrocrroorrro"),
+      wv(0.22, 1.68, 1.50, "rroocrroorrroo"),
+      wv(0.14, 2.00, 1.62, "rrooocrroorrroorrooooo")
     ]},
-    { name: "Pocket Wood", wood: 65, dam: 100, waves: [
-      wv(0.88, 1.08, 1.04, "rrcrrrrr"),
-      wv(0.74, 1.16, 1.08, "rrocrroc"),
-      wv(0.58, 1.28, 1.12, "rrocrrcocr"),
-      wv(0.46, 1.40, 1.16, "rrococrrocr"),
-      wv(0.34, 1.55, 1.20, "rrococrrococr")
+    { name: "Pocket Wood", wood: 60, dam: 100, waves: [
+      wv(0.72, 1.20, 1.12, "rrcrrcrr"),
+      wv(0.52, 1.38, 1.18, "rrocrrocrr"),
+      wv(0.36, 1.58, 1.24, "rrocrrcocrrocr"),
+      wv(0.24, 1.80, 1.32, "rrococrrococrro"),
+      wv(0.16, 2.05, 1.40, "rrococrrococrrooccoor")
     ]},
     { name: "Night Rush", wood: 100, dam: 100, waves: [
-      wv(0.80, 1.10, 1.08, "rrcrrcrr"),
-      wv(0.68, 1.18, 1.12, "rrocrrocrr"),
-      wv(0.56, 1.28, 1.16, "rrocrrcocrro"),
-      wv(0.44, 1.40, 1.20, "rrococrrococr"),
-      wv(0.34, 1.55, 1.24, "rrococrrooccoor"),
-      wv(0.28, 1.70, 1.28, "rrococrrococrroocco")
+      wv(0.60, 1.28, 1.20, "rrcrrcocr"),
+      wv(0.44, 1.46, 1.28, "rrocrrcocrro"),
+      wv(0.30, 1.66, 1.36, "rrococrrococrro"),
+      wv(0.22, 1.88, 1.44, "rrococrrooccoorr"),
+      wv(0.16, 2.12, 1.52, "rrococrrococrrooccoorr"),
+      wv(0.12, 2.36, 1.60, "rrococrrococrrooccoorrccrrooc")
     ]},
-    { name: "Hairline", wood: 90, dam: 60, waves: [
-      wv(0.78, 1.12, 1.10, "rrcrrcrr"),
-      wv(0.66, 1.22, 1.14, "rrocrrocrr"),
-      wv(0.52, 1.34, 1.18, "rrocrrcocrro"),
-      wv(0.42, 1.48, 1.22, "rrococrrococr"),
-      wv(0.32, 1.62, 1.26, "rrococrrooccoor"),
-      wv(0.26, 1.78, 1.30, "rrococrrococrrooc")
+    { name: "Hairline", wood: 100, dam: 70, waves: [
+      wv(0.58, 1.32, 1.22, "rrcrrcocr"),
+      wv(0.42, 1.50, 1.30, "rrocrrcocrro"),
+      wv(0.28, 1.72, 1.38, "rrococrrococrro"),
+      wv(0.20, 1.96, 1.46, "rrococrrooccoorr"),
+      wv(0.14, 2.22, 1.54, "rrococrrococrrooccoorr"),
+      wv(0.11, 2.48, 1.64, "rrococrrococrrooccoorrccrroocco")
     ]},
-    { name: "Last Stand", wood: 80, dam: 80, waves: [
-      wv(0.74, 1.16, 1.12, "rrcrrcrrr"),
-      wv(0.62, 1.26, 1.16, "rrocrrocrr"),
-      wv(0.50, 1.38, 1.20, "rrocrrcocrro"),
-      wv(0.40, 1.52, 1.24, "rrococrrococr"),
-      wv(0.32, 1.66, 1.28, "rrococrrooccoor"),
-      wv(0.26, 1.82, 1.32, "rrococrrococrroocco"),
-      wv(0.22, 1.95, 1.36, "rrococrrococrrooccoorrcc")
+    { name: "Last Stand", wood: 100, dam: 80, waves: [
+      wv(0.54, 1.36, 1.24, "rrcrrcocr"),
+      wv(0.40, 1.54, 1.32, "rrocrrcocrro"),
+      wv(0.28, 1.74, 1.40, "rrococrrococrro"),
+      wv(0.20, 1.96, 1.48, "rrococrrooccoorr"),
+      wv(0.15, 2.20, 1.56, "rrococrrococrrooccoorr"),
+      wv(0.12, 2.44, 1.64, "rrococrrococrrooccoorrccrro"),
+      wv(0.10, 2.70, 1.72, "rrococrrococrrooccoorrccrrooccoor")
     ]}
   ];
 

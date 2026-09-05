@@ -74,6 +74,15 @@
     }
     .chip.wood { color: var(--yellow); }
     .chip.flash { animation: shake 0.35s ease; background: #6a2a3a; }
+    .chip.danger {
+      border-color: #E85D4C;
+      color: #E85D4C;
+      animation: pulse 0.85s ease infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 #E85D4C88; }
+      50% { box-shadow: 0 0 0 6px #E85D4C00; }
+    }
     .btns { display: flex; gap: 6px; flex: 0 0 auto; }
     .icon-btn {
       width: 44px; height: 44px;
@@ -286,6 +295,23 @@
       border-radius: 12px;
       opacity: 0.85;
     }
+    #tip { justify-content: center; background: #1a1028aa; }
+    #tip .tip-card {
+      background: #3A2A6Aee;
+      border: 3px solid var(--yellow);
+      border-radius: 16px;
+      padding: 22px 20px 16px;
+      max-width: 20em;
+      box-shadow: 0 8px 28px #0008;
+    }
+    #tip .tip-line {
+      margin: 0 0 10px;
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--yellow);
+      text-shadow: 0 2px 0 #1A1028;
+      line-height: 1.3;
+    }
     #cameo {
       z-index: 20;
       justify-content: center;
@@ -401,6 +427,12 @@
         <button class="play" id="btn-resume" type="button">RESUME</button>
         <button class="play ghost" id="btn-pause-levels" type="button">LEVELS</button>
       </div>
+      <div id="tip" class="overlay hidden" role="dialog" aria-label="How to play">
+        <div class="tip-card">
+          <p class="tip-line">Stick = damage · Sap = slow · then Start Wave</p>
+          <p class="cameo-skip">tap to continue</p>
+        </div>
+      </div>
       <div id="cameo" class="overlay hidden" role="dialog" aria-label="Cameo">
         <div class="cameo-stage">
           <img id="cameo-img" class="hero" alt="" />
@@ -449,8 +481,8 @@
   const COST_EVOLVE_TRUCK = 140;
   const COST_EVOLVE_FLAME = 120;
   const REPAIR_HP = 24;
-  const BUILD_FIRST = 12;
-  const BUILD_NEXT = 8;
+  const BUILD_FIRST = 0;
+  const BUILD_NEXT = 15;
   const MAX_RANK = 2;
   const SAVE_KEY = "bober-dam-campaign-v1";
 
@@ -483,17 +515,17 @@
   }
 
   const LEVELS = [
-    { name: "Trickle", wood: 120, dam: 100, waves: [
+    { name: "Trickle", wood: 160, dam: 100, waves: [
       wv(1.10, 1.00, 1.00, "rrrrrr"),
       wv(1.00, 1.00, 1.00, "rrrrrrr"),
       wv(0.92, 1.00, 1.00, "rrrrrrrr")
     ]},
-    { name: "Driftwood", wood: 110, dam: 100, waves: [
+    { name: "Driftwood", wood: 150, dam: 100, waves: [
       wv(0.95, 1.00, 1.00, "rrrrrrr"),
       wv(0.88, 1.02, 1.00, "rrcrrrr"),
       wv(0.80, 1.06, 1.02, "rrcrrcrr")
     ]},
-    { name: "Scout Line", wood: 100, dam: 100, waves: [
+    { name: "Scout Line", wood: 140, dam: 100, waves: [
       wv(0.88, 1.15, 1.00, "rrrrrrrrr"),
       wv(0.78, 1.20, 1.02, "rrcrrcrrr"),
       wv(0.70, 1.24, 1.04, "rrocrrocr"),
@@ -506,7 +538,7 @@
       wv(0.36, 1.48, 1.20, "rrococrrococrro"),
       wv(0.24, 1.68, 1.28, "rrococrrococrrooccoor")
     ]},
-    { name: "Low Timber", wood: 85, dam: 100, waves: [
+    { name: "Low Timber", wood: 130, dam: 100, waves: [
       wv(0.78, 1.16, 1.10, "rrcrrcrr"),
       wv(0.54, 1.32, 1.16, "rrocrrocrrc"),
       wv(0.38, 1.46, 1.20, "rrocrrcocrro"),
@@ -669,6 +701,7 @@
   const btnRepair = document.getElementById("btn-repair");
   const shopHint = document.getElementById("shop-hint");
   const btnGo = document.getElementById("btn-go");
+  const tipEl = document.getElementById("tip");
   const cameoEl = document.getElementById("cameo");
   const cameoImg = document.getElementById("cameo-img");
   const cameoLine = document.getElementById("cameo-line");
@@ -722,6 +755,9 @@
   let shake = 0;
   let tWorld = 0;
   let hoverPad = -1;
+  let padPulseI = -1;
+  let padPulseT = 0;
+  let leakWarn = false;
   let pendingUnlock = "";
   const bober = {
     y: 0, tilt: 0, peek: -0.16, peekT: 1.8,
@@ -801,6 +837,7 @@
     endcard.classList.add("hidden");
     pausedEl.classList.add("hidden");
     cameoEl.classList.add("hidden");
+    if (tipEl) tipEl.classList.add("hidden");
   }
   function resetProgress() {
     if (!window.confirm("Wipe stars and unlocks?")) return;
@@ -918,19 +955,44 @@
     dam.x = viewW - dam.w - 6;
     dam.y = Math.max(8, last.y - dam.h * 0.42);
     const minClear = riverW / 2 + 56;
+    const open = padOpenSet();
     pads = PAD_SEEDS.map(function (seed, i) {
       const t = towers.find(function (tw) { return tw.pad === i; });
       const placed = placePadOnBank(seed, minClear);
       return {
         x: placed.x, y: placed.y, r: Math.max(16, Math.min(viewW, viewH) * 0.034),
         type: t ? t.type : null, rank: t ? t.rank : 0,
-        bankNx: placed.nx, bankNy: placed.ny
+        bankNx: placed.nx, bankNy: placed.ny,
+        locked: !open[i]
       };
     });
     separatePads(pads, Math.max(180, 0.28 * Math.min(viewW, viewH)), minClear);
+    pads.forEach(function (p, i) { p.locked = !open[i]; });
     const bb = boberBounds();
     if (!bober.y) bober.y = (bb.top + bb.bot) * 0.5;
     else bober.y = Math.max(bb.top, Math.min(bb.bot, bober.y));
+  }
+
+  function padsForLevel(idx) {
+    if (idx < 0) return 2;
+    if (idx <= 3) return 2;
+    if (idx <= 7) return 3;
+    return 4;
+  }
+  function padOpenSet() {
+    const n = padsForLevel(levelIndex);
+    const ranked = PAD_SEEDS.map(function (s, i) { return i; })
+      .sort(function (a, b) { return PAD_SEEDS[b].frac - PAD_SEEDS[a].frac; });
+    const open = {};
+    for (let k = 0; k < n; k++) open[ranked[k]] = true;
+    return open;
+  }
+  function newPadIndex() {
+    const n = padsForLevel(levelIndex);
+    if (n <= padsForLevel(levelIndex - 1)) return -1;
+    const ranked = PAD_SEEDS.map(function (s, i) { return i; })
+      .sort(function (a, b) { return PAD_SEEDS[b].frac - PAD_SEEDS[a].frac; });
+    return ranked[n - 1];
   }
 
   function boberBounds() {
@@ -1117,11 +1179,21 @@
     return Math.atan2(b.y - a.y, b.x - a.x);
   }
 
+  function damDanger() {
+    if (!running || phase === "splash" || phase === "levels") return false;
+    if (damMax > 0 && damHp / damMax < 0.4) return true;
+    for (let i = 0; i < enemies.length; i++) {
+      if (enemies[i].dist >= pathLen * 0.8) return true;
+    }
+    return false;
+  }
+
   function hud() {
     chipWood.textContent = "Wood " + wood;
     const waveShown = phase === "build" ? Math.min(WAVES.length, wave + 1) : Math.max(1, wave);
     chipWave.textContent = "L" + (levelIndex + 1) + " · " + waveShown + "/" + WAVES.length;
     chipHp.textContent = "Dam " + Math.max(0, Math.ceil(damHp));
+    chipHp.classList.toggle("danger", running && damDanger());
     btnStick.classList.toggle("on", selected === "stick");
     btnSap.classList.toggle("on", selected === "sap");
     btnRepair.classList.toggle("need", running && damHp < damMax && wood < COST_REPAIR);
@@ -1135,7 +1207,8 @@
     if (!running || phase === "splash" || phase === "levels") {
       btnGo.textContent = "START WAVE";
     } else if (phase === "build") {
-      btnGo.textContent = (wave === 0 ? "START WAVE" : "NEXT WAVE") + " · " + Math.ceil(Math.max(0, buildT)) + "s";
+      if (wave === 0) btnGo.textContent = "START WAVE";
+      else btnGo.textContent = "NEXT WAVE · " + Math.ceil(Math.max(0, buildT)) + "s";
     } else {
       btnGo.textContent = "WAVE " + wave;
     }
@@ -1167,20 +1240,30 @@
     if (cameoTimer) { clearTimeout(cameoTimer); cameoTimer = 0; }
     cameoDone = null;
     phase = "build";
-    buildT = BUILD_FIRST;
+    buildT = 0;
+    leakWarn = false;
     running = true;
     hideMenus();
     document.getElementById("app").classList.remove("booting");
     layout();
     resetBober();
     pads.forEach(function (p) { p.type = null; });
-    if (pendingUnlock) {
+    const freshPad = newPadIndex();
+    if (freshPad >= 0) {
+      banner = "NEW BUILD SITE UNLOCKED";
+      bannerT = 3.2;
+      padPulseI = freshPad;
+      padPulseT = 2.4;
+    } else if (pendingUnlock) {
       banner = pendingUnlock;
       bannerT = 3.4;
       pendingUnlock = "";
     } else {
       banner = "BUILD";
       bannerT = 2.2;
+    }
+    if (!localStorage.getItem("bober-dam-tip-v1") && tipEl) {
+      tipEl.classList.remove("hidden");
     }
     hud();
   }
@@ -1212,7 +1295,13 @@
     }
   }
 
+  function dismissTip() {
+    if (tipEl) tipEl.classList.add("hidden");
+    localStorage.setItem("bober-dam-tip-v1", "1");
+  }
+
   function startWave() {
+    dismissTip();
     if (wave >= WAVES.length) return win();
     if (phase === "wave" && (spawnQ.length || enemies.length)) return;
     wave += 1;
@@ -1335,7 +1424,9 @@
     if (!tw) return null;
     if (tw.type === "truck" || tw.type === "flame") return { text: "MAX 1", big: false };
     if ((tw.rank || 0) < MAX_RANK) {
-      return { text: "UP · " + TOWERS[tw.type].upCost, big: true };
+      const up = TOWERS[tw.type].upCost;
+      if (wood < up) return { text: "need wood", big: false };
+      return { text: "UP · " + up, big: true };
     }
     const dest = evolvedType(tw.type);
     if (!dest) return { text: "MAX 1", big: false };
@@ -1343,7 +1434,8 @@
     if (!unlocked) return { text: "EVOLVE 🔒", big: false };
     if (countType(dest) >= 1) return { text: "MAX 1", big: false };
     const cost = evolveCostOf(tw.type);
-    return { text: "EVOLVE · " + cost, big: wood >= cost };
+    if (wood < cost) return { text: "need wood", big: false };
+    return { text: "EVOLVE · " + cost, big: true };
   }
   function specFor(tw) {
     const b = TOWERS[tw.type];
@@ -1413,6 +1505,7 @@
   function tapPad(padIndex) {
     if (!running || phase === "win" || phase === "lose") return;
     const pad = pads[padIndex];
+    if (pad.locked && !pad.type) return;
     if (pad.type) {
       const tw = towers.find(function (t) { return t.pad === padIndex; });
       if (!tw) return;
@@ -1498,9 +1591,10 @@
     tWorld += dt;
     if (shake > 0) shake = Math.max(0, shake - dt * 6);
     if (bannerT > 0) bannerT -= dt;
+    if (padPulseT > 0) padPulseT = Math.max(0, padPulseT - dt);
     tickBober(dt);
 
-    if (phase === "build") {
+    if (phase === "build" && wave > 0) {
       buildT -= dt;
       if (buildT <= 0) startWave();
     }
@@ -1543,6 +1637,14 @@
         if (phase === "lose") return;
       }
     }
+
+    const danger = damDanger();
+    if (phase === "wave" && danger && !leakWarn) {
+      leakWarn = true;
+      banner = "LEAKING";
+      bannerT = 1.8;
+    }
+    if (!danger) leakWarn = false;
 
     for (let i = 0; i < towers.length; i++) {
       const tw = towers[i];
@@ -2305,6 +2407,17 @@
       ctx.stroke();
       ctx.globalAlpha = 1;
       ctx.restore();
+      if (p.locked && !p.type) {
+        ctx.fillStyle = "rgba(26, 16, 40, 0.45)";
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 6, 0, Math.PI * 2); ctx.fill();
+      }
+      if (padPulseT > 0 && i === padPulseI && !p.locked) {
+        ctx.strokeStyle = YEL;
+        ctx.globalAlpha = Math.min(1, padPulseT);
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 8 + (2.4 - padPulseT) * 10, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
       if (p.type) {
         const twRing = towers.find(function (t) { return t.pad === i; });
         const evolvedPad = p.type === "truck" || p.type === "flame";
@@ -2340,29 +2453,38 @@
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       if (!p.type) {
-        ctx.fillStyle = CREAM;
-        ctx.font = "bold 14px Trebuchet MS, sans-serif";
-        ctx.fillText("+", p.x, p.y - 6);
-        ctx.fillStyle = YEL;
-        ctx.font = "bold 11px Trebuchet MS, sans-serif";
-        ctx.fillText(String(TOWERS[selected].cost), p.x, p.y + 9);
+        if (p.locked) {
+          ctx.fillStyle = "#8a8498";
+          ctx.font = "bold 16px Trebuchet MS, sans-serif";
+          ctx.fillText("+", p.x, p.y - 2);
+          ctx.font = "bold 11px Trebuchet MS, sans-serif";
+          ctx.fillText("🔒", p.x, p.y + 12);
+        } else {
+          ctx.fillStyle = CREAM;
+          ctx.font = "bold 14px Trebuchet MS, sans-serif";
+          ctx.fillText("+", p.x, p.y - 6);
+          ctx.fillStyle = YEL;
+          ctx.font = "bold 11px Trebuchet MS, sans-serif";
+          ctx.fillText(String(TOWERS[selected].cost), p.x, p.y + 9);
+        }
       } else {
         const tw = towers.find(function (t) { return t.pad === i; });
         const hint = evolveHint(tw);
         if (hint) {
           const locked = hint.text.indexOf("🔒") >= 0 || hint.text === "MAX 1";
-          ctx.font = locked ? "bold 12px Trebuchet MS, sans-serif" : "bold 15px Trebuchet MS, sans-serif";
+          const need = hint.text === "need wood";
+          ctx.font = (locked || need) ? "bold 12px Trebuchet MS, sans-serif" : "bold 15px Trebuchet MS, sans-serif";
           const twm = ctx.measureText(hint.text).width;
-          const pw = twm + (locked ? 12 : 18);
-          const ph = locked ? 18 : 22;
+          const pw = twm + (locked || need ? 12 : 18);
+          const ph = locked || need ? 18 : 22;
           const px = p.x - pw / 2;
           const py = p.y + p.r - 4 - ph / 2;
           ctx.fillStyle = locked ? "#5a5068ee" : "#1A1028ee";
           roundRect(ctx, px, py, pw, ph, 8); ctx.fill();
-          ctx.strokeStyle = locked ? "#8a8498" : INK;
+          ctx.strokeStyle = need ? YEL : (locked ? "#8a8498" : INK);
           ctx.lineWidth = locked ? 1.6 : 2.6;
           ctx.stroke();
-          ctx.fillStyle = locked ? "#c8c2ce" : CREAM;
+          ctx.fillStyle = need ? YEL : (locked ? "#c8c2ce" : CREAM);
           ctx.fillText(hint.text, p.x, p.y + p.r - 4);
         }
       }
@@ -2467,6 +2589,13 @@
       ctx.font = "bold 13px Trebuchet MS, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "alphabetic";
+      if (wave === 0) {
+        ctx.fillStyle = YEL;
+        ctx.font = "bold 14px Trebuchet MS, sans-serif";
+        ctx.fillText("Place towers, then Start Wave.", viewW / 2, viewH - 28);
+      }
+      ctx.fillStyle = CREAM;
+      ctx.font = "bold 13px Trebuchet MS, sans-serif";
       const next = WAVES[wave] || WAVES[WAVES.length - 1];
       const bits = [];
       if (next.seq.indexOf("r") >= 0) bits.push("Twig Rats");
@@ -2504,6 +2633,10 @@
     hoverPad = padAt(p.x, p.y);
   });
 
+  if (tipEl) {
+    tipEl.addEventListener("click", function () { SFX.ensure(); dismissTip(); });
+    tipEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissTip(); }, { passive: false });
+  }
   btnStick.addEventListener("click", function () { selected = "stick"; SFX.ensure(); hud(); });
   btnSap.addEventListener("click", function () { selected = "sap"; SFX.ensure(); hud(); });
   btnRepair.addEventListener("click", function () { SFX.ensure(); repairDam(); });

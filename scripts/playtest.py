@@ -35,17 +35,17 @@ def wv(interval, hp, spd, seq):
 
 
 LEVELS = [
-    {"name": "Trickle", "wood": 120, "dam": 100, "waves": [
+    {"name": "Trickle", "wood": 160, "dam": 100, "waves": [
         wv(1.10, 1.00, 1.00, "rrrrrr"),
         wv(1.00, 1.00, 1.00, "rrrrrrr"),
         wv(0.92, 1.00, 1.00, "rrrrrrrr"),
     ]},
-    {"name": "Driftwood", "wood": 110, "dam": 100, "waves": [
+    {"name": "Driftwood", "wood": 150, "dam": 100, "waves": [
         wv(0.95, 1.00, 1.00, "rrrrrrr"),
         wv(0.88, 1.02, 1.00, "rrcrrrr"),
         wv(0.80, 1.06, 1.02, "rrcrrcrr"),
     ]},
-    {"name": "Scout Line", "wood": 100, "dam": 100, "waves": [
+    {"name": "Scout Line", "wood": 140, "dam": 100, "waves": [
         wv(0.88, 1.15, 1.00, "rrrrrrrrr"),
         wv(0.78, 1.20, 1.02, "rrcrrcrrr"),
         wv(0.70, 1.24, 1.04, "rrocrrocr"),
@@ -58,7 +58,7 @@ LEVELS = [
         wv(0.36, 1.48, 1.20, "rrococrrococrro"),
         wv(0.24, 1.68, 1.28, "rrococrrococrrooccoor"),
     ]},
-    {"name": "Low Timber", "wood": 85, "dam": 100, "waves": [
+    {"name": "Low Timber", "wood": 130, "dam": 100, "waves": [
         wv(0.78, 1.16, 1.10, "rrcrrcrr"),
         wv(0.54, 1.32, 1.16, "rrocrrocrrc"),
         wv(0.36, 1.46, 1.20, "rrocrrcocrro"),

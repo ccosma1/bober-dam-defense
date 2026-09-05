@@ -600,9 +600,9 @@
     [0.72, 0.68], [0.76, 0.56]
   ];
   const PAD_SEEDS = [
-    { frac: 0.16, above: true },
-    { frac: 0.32, above: false },
-    { frac: 0.55, above: true },
+    { frac: 0.14, above: true },
+    { frac: 0.42, above: false },
+    { frac: 0.58, above: true },
     { frac: 0.86, above: false }
   ];
   const DAM_GAP = 40;
@@ -892,7 +892,7 @@
         bankNx: placed.nx, bankNy: placed.ny
       };
     });
-    separatePads(pads, 140 * Math.min(viewW, viewH) / 390, minClear);
+    separatePads(pads, Math.max(180, 0.28 * Math.min(viewW, viewH)), minClear);
     const bb = boberBounds();
     if (!bober.y) bober.y = (bb.top + bb.bot) * 0.5;
     else bober.y = Math.max(bb.top, Math.min(bb.bot, bober.y));

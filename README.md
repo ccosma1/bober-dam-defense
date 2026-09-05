@@ -4,7 +4,7 @@ Fan game by a holder. Not affiliated with any token, studio, or official Bober p
 
 **Play online:** https://ccosma1.github.io/bober-dam-defense/
 
-A mobile-first tower defense in **one HTML page**. Hold a wooden dam against five waves.
+A mobile-first tower defense in **one HTML page**. 12-level campaign. Hold the wooden dam.
 
 No install. No wallet. No login. No leaderboard.
 
@@ -14,14 +14,14 @@ Run `START.bat` or open `index.html` in a browser.
 
 ## How to play
 
-1. Tap **HOLD THE DAM**.
-2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause** and **Restart** always work.
+1. Tap **HOLD THE DAM**, then pick a level. Level 1 is unlocked; beat a level to open the next.
+2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause**, **Mute**, and **Restart** always work.
 3. Tap a **bank pad** to place the selected tower (cost is on the pad). Tap an existing tower to upgrade it.
 4. **Stick Thrower** (50 wood) — cheap single-target DPS.
 5. **Sap Sprayer** (100 wood) — splash sap that slows a pack.
 6. Leaks **flash the dam** and drop HP. Low HP shows cracks.
 7. Optional: **Repair Dam** (30 wood) for HP back.
-8. Survive **5 waves**. Dam HP 0 is a loss.
+8. Hold the dam. Stars (1–3) come from HP left. Win returns to the map. Lose does not unlock.
 
 Pause, mute, and restart sit in the top-right.
 

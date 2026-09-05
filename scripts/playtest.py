@@ -1,4 +1,7 @@
-"""Headless balance check for Bober Dam Defense (mirrors index.html combat)."""
+"""Headless balance check for Bober Dam Defense.
+
+Mirrors Pack Night (campaign level 4) combat constants from index.html.
+"""
 from __future__ import annotations
 
 import math

@@ -198,6 +198,63 @@
     }
     .play:active { transform: translateY(2px); box-shadow: 0 2px 0 #8a6a00; }
     .end-msg { margin: 0 0 16px; font-size: 15px; color: var(--cream); text-shadow: 0 2px 6px #000; }
+    .end-stars {
+      margin: 0 0 12px;
+      min-height: 34px;
+      font-size: 30px;
+      letter-spacing: 0.18em;
+      color: var(--yellow);
+      text-shadow: 0 2px 0 #1A1028;
+    }
+    #levels {
+      justify-content: flex-start;
+      overflow: auto;
+      padding-top: 12px;
+    }
+    #levels h2 { margin-top: 8px; }
+    #level-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      width: 100%;
+      max-width: 22em;
+      margin: 8px 0 20px;
+      padding: 10px;
+      background: #1a1028cc;
+      border-radius: 16px;
+    }
+    .lvl {
+      appearance: none;
+      border: 3px solid var(--yellow);
+      background: var(--fur);
+      color: var(--cream);
+      border-radius: 14px;
+      min-height: 86px;
+      padding: 8px 4px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .lvl .num { font-size: 22px; color: var(--yellow); line-height: 1; }
+    .lvl .lbl { font-size: 10px; letter-spacing: 0.02em; }
+    .lvl .stars { font-size: 12px; color: var(--yellow); letter-spacing: 0.12em; }
+    .lvl.locked {
+      opacity: 0.55;
+      border-color: #5C3A1A;
+      cursor: default;
+    }
+    .lvl.locked .num { color: var(--cream); }
+    .play.ghost {
+      background: transparent;
+      color: var(--cream);
+      border-color: var(--cream);
+      box-shadow: none;
+      margin-top: 8px;
+    }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-4px); }
@@ -207,6 +264,7 @@
       .card { min-height: 48px; padding: 4px; }
       .overlay h1 { font-size: 26px; }
       .how { display: none; }
+      .lvl { min-height: 64px; }
     }
   </style>
 </head>
@@ -230,20 +288,28 @@
         <img class="hero" src="assets/splash.jpg" alt="" />
         <h1>BOBER DAM<br>DEFENSE</h1>
         <p class="tagline">Fan game by a holder.</p>
-        <p class="how">Tap a yellow pad (cost shows on the pad). Stick Thrower is cheap DPS. Sap Sprayer slows packs. Repair or upgrade if the dam cracks. Hold five waves.</p>
+        <p class="how">12 levels. Stick Thrower is cheap DPS. Sap Sprayer slows packs. Earn 1–3 stars from dam HP left. Beat a level to unlock the next.</p>
         <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
+      </div>
+      <div id="levels" class="overlay hidden">
+        <img class="hero" src="assets/splash.jpg" alt="" />
+        <h2>LEVELS</h2>
+        <p class="tagline">Fan game by a holder.</p>
+        <div id="level-grid"></div>
       </div>
       <div id="endcard" class="overlay hidden">
         <img class="hero" src="assets/splash.jpg" alt="" />
         <h2 id="end-title">DAM HELD</h2>
+        <div id="end-stars" class="end-stars"></div>
         <p class="end-msg" id="end-msg"></p>
         <p class="tagline">Fan game by a holder.</p>
-        <button class="play" id="btn-again" type="button">PLAY AGAIN</button>
+        <button class="play" id="btn-again" type="button">LEVELS</button>
       </div>
       <div id="paused" class="overlay hidden">
         <h2>PAUSED</h2>
         <p class="end-msg">Restart and Next Wave still work.</p>
         <button class="play" id="btn-resume" type="button">RESUME</button>
+        <button class="play ghost" id="btn-pause-levels" type="button">LEVELS</button>
       </div>
     </div>
     <footer id="shop">
@@ -273,8 +339,6 @@
   const INK = "#1A1028";
   const WOOD = "#5C3A1A";
 
-  const DAM_MAX = 100;
-  const START_WOOD = 100;
   const COST_STICK = 50;
   const COST_SAP = 100;
   const COST_REPAIR = 30;
@@ -284,6 +348,7 @@
   const BUILD_FIRST = 12;
   const BUILD_NEXT = 8;
   const MAX_RANK = 2;
+  const SAVE_KEY = "bober-dam-campaign-v1";
 
   const KINDS = {
     rat:   { hp: 22, spd: 92, wood: 8,  leak: 12, r: 14, armor: 0 },
@@ -296,12 +361,93 @@
     sap:   { cost: COST_SAP,   range: 120, cd: 0.82, dmg: 7,  splash: 96, slow: 2.8, pspd: 640, upCost: COST_UP_SAP }
   };
 
-  const WAVES = [
-    { interval: 0.95, hpMul: 1.00, spdMul: 1.00, seq: "rrrrrrrr" },
-    { interval: 0.82, hpMul: 1.04, spdMul: 1.02, seq: "rrcrrcrr" },
-    { interval: 0.72, hpMul: 1.10, spdMul: 1.05, seq: "rrocrrocrr" },
-    { interval: 0.48, hpMul: 1.36, spdMul: 1.12, seq: "rrocrrcocrrocrro" },
-    { interval: 0.28, hpMul: 1.82, spdMul: 1.20, seq: "rrococrrococrrooccoorrccrroocco" }
+  function wv(interval, hp, spd, seq) {
+    return { interval: interval, hpMul: hp, spdMul: spd, seq: seq };
+  }
+
+  const LEVELS = [
+    { name: "Trickle", wood: 120, dam: 100, waves: [
+      wv(1.10, 1.00, 1.00, "rrrrrr"),
+      wv(1.00, 1.00, 1.00, "rrrrrrr"),
+      wv(0.92, 1.00, 1.00, "rrrrrrrr")
+    ]},
+    { name: "Driftwood", wood: 110, dam: 100, waves: [
+      wv(0.95, 1.00, 1.00, "rrrrrrr"),
+      wv(0.88, 1.02, 1.00, "rrcrrrr"),
+      wv(0.80, 1.06, 1.02, "rrcrrcrr")
+    ]},
+    { name: "Scout Line", wood: 100, dam: 100, waves: [
+      wv(0.92, 1.00, 1.00, "rrrrrrrr"),
+      wv(0.82, 1.04, 1.02, "rrcrrcrr"),
+      wv(0.74, 1.08, 1.04, "rrocrroc"),
+      wv(0.68, 1.12, 1.06, "rrocrrocrr")
+    ]},
+    { name: "Pack Night", wood: 100, dam: 100, waves: [
+      wv(0.95, 1.00, 1.00, "rrrrrrrr"),
+      wv(0.82, 1.04, 1.02, "rrcrrcrr"),
+      wv(0.72, 1.10, 1.05, "rrocrrocrr"),
+      wv(0.48, 1.36, 1.12, "rrocrrcocrrocrro"),
+      wv(0.28, 1.82, 1.20, "rrococrrococrrooccoorrccrroocco")
+    ]},
+    { name: "Low Timber", wood: 70, dam: 100, waves: [
+      wv(0.88, 1.04, 1.02, "rrcrrrrr"),
+      wv(0.76, 1.10, 1.05, "rrocrroc"),
+      wv(0.62, 1.20, 1.08, "rrocrrcocr"),
+      wv(0.48, 1.32, 1.12, "rrocrrcocrro")
+    ]},
+    { name: "Thin Dam", wood: 100, dam: 70, waves: [
+      wv(0.90, 1.05, 1.02, "rrrrrrrr"),
+      wv(0.78, 1.10, 1.05, "rrcrrcrr"),
+      wv(0.66, 1.18, 1.08, "rrocrrocrr"),
+      wv(0.50, 1.34, 1.12, "rrocrrcocrro"),
+      wv(0.36, 1.50, 1.16, "rrococrroccrro")
+    ]},
+    { name: "Crab Walk", wood: 110, dam: 100, waves: [
+      wv(0.90, 1.08, 0.98, "rccrrc"),
+      wv(0.78, 1.16, 1.00, "rccrccrr"),
+      wv(0.64, 1.28, 1.04, "crroccrcr"),
+      wv(0.50, 1.40, 1.08, "rccocrccro"),
+      wv(0.38, 1.55, 1.12, "ccrococrccro")
+    ]},
+    { name: "Fast Water", wood: 100, dam: 100, waves: [
+      wv(0.72, 1.00, 1.18, "rrrrrrrr"),
+      wv(0.62, 1.08, 1.22, "rroorro"),
+      wv(0.54, 1.16, 1.26, "rrocrroorr"),
+      wv(0.44, 1.28, 1.30, "rroocrroor"),
+      wv(0.34, 1.42, 1.36, "rrooocrroorro")
+    ]},
+    { name: "Pocket Wood", wood: 65, dam: 100, waves: [
+      wv(0.88, 1.08, 1.04, "rrcrrrrr"),
+      wv(0.74, 1.16, 1.08, "rrocrroc"),
+      wv(0.58, 1.28, 1.12, "rrocrrcocr"),
+      wv(0.46, 1.40, 1.16, "rrococrrocr"),
+      wv(0.34, 1.55, 1.20, "rrococrrococr")
+    ]},
+    { name: "Night Rush", wood: 100, dam: 100, waves: [
+      wv(0.80, 1.10, 1.08, "rrcrrcrr"),
+      wv(0.68, 1.18, 1.12, "rrocrrocrr"),
+      wv(0.56, 1.28, 1.16, "rrocrrcocrro"),
+      wv(0.44, 1.40, 1.20, "rrococrrococr"),
+      wv(0.34, 1.55, 1.24, "rrococrrooccoor"),
+      wv(0.28, 1.70, 1.28, "rrococrrococrroocco")
+    ]},
+    { name: "Hairline", wood: 90, dam: 60, waves: [
+      wv(0.78, 1.12, 1.10, "rrcrrcrr"),
+      wv(0.66, 1.22, 1.14, "rrocrrocrr"),
+      wv(0.52, 1.34, 1.18, "rrocrrcocrro"),
+      wv(0.42, 1.48, 1.22, "rrococrrococr"),
+      wv(0.32, 1.62, 1.26, "rrococrrooccoor"),
+      wv(0.26, 1.78, 1.30, "rrococrrococrrooc")
+    ]},
+    { name: "Last Stand", wood: 80, dam: 80, waves: [
+      wv(0.74, 1.16, 1.12, "rrcrrcrrr"),
+      wv(0.62, 1.26, 1.16, "rrocrrocrr"),
+      wv(0.50, 1.38, 1.20, "rrocrrcocrro"),
+      wv(0.40, 1.52, 1.24, "rrococrrococr"),
+      wv(0.32, 1.66, 1.28, "rrococrrooccoor"),
+      wv(0.26, 1.82, 1.32, "rrococrrococrroocco"),
+      wv(0.22, 1.95, 1.36, "rrococrrococrrooccoorrcc")
+    ]}
   ];
 
   const PATH_N = [
@@ -330,14 +476,18 @@
   const pausedEl = document.getElementById("paused");
   const btnPlay = document.getElementById("btn-play");
   const btnAgain = document.getElementById("btn-again");
+  const btnPauseLevels = document.getElementById("btn-pause-levels");
   const btnStick = document.getElementById("btn-stick");
   const btnSap = document.getElementById("btn-sap");
   const btnRepair = document.getElementById("btn-repair");
   const btnGo = document.getElementById("btn-go");
   const splash = document.getElementById("splash");
+  const levelsEl = document.getElementById("levels");
+  const levelGrid = document.getElementById("level-grid");
   const endcard = document.getElementById("endcard");
   const endTitle = document.getElementById("end-title");
   const endMsg = document.getElementById("end-msg");
+  const endStars = document.getElementById("end-stars");
 
   const stars = Array.from({ length: 48 }, (_, i) => ({
     x: ((i * 97 + 13) % 100) / 100,
@@ -355,9 +505,12 @@
   let running = false;
   let paused = false;
   let phase = "splash";
-  let wood = START_WOOD;
-  let damHp = DAM_MAX;
-  let hpShown = DAM_MAX;
+  let levelIndex = 0;
+  let WAVES = LEVELS[0].waves;
+  let damMax = 100;
+  let wood = 100;
+  let damHp = 100;
+  let hpShown = 100;
   let damFlash = 0;
   let wave = 0;
   let buildT = 0;
@@ -407,6 +560,81 @@
     btnMute.setAttribute("aria-label", SFX.muted ? "Unmute" : "Mute");
   }
   syncMute();
+
+  function loadSave() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s && typeof s.unlocked === "number") {
+          s.unlocked = Math.max(1, Math.min(LEVELS.length, s.unlocked | 0));
+          if (!Array.isArray(s.stars) || s.stars.length !== LEVELS.length) {
+            s.stars = Array.from({ length: LEVELS.length }, function (_, i) {
+              return (s.stars && s.stars[i]) || 0;
+            });
+          }
+          return s;
+        }
+      }
+    } catch (err) {}
+    return { unlocked: 1, stars: Array(LEVELS.length).fill(0) };
+  }
+  function writeSave() {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+  }
+  let save = loadSave();
+
+  function starString(n) {
+    n = Math.max(0, Math.min(3, n | 0));
+    return "★".repeat(n) + "☆".repeat(3 - n);
+  }
+  function starsFromHp(hp, maxHp) {
+    const p = maxHp > 0 ? hp / maxHp : 0;
+    if (p >= 0.7) return 3;
+    if (p >= 0.35) return 2;
+    return 1;
+  }
+  function hideMenus() {
+    splash.classList.add("hidden");
+    levelsEl.classList.add("hidden");
+    endcard.classList.add("hidden");
+    pausedEl.classList.add("hidden");
+  }
+  function showLevels() {
+    running = false;
+    paused = false;
+    phase = "levels";
+    hideMenus();
+    levelsEl.classList.remove("hidden");
+    document.getElementById("app").classList.add("booting");
+    paintLevelGrid();
+    hud();
+  }
+  function paintLevelGrid() {
+    levelGrid.innerHTML = "";
+    for (let i = 0; i < LEVELS.length; i++) {
+      const locked = i >= save.unlocked;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "lvl" + (locked ? " locked" : "");
+      btn.innerHTML = "<span class=\"num\">" + (i + 1) + "</span>" +
+        "<span class=\"lbl\">" + (locked ? "Locked" : LEVELS[i].name) + "</span>" +
+        "<span class=\"stars\">" + (locked ? "—" : starString(save.stars[i])) + "</span>";
+      btn.addEventListener("click", function () {
+        SFX.ensure();
+        if (i >= save.unlocked) return;
+        startLevel(i);
+      });
+      levelGrid.appendChild(btn);
+    }
+  }
+  function startLevel(i) {
+    if (i < 0 || i >= LEVELS.length || i >= save.unlocked) return;
+    levelIndex = i;
+    WAVES = LEVELS[i].waves;
+    damMax = LEVELS[i].dam;
+    resetRun();
+  }
 
   function layout() {
     const stage = document.getElementById("stage");
@@ -463,14 +691,14 @@
   function hud() {
     chipWood.textContent = "Wood " + wood;
     const waveShown = phase === "build" ? Math.min(WAVES.length, wave + 1) : Math.max(1, wave);
-    chipWave.textContent = "Wave " + waveShown + "/" + WAVES.length;
+    chipWave.textContent = "L" + (levelIndex + 1) + " · " + waveShown + "/" + WAVES.length;
     chipHp.textContent = "Dam " + Math.max(0, Math.ceil(damHp));
     btnStick.classList.toggle("on", selected === "stick");
     btnSap.classList.toggle("on", selected === "sap");
     btnPause.classList.toggle("on", paused);
     btnPause.textContent = paused ? "▶" : "⏸";
     btnPause.setAttribute("aria-label", paused ? "Resume" : "Pause");
-    if (!running || phase === "splash") {
+    if (!running || phase === "splash" || phase === "levels") {
       btnGo.textContent = "START WAVE";
     } else if (phase === "build") {
       btnGo.textContent = (wave === 0 ? "START WAVE" : "NEXT WAVE") + " · " + Math.ceil(Math.max(0, buildT)) + "s";
@@ -480,9 +708,12 @@
   }
 
   function resetRun() {
-    wood = START_WOOD;
-    damHp = DAM_MAX;
-    hpShown = DAM_MAX;
+    const L = LEVELS[levelIndex];
+    WAVES = L.waves;
+    damMax = L.dam;
+    wood = L.wood;
+    damHp = damMax;
+    hpShown = damMax;
     damFlash = 0;
     wave = 0;
     selected = "stick";
@@ -502,8 +733,7 @@
     phase = "build";
     buildT = BUILD_FIRST;
     running = true;
-    splash.classList.add("hidden");
-    endcard.classList.add("hidden");
+    hideMenus();
     document.getElementById("app").classList.remove("booting");
     layout();
     pads.forEach(function (p) { p.type = null; });
@@ -513,7 +743,7 @@
   }
 
   function setPaused(on) {
-    if (!running || phase === "win" || phase === "lose" || phase === "splash") return;
+    if (!running || phase === "win" || phase === "lose" || phase === "splash" || phase === "levels") return;
     paused = !!on;
     pausedEl.classList.toggle("hidden", !paused);
     last = performance.now();
@@ -522,8 +752,12 @@
 
   function requestNextWave() {
     SFX.ensure();
-    if (phase === "splash" || phase === "win" || phase === "lose") {
-      resetRun();
+    if (phase === "splash" || phase === "levels") {
+      showLevels();
+      return;
+    }
+    if (phase === "win" || phase === "lose") {
+      showLevels();
       return;
     }
     if (!running) return;
@@ -558,8 +792,16 @@
     running = false;
     paused = false;
     pausedEl.classList.add("hidden");
+    const earned = starsFromHp(Math.max(0, damHp), damMax);
+    if (earned > (save.stars[levelIndex] || 0)) save.stars[levelIndex] = earned;
+    if (levelIndex + 1 < LEVELS.length) save.unlocked = Math.max(save.unlocked, levelIndex + 2);
+    writeSave();
     endTitle.textContent = "DAM HELD";
-    endMsg.textContent = "Five waves. The logs still stand. Bober keeps the river.";
+    endStars.textContent = starString(earned);
+    endMsg.textContent = LEVELS[levelIndex].name + " · " + earned + " star" + (earned === 1 ? "" : "s") + ". Next level unlocked.";
+    if (levelIndex + 1 >= LEVELS.length) endMsg.textContent = "Last Stand held. " + earned + " star" + (earned === 1 ? "" : "s") + ".";
+    btnAgain.textContent = "LEVELS";
+    hideMenus();
     endcard.classList.remove("hidden");
     document.getElementById("app").classList.add("booting");
     SFX.tone(392, 0.15, "square", 0.05);
@@ -573,7 +815,10 @@
     pausedEl.classList.add("hidden");
     damHp = 0;
     endTitle.textContent = "THE DAM BURST";
-    endMsg.textContent = "The river punched through. Patch it up and hold the line again.";
+    endStars.textContent = "";
+    endMsg.textContent = LEVELS[levelIndex].name + " broke. Try again from the map.";
+    btnAgain.textContent = "LEVELS";
+    hideMenus();
     endcard.classList.remove("hidden");
     document.getElementById("app").classList.add("booting");
     SFX.tone(180, 0.4, "sawtooth", 0.05, 70);
@@ -681,13 +926,13 @@
 
   function repairDam() {
     if (!running || phase === "win" || phase === "lose") return;
-    if (damHp >= DAM_MAX) return;
+    if (damHp >= damMax) return;
     if (wood < COST_REPAIR) {
       cantAfford();
       return;
     }
     wood -= COST_REPAIR;
-    damHp = Math.min(DAM_MAX, damHp + REPAIR_HP);
+    damHp = Math.min(damMax, damHp + REPAIR_HP);
     floaters.push({ x: dam.x + dam.w * 0.35, y: dam.y + 40, text: "+" + REPAIR_HP + " HP", t: 0.9, col: "#7ED957" });
     SFX.tone(200, 0.08, "square", 0.04);
     SFX.tone(280, 0.1, "square", 0.03);
@@ -1080,7 +1325,7 @@
     ctx.lineTo(x + logW - 10, y + h - 6);
     ctx.stroke();
 
-    const pctHp = Math.max(0, damHp / DAM_MAX);
+    const pctHp = Math.max(0, damHp / damMax);
     if (pctHp <= 0.66) drawCracks(x, y, logW, h, pctHp <= 0.33 ? 2 : 1);
 
     if (damFlash > 0) {
@@ -1101,7 +1346,7 @@
     ctx.fillStyle = "#1A1028";
     roundRect(ctx, bx - 10, by - 4, 18, bh + 8, 6); ctx.fill();
     ctx.strokeStyle = damFlash > 0 ? "#E85D4C" : CREAM; ctx.lineWidth = 2; ctx.stroke();
-    const pct = Math.max(0, hpShown / DAM_MAX);
+    const pct = Math.max(0, hpShown / damMax);
     const fh = bh * pct;
     ctx.fillStyle = pct > 0.45 ? "#7ED957" : pct > 0.2 ? YEL : "#E85D4C";
     ctx.fillRect(bx - 7, by + bh - fh, 12, fh);
@@ -1327,16 +1572,21 @@
   btnSap.addEventListener("click", function () { selected = "sap"; SFX.ensure(); hud(); });
   btnRepair.addEventListener("click", function () { SFX.ensure(); repairDam(); });
   btnGo.addEventListener("click", function () { requestNextWave(); });
-  btnPlay.addEventListener("click", function () { SFX.ensure(); resetRun(); });
-  btnAgain.addEventListener("click", function () { SFX.ensure(); resetRun(); });
+  btnPlay.addEventListener("click", function () { SFX.ensure(); showLevels(); });
+  btnAgain.addEventListener("click", function () { SFX.ensure(); showLevels(); });
+  btnPauseLevels.addEventListener("click", function () { SFX.ensure(); showLevels(); });
   btnResume.addEventListener("click", function () { SFX.ensure(); setPaused(false); });
   btnPause.addEventListener("click", function () {
     SFX.ensure();
-    if (!running || phase === "splash" || phase === "win" || phase === "lose") return;
+    if (!running || phase === "splash" || phase === "levels" || phase === "win" || phase === "lose") return;
     setPaused(!paused);
   });
   btnRestart.addEventListener("click", function () {
     SFX.ensure();
+    if (phase === "splash" || phase === "levels" || phase === "win" || phase === "lose") {
+      showLevels();
+      return;
+    }
     resetRun();
   });
   btnMute.addEventListener("click", function () {
@@ -1365,7 +1615,7 @@
   window.addEventListener("resize", layout);
   window.addEventListener("orientationchange", function () { setTimeout(layout, 80); });
   document.addEventListener("visibilitychange", function () {
-    if (document.hidden && running && phase !== "win" && phase !== "lose") setPaused(true);
+    if (document.hidden && running && phase !== "win" && phase !== "lose" && phase !== "levels") setPaused(true);
     last = performance.now();
   });
 
@@ -1373,7 +1623,7 @@
   hud();
   requestAnimationFrame(function (t) { last = t; loop(t); });
   if (/(?:^|[?&])play=1(?:&|$)/.test(location.search)) {
-    resetRun();
+    showLevels();
   }
 })();
   </script>

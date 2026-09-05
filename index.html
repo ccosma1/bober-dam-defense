@@ -392,15 +392,27 @@
       background: #1A1028;
     }
     #history .hist-bar {
-      flex: 0 0 auto;
-      min-height: 88px;
-      background: rgba(58, 42, 106, 0.92);
+      flex: 0 0 80px;
+      height: 80px;
+      min-height: 80px;
+      max-height: 88px;
+      background: #3A2A6A;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 4px;
-      padding: 10px 14px 8px;
+      padding: 8px 14px 6px;
+    }
+    #history.chorus .hist-stage {
+      animation: histClap 0.625s ease infinite;
+    }
+    #history.chorus .hist-bar {
+      box-shadow: inset 0 0 0 3px #F5C400;
+    }
+    @keyframes histClap {
+      0%, 100% { box-shadow: 0 10px 36px #0009; }
+      50% { box-shadow: 0 0 0 6px #F5C400cc, 0 10px 36px #0009; }
     }
     #history .hist-sub {
       margin: 0;
@@ -925,6 +937,10 @@
   function syncMute() {
     btnMute.textContent = SFX.muted ? "🔇" : "🔊";
     btnMute.setAttribute("aria-label", SFX.muted ? "Unmute" : "Mute");
+    if (histAudio) {
+      histAudio.muted = !!SFX.muted;
+      histAudio.volume = SFX.muted ? 0 : 1;
+    }
   }
   syncMute();
 
@@ -1000,13 +1016,26 @@
     return 1;
   }
   function hideMenus() {
+    const histOpen = histEl && !histEl.classList.contains("hidden");
     splash.classList.add("hidden");
     levelsEl.classList.add("hidden");
     endcard.classList.add("hidden");
     pausedEl.classList.add("hidden");
     cameoEl.classList.add("hidden");
     if (tipEl) tipEl.classList.add("hidden");
-    if (histEl) histEl.classList.add("hidden");
+    if (histEl) {
+      histEl.classList.add("hidden");
+      histEl.classList.remove("chorus");
+    }
+    if (histOpen) {
+      if (typeof histRaf !== "undefined" && histRaf) { cancelAnimationFrame(histRaf); histRaf = 0; }
+      if (typeof histTimer !== "undefined" && histTimer) { clearTimeout(histTimer); histTimer = 0; }
+      if (typeof histAudio !== "undefined" && histAudio) {
+        try { histAudio.pause(); histAudio.currentTime = 0; } catch (err) {}
+      }
+      histAfter = null;
+      markHistorySeen();
+    }
   }
   function resetProgress() {
     if (!window.confirm("Wipe stars and unlocks?")) return;
@@ -1063,45 +1092,103 @@
     else if (kind === "doge") { SFX.tone(330, 0.12, "triangle", 0.04); SFX.tone(392, 0.16, "sine", 0.03); }
     else { SFX.tone(392, 0.12, "square", 0.05); SFX.tone(523, 0.18, "square", 0.05, 784); }
   }
+  const HIST_ANTHEM = "assets/history/anthem.mp3";
   const HIST_BEATS = [
-    { src: "assets/history/h0.jpg", line: "BOBER: A SHORT HISTORY", sub: "a fan game tale · not official", ms: 3000, sfx: "title" },
-    { src: "assets/history/h1.jpg", line: "Once, a beaver found a river worth protecting.", sub: "", ms: 4000, sfx: "mars" },
-    { src: "assets/history/h2.jpg", line: "So he built. And built. And yeeted a few sticks for luck.", sub: "", ms: 4000, sfx: "starlink" },
-    { src: "assets/history/h3.jpg", line: "Then the river got… ideas.", sub: "", ms: 4000, sfx: "sink" },
-    { src: "assets/history/h4.jpg", line: "Even Mars sent a shiny truck. Nobody asked.", sub: "", ms: 5000, sfx: "truck" },
-    { src: "assets/history/h5.jpg", line: "Legends don’t wait. Beavers dig in.", sub: "", ms: 5000, sfx: "bot" },
-    { src: "assets/history/h6.jpg", line: "DEFEND THE DAM.", sub: "", ms: 5000, sfx: "finale" }
+    { src: "assets/history/h0.jpg", line: "BOBER: A SHORT HISTORY", sub: "AIN'T NO LEAK · a fan game tale · not official", t: 0.0, chorus: false },
+    { src: "assets/history/h1.jpg", line: "Once, a beaver found a river worth protecting.", sub: "", t: 12.5, chorus: false },
+    { src: "assets/history/h2.jpg", line: "So he built. And built.", sub: "", t: 22.5, chorus: false },
+    { src: "assets/history/h3.jpg", line: "And yeeted a few sticks for luck.", sub: "", t: 27.5, chorus: false },
+    { src: "assets/history/h4.jpg", line: "Then the river got… ideas.", sub: "", t: 32.5, chorus: true },
+    { src: "assets/history/h5.jpg", line: "Even Mars sent a shiny truck. Nobody asked.", sub: "", t: 52.5, chorus: false },
+    { src: "assets/history/h6.jpg", line: "Otters got maps. Crabs flew a pirate mast.", sub: "", t: 57.5, chorus: false },
+    { src: "assets/history/h7.jpg", line: "Legends don’t wait. Beavers dig in.", sub: "", t: 67.5, chorus: false },
+    { src: "assets/history/h8.jpg", line: "This dam's our home — we ain't alone.", sub: "", t: 72.5, chorus: true },
+    { src: "assets/history/h9.jpg", line: "Fix the cracks and keep the woodwork clean.", sub: "", t: 92.5, chorus: false },
+    { src: "assets/history/h10.jpg", line: "Still we stand where the timber stacks.", sub: "", t: 112.5, chorus: true },
+    { src: "assets/history/h11.jpg", line: "DEFEND THE DAM.", sub: "", t: 132.5, chorus: true }
   ];
+  const HIST_END = 142.5;
   let histTimer = 0;
-  let histI = 0;
+  let histRaf = 0;
+  let histI = -1;
   let histAfter = null;
+  let histAudio = null;
+  let histT0 = 0;
+  let histStopping = false;
+  function ensureHistAudio() {
+    if (!histAudio) {
+      histAudio = new Audio(HIST_ANTHEM);
+      histAudio.preload = "auto";
+      histAudio.addEventListener("ended", function () { stopHistory(); });
+    }
+    histAudio.muted = !!SFX.muted;
+    histAudio.volume = SFX.muted ? 0 : 1;
+    return histAudio;
+  }
   function stopHistory() {
+    if (histStopping) return;
+    histStopping = true;
     if (histTimer) { clearTimeout(histTimer); histTimer = 0; }
-    if (histEl) histEl.classList.add("hidden");
+    if (histRaf) { cancelAnimationFrame(histRaf); histRaf = 0; }
+    if (histAudio) {
+      try { histAudio.pause(); histAudio.currentTime = 0; } catch (err) {}
+    }
+    if (histEl) {
+      histEl.classList.add("hidden");
+      histEl.classList.remove("chorus");
+    }
     markHistorySeen();
     fillNameInput();
     const cb = histAfter;
     histAfter = null;
+    histStopping = false;
     if (cb) cb();
   }
-  function showHistBeat(i) {
-    if (i >= HIST_BEATS.length) { stopHistory(); return; }
+  function applyHistBeat(i) {
+    if (i < 0 || i >= HIST_BEATS.length) return;
     histI = i;
     const b = HIST_BEATS[i];
     histImg.src = b.src;
     histLine.textContent = b.line;
     histSub.textContent = b.sub || "";
-    playCameoSfx(b.sfx);
-    if (histTimer) clearTimeout(histTimer);
-    histTimer = setTimeout(function () { showHistBeat(i + 1); }, b.ms);
+    if (histEl) histEl.classList.toggle("chorus", !!b.chorus);
+  }
+  function histFrameAt(t) {
+    let i = 0;
+    for (let k = 0; k < HIST_BEATS.length; k++) {
+      if (t >= HIST_BEATS[k].t) i = k;
+    }
+    return i;
+  }
+  function histTick() {
+    if (!histEl || histEl.classList.contains("hidden")) return;
+    let t = (performance.now() - histT0) / 1000;
+    if (histAudio && histAudio.currentTime > 0.05) t = histAudio.currentTime;
+    const i = histFrameAt(t);
+    if (i !== histI) applyHistBeat(i);
+    if (t >= HIST_END - 0.05 || (histAudio && histAudio.ended)) {
+      stopHistory();
+      return;
+    }
+    histRaf = requestAnimationFrame(histTick);
   }
   function playHistory(after) {
     histAfter = after || null;
+    histStopping = false;
     hideMenus();
     if (histEl) histEl.classList.remove("hidden");
     document.getElementById("app").classList.add("booting");
     SFX.ensure();
-    showHistBeat(0);
+    ensureHistAudio();
+    applyHistBeat(0);
+    histT0 = performance.now();
+    try {
+      histAudio.currentTime = 0;
+      const p = histAudio.play();
+      if (p && p.catch) p.catch(function () {});
+    } catch (err) {}
+    if (histRaf) cancelAnimationFrame(histRaf);
+    histRaf = requestAnimationFrame(histTick);
   }
 
   function dismissCameo() {

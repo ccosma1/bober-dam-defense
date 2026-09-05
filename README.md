@@ -50,6 +50,7 @@ Repo: https://github.com/ccosma1/bober-dam-defense
 - `index.html` — the whole game (HTML, CSS, canvas JS)
 - `assets/splash.jpg` — title art
 - `assets/cameo-*.jpg` — skippable cartoon meme overlays
+- `assets/sprites/bober-*.png` — Yeet Bober idle/fly/splat for the dam NPC and towers
 - `assets/icons/` — original dam-defense mark (not the Yeet slingshot)
 - `scripts/make_icon.py` — regenerates the mark
 

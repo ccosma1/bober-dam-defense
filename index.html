@@ -368,7 +368,7 @@
       z-index: 21;
       justify-content: center;
       align-items: center;
-      cursor: pointer;
+      cursor: default;
       background: rgba(26, 16, 40, 0.5);
       padding: 12px;
     }
@@ -392,18 +392,31 @@
       background: #1A1028;
     }
     #history .hist-bar {
-      flex: 0 0 80px;
-      height: 80px;
+      flex: 0 0 auto;
       min-height: 80px;
-      max-height: 88px;
       background: #3A2A6A;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 4px;
-      padding: 8px 14px 6px;
+      padding: 8px 14px 8px;
     }
+    #hist-skip {
+      appearance: none;
+      border: 2px solid var(--cream);
+      background: #1A1028;
+      color: var(--cream);
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      padding: 5px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+    #hist-skip:active { filter: brightness(0.85); }
     #history.chorus .hist-stage {
       animation: histClap 0.625s ease infinite;
     }
@@ -565,7 +578,7 @@
           <div class="hist-bar">
             <p class="hist-sub" id="hist-sub"></p>
             <p class="hist-line" id="hist-line"></p>
-            <p class="cameo-skip">tap to skip</p>
+            <button type="button" id="hist-skip">tap to skip</button>
           </div>
         </div>
       </div>
@@ -846,6 +859,7 @@
   const histImg = document.getElementById("hist-img");
   const histLine = document.getElementById("hist-line");
   const histSub = document.getElementById("hist-sub");
+  const histSkipBtn = document.getElementById("hist-skip");
   const btnHistory = document.getElementById("btn-history");
   const cameoEl = document.getElementById("cameo");
   const cameoImg = document.getElementById("cameo-img");
@@ -1016,26 +1030,12 @@
     return 1;
   }
   function hideMenus() {
-    const histOpen = histEl && !histEl.classList.contains("hidden");
     splash.classList.add("hidden");
     levelsEl.classList.add("hidden");
     endcard.classList.add("hidden");
     pausedEl.classList.add("hidden");
     cameoEl.classList.add("hidden");
     if (tipEl) tipEl.classList.add("hidden");
-    if (histEl) {
-      histEl.classList.add("hidden");
-      histEl.classList.remove("chorus");
-    }
-    if (histOpen) {
-      if (typeof histRaf !== "undefined" && histRaf) { cancelAnimationFrame(histRaf); histRaf = 0; }
-      if (typeof histTimer !== "undefined" && histTimer) { clearTimeout(histTimer); histTimer = 0; }
-      if (typeof histAudio !== "undefined" && histAudio) {
-        try { histAudio.pause(); histAudio.currentTime = 0; } catch (err) {}
-      }
-      histAfter = null;
-      markHistorySeen();
-    }
   }
   function resetProgress() {
     if (!window.confirm("Wipe stars and unlocks?")) return;
@@ -1046,6 +1046,7 @@
     running = false;
     paused = false;
     phase = "levels";
+    closeHistorySilent();
     hideMenus();
     levelsEl.classList.remove("hidden");
     document.getElementById("app").classList.add("booting");
@@ -1072,6 +1073,7 @@
   }
   function startLevel(i) {
     if (i < 0 || i >= LEVELS.length || i >= save.unlocked) return;
+    closeHistorySilent();
     levelIndex = i;
     WAVES = LEVELS[i].waves;
     damMax = LEVELS[i].dam;
@@ -1115,12 +1117,40 @@
   let histAudio = null;
   let histT0 = 0;
   let histStopping = false;
+  let histSkipArmed = 0;
+  function historyOpen() {
+    return !!(histEl && !histEl.classList.contains("hidden"));
+  }
+  function haltAnthem() {
+    if (histRaf) { cancelAnimationFrame(histRaf); histRaf = 0; }
+    if (histTimer) { clearTimeout(histTimer); histTimer = 0; }
+    if (histAudio) {
+      try {
+        histAudio.pause();
+        histAudio.loop = false;
+        histAudio.currentTime = 0;
+      } catch (err) {}
+    }
+  }
+  function closeHistorySilent() {
+    haltAnthem();
+    if (histEl) {
+      histEl.classList.add("hidden");
+      histEl.classList.remove("chorus");
+    }
+    histAfter = null;
+  }
   function ensureHistAudio() {
     if (!histAudio) {
       histAudio = new Audio(HIST_ANTHEM);
       histAudio.preload = "auto";
-      histAudio.addEventListener("ended", function () { stopHistory(); });
+      histAudio.loop = false;
+      histAudio.addEventListener("ended", function () {
+        if (historyOpen()) stopHistory();
+        else haltAnthem();
+      });
     }
+    histAudio.loop = false;
     histAudio.muted = !!SFX.muted;
     histAudio.volume = SFX.muted ? 0 : 1;
     return histAudio;
@@ -1128,11 +1158,7 @@
   function stopHistory() {
     if (histStopping) return;
     histStopping = true;
-    if (histTimer) { clearTimeout(histTimer); histTimer = 0; }
-    if (histRaf) { cancelAnimationFrame(histRaf); histRaf = 0; }
-    if (histAudio) {
-      try { histAudio.pause(); histAudio.currentTime = 0; } catch (err) {}
-    }
+    haltAnthem();
     if (histEl) {
       histEl.classList.add("hidden");
       histEl.classList.remove("chorus");
@@ -1143,6 +1169,16 @@
     histAfter = null;
     histStopping = false;
     if (cb) cb();
+  }
+  function requestSkipHistory(ev) {
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+    if (!historyOpen()) return;
+    if (Date.now() < histSkipArmed) return;
+    SFX.ensure();
+    stopHistory();
   }
   function applyHistBeat(i) {
     if (i < 0 || i >= HIST_BEATS.length) return;
@@ -1161,9 +1197,12 @@
     return i;
   }
   function histTick() {
-    if (!histEl || histEl.classList.contains("hidden")) return;
+    if (!historyOpen()) {
+      haltAnthem();
+      return;
+    }
     let t = (performance.now() - histT0) / 1000;
-    if (histAudio && histAudio.currentTime > 0.05) t = histAudio.currentTime;
+    if (histAudio && !histAudio.paused && histAudio.currentTime > 0.05) t = histAudio.currentTime;
     const i = histFrameAt(t);
     if (i !== histI) applyHistBeat(i);
     if (t >= HIST_END - 0.05 || (histAudio && histAudio.ended)) {
@@ -1175,14 +1214,27 @@
   function playHistory(after) {
     histAfter = after || null;
     histStopping = false;
+    histSkipArmed = Date.now() + 450;
+    if (histSkipBtn) histSkipBtn.disabled = true;
+    if (histTimer) clearTimeout(histTimer);
+    histTimer = setTimeout(function () {
+      histTimer = 0;
+      if (histSkipBtn) histSkipBtn.disabled = false;
+    }, 450);
     hideMenus();
-    if (histEl) histEl.classList.remove("hidden");
+    if (!histEl) return;
+    histEl.classList.remove("hidden");
     document.getElementById("app").classList.add("booting");
     SFX.ensure();
     ensureHistAudio();
     applyHistBeat(0);
     histT0 = performance.now();
+    if (!historyOpen()) {
+      haltAnthem();
+      return;
+    }
     try {
+      histAudio.loop = false;
       histAudio.currentTime = 0;
       const p = histAudio.play();
       if (p && p.catch) p.catch(function () {});
@@ -1541,6 +1593,7 @@
     buildT = 0;
     leakWarn = false;
     running = true;
+    closeHistorySilent();
     hideMenus();
     document.getElementById("app").classList.remove("booting");
     layout();
@@ -1568,6 +1621,7 @@
 
   function setPaused(on) {
     if (!running || phase === "win" || phase === "lose" || phase === "splash" || phase === "levels") return;
+    closeHistorySilent();
     paused = !!on;
     pausedEl.classList.toggle("hidden", !paused);
     last = performance.now();
@@ -1618,6 +1672,7 @@
   }
 
   function revealEndcard() {
+    closeHistorySilent();
     hideMenus();
     endcard.classList.remove("hidden");
     document.getElementById("app").classList.add("booting");
@@ -1651,6 +1706,7 @@
     btnAgain.textContent = "LEVELS";
     document.getElementById("app").classList.add("booting");
     if (beat) {
+      closeHistorySilent();
       hideMenus();
       showCameo(beat, revealEndcard);
     } else {
@@ -1670,6 +1726,7 @@
     endStars.textContent = "";
     endMsg.textContent = playerName() + " — " + LEVELS[levelIndex].name + " broke. Try again from the map.";
     btnAgain.textContent = "LEVELS";
+    closeHistorySilent();
     hideMenus();
     endcard.classList.remove("hidden");
     document.getElementById("app").classList.add("booting");
@@ -2943,10 +3000,17 @@
   cameoEl.addEventListener("click", function () { SFX.ensure(); dismissCameo(); });
   cameoEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissCameo(); }, { passive: false });
   btnGo.addEventListener("click", function () { requestNextWave(); });
-  if (histEl) {
-    histEl.addEventListener("click", function () { SFX.ensure(); stopHistory(); });
-    histEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); stopHistory(); }, { passive: false });
+  if (histSkipBtn) {
+    histSkipBtn.addEventListener("click", requestSkipHistory);
+    histSkipBtn.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
+    histSkipBtn.addEventListener("touchend", function (ev) {
+      ev.preventDefault();
+      requestSkipHistory(ev);
+    }, { passive: false });
   }
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") requestSkipHistory(ev);
+  });
   if (nameInput) {
     nameInput.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
     nameInput.addEventListener("click", function (ev) { ev.stopPropagation(); });
@@ -2965,17 +3029,19 @@
     });
     nameInput.addEventListener("blur", function () { persistName(); });
   }
-  btnPlay.addEventListener("click", function () {
+  btnPlay.addEventListener("click", function (ev) {
+    ev.stopPropagation();
     SFX.ensure();
     persistName();
-    if (!historySeen()) {
-      playHistory(function () { showLevels(); });
-    } else {
-      showLevels();
-    }
+    closeHistorySilent();
+    showLevels();
   });
   if (btnHistory) {
+    ["pointerdown", "touchend"].forEach(function (type) {
+      btnHistory.addEventListener(type, function (ev) { ev.stopPropagation(); }, type === "touchend" ? { passive: false } : false);
+    });
     btnHistory.addEventListener("click", function (ev) {
+      ev.preventDefault();
       ev.stopPropagation();
       SFX.ensure();
       persistName();

@@ -548,7 +548,7 @@
     { frac: 0.16, above: true },
     { frac: 0.32, above: false },
     { frac: 0.55, above: true },
-    { frac: 0.70, above: false }
+    { frac: 0.86, above: false }
   ];
   const DAM_GAP = 40;
 
@@ -803,7 +803,13 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const progress = enemies.map(function (e) { return e.dist / pathLen; });
-    path = PATH_N.map(function (p) { return { x: p[0] * viewW, y: p[1] * viewH }; });
+    const frameL = 4, frameT = 8, frameR = 12, frameB = Math.max(40, Math.round(viewH * 0.07));
+    path = PATH_N.map(function (p) {
+      return {
+        x: frameL + p[0] * (viewW - frameL - frameR),
+        y: frameT + p[1] * (viewH - frameT - frameB)
+      };
+    });
     pathCum = [0];
     pathLen = 0;
     for (let i = 1; i < path.length; i++) {
@@ -954,7 +960,10 @@
     let x = p.x + nx * (minD + 10);
     let y = p.y + ny * (minD + 10);
     for (let k = 0; k < 10 && !padLegal(x, y, minD); k++) {
-      if (inDamKeepout(x, y)) x = Math.min(x, dam.x - DAM_GAP - 1);
+      if (inDamKeepout(x, y)) {
+        x = Math.min(x, dam.x - DAM_GAP - 1);
+        if (!seed.above) y = Math.min(viewH - 42, Math.max(y, p.y + 18));
+      }
       const info = nearestPathInfo(x, y);
       if (info.d < minD) {
         x += info.nx * (minD - info.d + 8);
@@ -1433,7 +1442,11 @@
       if (tgt) {
         const lead = tgt.spd * 0.07;
         const p = pointAt(tgt.dist + lead);
-        tw.ang = Math.atan2(p.y - pad.y, p.x - pad.x);
+        const want = Math.atan2(p.y - pad.y, p.x - pad.x);
+        let dAng = want - tw.ang;
+        while (dAng > Math.PI) dAng -= Math.PI * 2;
+        while (dAng < -Math.PI) dAng += Math.PI * 2;
+        tw.ang += dAng * Math.min(1, 1 - Math.exp(-dt * 8.5));
         if (tw.cd <= 0) {
           tw.cd = spec.cd;
           tw.recoil = 0.08;
@@ -1683,8 +1696,12 @@
     ctx.fillStyle = "rgba(26, 16, 40, 0.32)";
     ctx.beginPath(); ctx.ellipse(pad.x + 2, pad.y + 20 + rk * 2, evolved ? 24 : 18 + rk * 3, evolved ? 9 : 7 + rk, 0, 0, Math.PI * 2); ctx.fill();
     ctx.translate(pad.x, pad.y);
+    const flip = Math.cos(tw.ang) < 0;
+    ctx.scale(flip ? -1 : 1, 1);
+    ctx.rotate(Math.atan2(Math.sin(tw.ang), Math.max(0.12, Math.abs(Math.cos(tw.ang)))));
     if (evolved) ctx.scale(1.18, 1.18);
     else ctx.scale(1 + rk * 0.16, 1 + rk * 0.16);
+    ctx.translate(tw.recoil > 0 ? -3 : 0, 0);
     ctx.strokeStyle = INK;
     ctx.lineWidth = evolved ? 3.4 : 3 + rk * 0.4;
 
@@ -1698,9 +1715,6 @@
       }
     }
 
-    ctx.save();
-    ctx.rotate(tw.ang);
-    ctx.translate(tw.recoil > 0 ? -4 : 0, 0);
     if (tw.type === "stick") {
       ctx.fillStyle = rk >= 2 ? "#E8C07A" : "#c48a4a";
       roundRect(ctx, 10, -5, 26 + rk * 4, 10 + rk, 3); ctx.fill(); ctx.stroke();
@@ -1773,7 +1787,6 @@
       ctx.fillStyle = CREAM;
       ctx.beginPath(); ctx.arc(30, 5, 3, 0, Math.PI * 2); ctx.fill();
     }
-    ctx.restore();
     ctx.restore();
   }
 
@@ -2097,14 +2110,6 @@
 
     for (let i = 0; i < pads.length; i++) {
       const p = pads[i];
-      if (hoverPad === i && running && !p.type) {
-        const rng = TOWERS[selected] ? TOWERS[selected].range : 150;
-        ctx.strokeStyle = "rgba(244,230,195,0.32)";
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([5, 7]);
-        ctx.beginPath(); ctx.arc(p.x, p.y, rng, 0, Math.PI * 2); ctx.stroke();
-        ctx.setLineDash([]);
-      }
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fillStyle = p.type ? "rgba(92,58,26,0.55)" : (hoverPad === i ? "rgba(245,196,0,0.28)" : "rgba(244,230,195,0.16)");

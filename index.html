@@ -375,7 +375,7 @@
           <img id="cameo-img" class="hero" alt="" />
           <div class="cameo-bar">
             <p class="cameo-line" id="cameo-line"></p>
-            <p class="cameo-skip">tap to skip</p>
+            <p class="cameo-skip">tap to continue</p>
           </div>
         </div>
       </div>
@@ -751,21 +751,31 @@
   function showCameo(key, after) {
     const c = CAMEOS[key];
     if (!c) { after(); return; }
+    save.cameos[key] = true;
+    writeSave();
     cameoDone = after;
     cameoImg.src = c.src;
     cameoLine.textContent = c.line;
     cameoEl.classList.remove("hidden");
     playCameoSfx(c.sfx);
-    cameoTimer = setTimeout(dismissCameo, 2500);
+    cameoTimer = setTimeout(dismissCameo, 8000);
   }
-  function pickCameo(clearedIndex) {
-    if (clearedIndex >= 3) save.unlockTruck = true;
-    if (clearedIndex >= 7) save.unlockFlame = true;
-    if (clearedIndex >= 11 && !save.cameos.l12) { save.cameos.l12 = true; return "l12"; }
-    if (clearedIndex >= 7 && !save.cameos.l8) { save.cameos.l8 = true; return "l8"; }
-    if (clearedIndex >= 6 && !save.cameos.l7) { save.cameos.l7 = true; return "l7"; }
-    if (clearedIndex >= 3 && !save.cameos.l5) { save.cameos.l5 = true; return "l5"; }
-    return null;
+  function levelWasCleared(i) {
+    return levelIndex === i || (save.stars[i] || 0) > 0 || save.unlocked > i + 1;
+  }
+  function cameoQueue() {
+    if (!save.cameos) save.cameos = {};
+    const q = [];
+    if (!save.cameos.l5 && levelWasCleared(3)) q.push("l5");
+    if (!save.cameos.l7 && levelWasCleared(6)) q.push("l7");
+    if (!save.cameos.l8 && levelWasCleared(7)) q.push("l8");
+    if (!save.cameos.l12 && levelWasCleared(11)) q.push("l12");
+    return q;
+  }
+  function playCameoQueue(keys, after) {
+    if (!keys.length) { after(); return; }
+    const key = keys.shift();
+    showCameo(key, function () { playCameoQueue(keys, after); });
   }
 
   function layout() {
@@ -980,7 +990,9 @@
     const earned = starsFromHp(Math.max(0, damHp), damMax);
     if (earned > (save.stars[levelIndex] || 0)) save.stars[levelIndex] = earned;
     if (levelIndex + 1 < LEVELS.length) save.unlocked = Math.max(save.unlocked, levelIndex + 2);
-    const beat = pickCameo(levelIndex);
+    if (levelWasCleared(3)) save.unlockTruck = true;
+    if (levelWasCleared(7)) save.unlockFlame = true;
+    const queue = cameoQueue();
     writeSave();
     endTitle.textContent = "DAM HELD";
     endStars.textContent = starString(earned);
@@ -988,9 +1000,9 @@
     if (levelIndex + 1 >= LEVELS.length) endMsg.textContent = "Last Stand held. " + earned + " star" + (earned === 1 ? "" : "s") + ".";
     btnAgain.textContent = "LEVELS";
     document.getElementById("app").classList.add("booting");
-    if (beat) {
+    if (queue.length) {
       hideMenus();
-      showCameo(beat, revealEndcard);
+      playCameoQueue(queue, revealEndcard);
     } else {
       SFX.tone(392, 0.15, "square", 0.05);
       SFX.tone(523, 0.2, "square", 0.05, 784);

@@ -258,6 +258,16 @@
       box-shadow: none;
       margin-top: 8px;
     }
+    .reset-sm {
+      margin-top: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      padding: 6px 14px;
+      border-width: 2px;
+      border-radius: 12px;
+      opacity: 0.85;
+    }
     #cameo {
       z-index: 20;
       justify-content: center;
@@ -349,12 +359,14 @@
         <p class="tagline">Fan game by a holder.</p>
         <p class="how">12 levels. Stick Thrower is cheap DPS. Sap Sprayer slows packs. Earn 1–3 stars from dam HP left. Beat a level to unlock the next.</p>
         <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
+        <button class="play ghost reset-sm" id="btn-reset-splash" type="button">Reset</button>
       </div>
       <div id="levels" class="overlay hidden">
         <img class="hero" src="assets/splash.jpg" alt="" />
         <h2>LEVELS</h2>
         <p class="tagline">Fan game by a holder.</p>
         <div id="level-grid"></div>
+        <button class="play ghost" id="btn-reset-levels" type="button">Reset progress</button>
       </div>
       <div id="endcard" class="overlay hidden">
         <img class="hero" src="assets/splash.jpg" alt="" />
@@ -418,8 +430,8 @@
   const COST_STICK = 50;
   const COST_SAP = 100;
   const COST_REPAIR = 30;
-  const COST_UP_STICK = 40;
-  const COST_UP_SAP = 70;
+  const COST_UP_STICK = 80;
+  const COST_UP_SAP = 90;
   const REPAIR_HP = 24;
   const BUILD_FIRST = 12;
   const BUILD_NEXT = 8;
@@ -496,43 +508,43 @@
       wv(0.16, 2.05, 1.26, "ccrococrccrroccrocooooo")
     ]},
     { name: "Fast Water", wood: 95, dam: 100, waves: [
-      wv(0.58, 1.14, 1.26, "rrrrrrrrr"),
-      wv(0.44, 1.30, 1.34, "rroorrorro"),
-      wv(0.32, 1.48, 1.42, "rrocrroorrro"),
-      wv(0.22, 1.68, 1.50, "rroocrroorrroo"),
-      wv(0.14, 2.00, 1.62, "rrooocrroorrroorrooooo")
+      wv(0.58, 1.35, 1.26, "rrrrrrrrr"),
+      wv(0.44, 1.53, 1.34, "rroorrorro"),
+      wv(0.32, 1.75, 1.42, "rrocrroorrro"),
+      wv(0.22, 1.98, 1.50, "rroocrroorrroo"),
+      wv(0.14, 2.36, 1.62, "rrooocrroorrroorrooooo")
     ]},
     { name: "Pocket Wood", wood: 60, dam: 100, waves: [
-      wv(0.72, 1.20, 1.12, "rrcrrcrr"),
-      wv(0.52, 1.38, 1.18, "rrocrrocrr"),
-      wv(0.36, 1.58, 1.24, "rrocrrcocrrocr"),
-      wv(0.24, 1.80, 1.32, "rrococrrococrro"),
-      wv(0.16, 2.05, 1.40, "rrococrrococrrooccoor")
+      wv(0.72, 1.42, 1.12, "rrcrrcrr"),
+      wv(0.52, 1.63, 1.18, "rrocrrocrr"),
+      wv(0.36, 1.86, 1.24, "rrocrrcocrrocr"),
+      wv(0.24, 2.12, 1.32, "rrococrrococrro"),
+      wv(0.16, 2.42, 1.40, "rrococrrococrrooccoor")
     ]},
     { name: "Night Rush", wood: 100, dam: 100, waves: [
-      wv(0.60, 1.28, 1.20, "rrcrrcocr"),
-      wv(0.44, 1.46, 1.28, "rrocrrcocrro"),
-      wv(0.30, 1.66, 1.36, "rrococrrococrro"),
-      wv(0.22, 1.88, 1.44, "rrococrrooccoorr"),
-      wv(0.16, 2.12, 1.52, "rrococrrococrrooccoorr"),
-      wv(0.12, 2.36, 1.60, "rrococrrococrrooccoorrccrrooc")
+      wv(0.60, 1.51, 1.20, "rrcrrcocr"),
+      wv(0.44, 1.72, 1.28, "rrocrrcocrro"),
+      wv(0.30, 1.96, 1.36, "rrococrrococrro"),
+      wv(0.22, 2.22, 1.44, "rrococrrooccoorr"),
+      wv(0.16, 2.50, 1.52, "rrococrrococrrooccoorr"),
+      wv(0.12, 2.78, 1.60, "rrococrrococrrooccoorrccrrooc")
     ]},
     { name: "Hairline", wood: 100, dam: 70, waves: [
-      wv(0.58, 1.32, 1.22, "rrcrrcocr"),
-      wv(0.42, 1.50, 1.30, "rrocrrcocrro"),
-      wv(0.28, 1.72, 1.38, "rrococrrococrro"),
-      wv(0.20, 1.96, 1.46, "rrococrrooccoorr"),
-      wv(0.14, 2.22, 1.54, "rrococrrococrrooccoorr"),
-      wv(0.11, 2.48, 1.64, "rrococrrococrrooccoorrccrroocco")
+      wv(0.58, 1.56, 1.22, "rrcrrcocr"),
+      wv(0.42, 1.77, 1.30, "rrocrrcocrro"),
+      wv(0.28, 2.03, 1.38, "rrococrrococrro"),
+      wv(0.20, 2.31, 1.46, "rrococrrooccoorr"),
+      wv(0.14, 2.62, 1.54, "rrococrrococrrooccoorr"),
+      wv(0.11, 2.93, 1.64, "rrococrrococrrooccoorrccrroocco")
     ]},
     { name: "Last Stand", wood: 100, dam: 80, waves: [
-      wv(0.54, 1.36, 1.24, "rrcrrcocr"),
-      wv(0.40, 1.54, 1.32, "rrocrrcocrro"),
-      wv(0.28, 1.74, 1.40, "rrococrrococrro"),
-      wv(0.20, 1.96, 1.48, "rrococrrooccoorr"),
-      wv(0.15, 2.20, 1.56, "rrococrrococrrooccoorr"),
-      wv(0.12, 2.44, 1.64, "rrococrrococrrooccoorrccrro"),
-      wv(0.10, 2.70, 1.72, "rrococrrococrrooccoorrccrrooccoor")
+      wv(0.54, 1.60, 1.24, "rrcrrcocr"),
+      wv(0.40, 1.82, 1.32, "rrocrrcocrro"),
+      wv(0.28, 2.05, 1.40, "rrococrrococrro"),
+      wv(0.20, 2.31, 1.48, "rrococrrooccoorr"),
+      wv(0.15, 2.60, 1.56, "rrococrrococrrooccoorr"),
+      wv(0.12, 2.88, 1.64, "rrococrrococrrooccoorrccrro"),
+      wv(0.10, 3.19, 1.72, "rrococrrococrrooccoorrccrrooccoor")
     ]}
   ];
 
@@ -562,6 +574,8 @@
   const btnResume = document.getElementById("btn-resume");
   const pausedEl = document.getElementById("paused");
   const btnPlay = document.getElementById("btn-play");
+  const btnResetSplash = document.getElementById("btn-reset-splash");
+  const btnResetLevels = document.getElementById("btn-reset-levels");
   const btnAgain = document.getElementById("btn-again");
   const btnPauseLevels = document.getElementById("btn-pause-levels");
   const btnStick = document.getElementById("btn-stick");
@@ -696,6 +710,11 @@
     pausedEl.classList.add("hidden");
     cameoEl.classList.add("hidden");
   }
+  function resetProgress() {
+    if (!window.confirm("Wipe stars and unlocks?")) return;
+    localStorage.removeItem(SAVE_KEY);
+    window.location.reload();
+  }
   function showLevels() {
     running = false;
     paused = false;
@@ -801,11 +820,12 @@
       const t = towers.find(function (tw) { return tw.pad === i; });
       const placed = placePadOnBank(seed, minClear);
       return {
-        x: placed.x, y: placed.y, r: Math.max(20, Math.min(viewW, viewH) * 0.042),
+        x: placed.x, y: placed.y, r: Math.max(16, Math.min(viewW, viewH) * 0.034),
         type: t ? t.type : null, rank: t ? t.rank : 0,
         bankNx: placed.nx, bankNy: placed.ny
       };
     });
+    separatePads(pads, 110 * Math.min(viewW, viewH) / 390, minClear);
   }
 
   function nearestPathInfo(px, py) {
@@ -859,6 +879,36 @@
     }
     const info = nearestPathInfo(x, y);
     return { x: x, y: y, nx: info.nx, ny: info.ny };
+  }
+  function trySlidePad(pad, dx, dy, minClear) {
+    const nx = pad.x + dx, ny = pad.y + dy;
+    if (!padLegal(nx, ny, minClear)) return false;
+    pad.x = nx;
+    pad.y = ny;
+    const info = nearestPathInfo(pad.x, pad.y);
+    pad.bankNx = info.nx;
+    pad.bankNy = info.ny;
+    return true;
+  }
+  function separatePads(list, minSep, minClear) {
+    for (let iter = 0; iter < 20; iter++) {
+      let moved = false;
+      for (let i = 0; i < list.length; i++) {
+        for (let j = i + 1; j < list.length; j++) {
+          const dx = list[j].x - list[i].x, dy = list[j].y - list[i].y;
+          const d = Math.hypot(dx, dy);
+          if (d >= minSep || d < 0.001) continue;
+          const push = (minSep - d) / 2 + 3;
+          const ai = list[i].bankNx || 0, bi = list[i].bankNy || 1;
+          const aj = list[j].bankNx || 0, bj = list[j].bankNy || 1;
+          const si = (dx * ai + dy * bi) > 0 ? -1 : 1;
+          const sj = (dx * aj + dy * bj) > 0 ? 1 : -1;
+          if (trySlidePad(list[i], ai * si * push, bi * si * push, minClear)) moved = true;
+          if (trySlidePad(list[j], aj * sj * push, bj * sj * push, minClear)) moved = true;
+        }
+      }
+      if (!moved) break;
+    }
   }
 
   function pointAt(dist) {
@@ -1060,7 +1110,7 @@
     return {
       range: b.range + r * 14,
       cd: Math.max(0.2, b.cd * (1 - r * 0.14)),
-      dmg: b.dmg + r * (tw.type === "stick" ? 7 : 3),
+      dmg: b.dmg + r * 3,
       splash: b.splash + r * 20,
       slow: b.slow + r * 0.45,
       pspd: b.pspd,
@@ -1902,6 +1952,8 @@
   cameoEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissCameo(); }, { passive: false });
   btnGo.addEventListener("click", function () { requestNextWave(); });
   btnPlay.addEventListener("click", function () { SFX.ensure(); showLevels(); });
+  btnResetSplash.addEventListener("click", function (ev) { ev.stopPropagation(); resetProgress(); });
+  btnResetLevels.addEventListener("click", function (ev) { ev.stopPropagation(); resetProgress(); });
   btnAgain.addEventListener("click", function () { SFX.ensure(); showLevels(); });
   btnPauseLevels.addEventListener("click", function () { SFX.ensure(); showLevels(); });
   btnResume.addEventListener("click", function () { SFX.ensure(); setPaused(false); });

@@ -312,6 +312,61 @@
       text-shadow: 0 2px 0 #1A1028;
       line-height: 1.3;
     }
+    #history {
+      z-index: 21;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      background: rgba(26, 16, 40, 0.5);
+      padding: 12px;
+    }
+    #history .hist-stage {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: min(960px, 92vw);
+      height: min(78vh, 680px);
+      overflow: hidden;
+      border-radius: 14px;
+      box-shadow: 0 10px 36px #0009;
+      background: #1A1028;
+    }
+    #history img {
+      position: relative;
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 0;
+      object-fit: contain;
+      background: #1A1028;
+    }
+    #history .hist-bar {
+      flex: 0 0 auto;
+      min-height: 88px;
+      background: rgba(58, 42, 106, 0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 14px 8px;
+    }
+    #history .hist-sub {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--cream);
+      letter-spacing: 0.04em;
+      min-height: 1em;
+    }
+    #history .hist-line {
+      margin: 0;
+      max-width: 22em;
+      font-size: clamp(18px, 4.6vw, 26px);
+      font-weight: 900;
+      line-height: 1.2;
+      color: var(--yellow);
+      text-shadow: 0 2px 0 #1A1028;
+    }
     #cameo {
       z-index: 20;
       justify-content: center;
@@ -404,6 +459,7 @@
         <p class="tagline">Fan game by a holder.</p>
         <p class="how">20 levels. Stick Thrower is cheap DPS. Sap Sprayer slows packs. Upgrade twice, then tap to evolve. Earn 1–3 stars from dam HP left. Beat a level to unlock the next.</p>
         <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
+        <button class="play ghost reset-sm" id="btn-history" type="button">HISTORY</button>
         <button class="play ghost reset-sm" id="btn-reset-splash" type="button">Reset</button>
       </div>
       <div id="levels" class="overlay hidden">
@@ -431,6 +487,16 @@
         <div class="tip-card">
           <p class="tip-line">Stick = damage · Sap = slow · then Start Wave</p>
           <p class="cameo-skip">tap to continue</p>
+        </div>
+      </div>
+      <div id="history" class="overlay hidden" role="dialog" aria-label="A Short History">
+        <div class="hist-stage">
+          <img id="hist-img" alt="" />
+          <div class="hist-bar">
+            <p class="hist-sub" id="hist-sub"></p>
+            <p class="hist-line" id="hist-line"></p>
+            <p class="cameo-skip">tap to skip</p>
+          </div>
         </div>
       </div>
       <div id="cameo" class="overlay hidden" role="dialog" aria-label="Cameo">
@@ -702,6 +768,11 @@
   const shopHint = document.getElementById("shop-hint");
   const btnGo = document.getElementById("btn-go");
   const tipEl = document.getElementById("tip");
+  const histEl = document.getElementById("history");
+  const histImg = document.getElementById("hist-img");
+  const histLine = document.getElementById("hist-line");
+  const histSub = document.getElementById("hist-sub");
+  const btnHistory = document.getElementById("btn-history");
   const cameoEl = document.getElementById("cameo");
   const cameoImg = document.getElementById("cameo-img");
   const cameoLine = document.getElementById("cameo-line");
@@ -838,6 +909,7 @@
     pausedEl.classList.add("hidden");
     cameoEl.classList.add("hidden");
     if (tipEl) tipEl.classList.add("hidden");
+    if (histEl) histEl.classList.add("hidden");
   }
   function resetProgress() {
     if (!window.confirm("Wipe stars and unlocks?")) return;
@@ -894,6 +966,46 @@
     else if (kind === "doge") { SFX.tone(330, 0.12, "triangle", 0.04); SFX.tone(392, 0.16, "sine", 0.03); }
     else { SFX.tone(392, 0.12, "square", 0.05); SFX.tone(523, 0.18, "square", 0.05, 784); }
   }
+  const HIST_BEATS = [
+    { src: "assets/history/h0.jpg", line: "BOBER: A SHORT HISTORY", sub: "a fan game tale · not official", ms: 3000, sfx: "title" },
+    { src: "assets/history/h1.jpg", line: "Once, a beaver found a river worth protecting.", sub: "", ms: 4000, sfx: "mars" },
+    { src: "assets/history/h2.jpg", line: "So he built. And built. And yeeted a few sticks for luck.", sub: "", ms: 4000, sfx: "starlink" },
+    { src: "assets/history/h3.jpg", line: "Then the river got… ideas.", sub: "", ms: 4000, sfx: "sink" },
+    { src: "assets/history/h4.jpg", line: "Even Mars sent a shiny truck. Nobody asked.", sub: "", ms: 5000, sfx: "truck" },
+    { src: "assets/history/h5.jpg", line: "Legends don’t wait. Beavers dig in.", sub: "", ms: 5000, sfx: "bot" },
+    { src: "assets/history/h6.jpg", line: "DEFEND THE DAM.", sub: "", ms: 5000, sfx: "finale" }
+  ];
+  let histTimer = 0;
+  let histI = 0;
+  let histAfter = null;
+  function stopHistory() {
+    if (histTimer) { clearTimeout(histTimer); histTimer = 0; }
+    if (histEl) histEl.classList.add("hidden");
+    localStorage.setItem("bober-dam-history-seen", "1");
+    const cb = histAfter;
+    histAfter = null;
+    if (cb) cb();
+  }
+  function showHistBeat(i) {
+    if (i >= HIST_BEATS.length) { stopHistory(); return; }
+    histI = i;
+    const b = HIST_BEATS[i];
+    histImg.src = b.src;
+    histLine.textContent = b.line;
+    histSub.textContent = b.sub || "";
+    playCameoSfx(b.sfx);
+    if (histTimer) clearTimeout(histTimer);
+    histTimer = setTimeout(function () { showHistBeat(i + 1); }, b.ms);
+  }
+  function playHistory(after) {
+    histAfter = after || null;
+    hideMenus();
+    if (histEl) histEl.classList.remove("hidden");
+    document.getElementById("app").classList.add("booting");
+    SFX.ensure();
+    showHistBeat(0);
+  }
+
   function dismissCameo() {
     if (cameoTimer) { clearTimeout(cameoTimer); cameoTimer = 0; }
     cameoEl.classList.add("hidden");
@@ -2643,7 +2755,29 @@
   cameoEl.addEventListener("click", function () { SFX.ensure(); dismissCameo(); });
   cameoEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissCameo(); }, { passive: false });
   btnGo.addEventListener("click", function () { requestNextWave(); });
-  btnPlay.addEventListener("click", function () { SFX.ensure(); showLevels(); });
+  if (histEl) {
+    histEl.addEventListener("click", function () { SFX.ensure(); stopHistory(); });
+    histEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); stopHistory(); }, { passive: false });
+  }
+  btnPlay.addEventListener("click", function () {
+    SFX.ensure();
+    if (!localStorage.getItem("bober-dam-history-seen")) {
+      playHistory(function () { showLevels(); });
+    } else {
+      showLevels();
+    }
+  });
+  if (btnHistory) {
+    btnHistory.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      SFX.ensure();
+      playHistory(function () {
+        hideMenus();
+        splash.classList.remove("hidden");
+        document.getElementById("app").classList.add("booting");
+      });
+    });
+  }
   btnResetSplash.addEventListener("click", function (ev) { ev.stopPropagation(); resetProgress(); });
   btnResetLevels.addEventListener("click", function (ev) { ev.stopPropagation(); resetProgress(); });
   btnAgain.addEventListener("click", function () { SFX.ensure(); showLevels(); });

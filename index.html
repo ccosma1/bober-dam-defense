@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#3A2A6A" />
+  <meta name="description" content="Bober Dam Defense — fan game by a holder. Hold the wooden dam." />
+  <title>Bober Dam Defense</title>
+  <link rel="icon" href="assets/icons/bober-dam.ico" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <style>
+    :root {
+      --sky: #3A2A6A;
+      --sky-deep: #241848;
+      --fur: #8B5A2B;
+      --fur-dark: #5C3A1A;
+      --yellow: #F5C400;
+      --cream: #F4E6C3;
+      --ink: #1A1028;
+      --water: #3D5C9A;
+      --danger: #E85D4C;
+      --ok: #7ED957;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--ink);
+      color: var(--cream);
+      font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+      user-select: none;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      height: 100svh;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      background: var(--sky);
+      position: relative;
+      overflow: hidden;
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    }
+    header, footer {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: linear-gradient(#2a1c4ecc, #1a1028ee);
+      z-index: 3;
+      min-width: 0;
+      width: 100%;
+    }
+    header { justify-content: space-between; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; min-width: 0; }
+    .chip {
+      background: #3A2A6A;
+      border: 2px solid #F5C400;
+      color: var(--cream);
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .chip.wood { color: var(--yellow); }
+    .chip.flash { animation: shake 0.35s ease; background: #6a2a3a; }
+    .btns { display: flex; gap: 6px; flex: 0 0 auto; }
+    .icon-btn {
+      width: 42px; height: 42px;
+      border: 2px solid var(--cream);
+      background: var(--fur);
+      color: var(--cream);
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .icon-btn:active { transform: translateY(1px); filter: brightness(0.85); }
+    #stage { flex: 1; min-height: 0; min-width: 0; position: relative; background: var(--sky); }
+    canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
+    footer {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+    }
+    #app.booting footer { display: none; }
+    #app.booting .chips { visibility: hidden; }
+    .card {
+      appearance: none;
+      border: 3px solid #5C3A1A;
+      background: #8B5A2B;
+      color: var(--cream);
+      border-radius: 14px;
+      padding: 6px 4px 8px;
+      cursor: pointer;
+      min-height: 64px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-weight: 800;
+    }
+    .card .name { font-size: 10px; letter-spacing: 0.01em; line-height: 1.15; text-align: center; }
+    .card .cost { font-size: 12px; color: var(--yellow); }
+    .card.on { border-color: var(--yellow); box-shadow: 0 0 0 2px #F5C40088; background: #a06a34; }
+    .card:disabled { opacity: 0.45; }
+    .card.repair { background: #4a3a28; }
+    #btn-go {
+      grid-column: 1 / -1;
+      height: 44px;
+      border: 3px solid var(--yellow);
+      background: var(--yellow);
+      color: var(--ink);
+      border-radius: 14px;
+      font-weight: 900;
+      font-size: 16px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+    }
+    #btn-go.hidden { display: none; }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 18px 18px 28px;
+      background:
+        linear-gradient(to top, #1a1028f2 0%, #1a1028cc 38%, #3A2A6A55 100%);
+      text-align: center;
+    }
+    .overlay.hidden { display: none; }
+    .overlay img.hero {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+    .overlay h1 {
+      margin: 0 0 6px;
+      font-size: clamp(28px, 8vw, 42px);
+      line-height: 0.95;
+      color: var(--yellow);
+      text-shadow: 0 3px 0 #1A1028, 0 6px 16px #000;
+      letter-spacing: 0.02em;
+    }
+    .overlay h2 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      color: var(--yellow);
+      text-shadow: 0 3px 0 #1A1028;
+    }
+    .tagline {
+      margin: 0 0 14px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--cream);
+      text-shadow: 0 2px 8px #000;
+    }
+    .how {
+      margin: 0 0 16px;
+      max-width: 22em;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--cream);
+      text-shadow: 0 1px 6px #000;
+    }
+    .play {
+      appearance: none;
+      border: 3px solid #1A1028;
+      background: var(--yellow);
+      color: var(--ink);
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing: 0.08em;
+      padding: 12px 28px;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #8a6a00;
+    }
+    .play:active { transform: translateY(2px); box-shadow: 0 2px 0 #8a6a00; }
+    .end-msg { margin: 0 0 16px; font-size: 15px; color: var(--cream); text-shadow: 0 2px 6px #000; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+    @media (orientation: landscape) and (max-height: 500px) {
+      .card { min-height: 48px; padding: 4px; }
+      .overlay h1 { font-size: 26px; }
+      .how { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="booting">
+    <header>
+      <div class="chips">
+        <div class="chip wood" id="chip-wood">Wood 100</div>
+        <div class="chip" id="chip-wave">Wave 0/5</div>
+        <div class="chip" id="chip-hp">Dam 100</div>
+      </div>
+      <div class="btns">
+        <button class="icon-btn" id="btn-mute" type="button" aria-label="Mute">🔊</button>
+        <button class="icon-btn" id="btn-restart" type="button" aria-label="Restart">↻</button>
+      </div>
+    </header>
+    <div id="stage">
+      <canvas id="game"></canvas>
+      <div id="splash" class="overlay">
+        <img class="hero" src="assets/splash.jpg" alt="" />
+        <h1>BOBER DAM<br>DEFENSE</h1>
+        <p class="tagline">Fan game by a holder.</p>
+        <p class="how">Tap a yellow pad. Stick Thrower hits one. Sap Sprayer slows the pack. Leaks chew the dam. Hold five waves.</p>
+        <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
+      </div>
+      <div id="endcard" class="overlay hidden">
+        <img class="hero" src="assets/splash.jpg" alt="" />
+        <h2 id="end-title">DAM HELD</h2>
+        <p class="end-msg" id="end-msg"></p>
+        <p class="tagline">Fan game by a holder.</p>
+        <button class="play" id="btn-again" type="button">PLAY AGAIN</button>
+      </div>
+    </div>
+    <footer id="shop">
+      <button id="btn-go" type="button">GO</button>
+      <button class="card on" id="btn-stick" type="button">
+        <span class="name">Stick Thrower</span>
+        <span class="cost">50 wood</span>
+      </button>
+      <button class="card" id="btn-sap" type="button">
+        <span class="name">Sap Sprayer</span>
+        <span class="cost">100 wood</span>
+      </button>
+      <button class="card repair" id="btn-repair" type="button">
+        <span class="name">Repair Dam</span>
+        <span class="cost">35 wood</span>
+      </button>
+    </footer>
+  </div>
+  <script>
+(function () {
+  "use strict";
+
+  const SKY = "#3A2A6A";
+  const FUR = "#8B5A2B";
+  const YEL = "#F5C400";
+  const CREAM = "#F4E6C3";
+  const INK = "#1A1028";
+  const WOOD = "#5C3A1A";
+
+  const DAM_MAX = 100;
+  const START_WOOD = 100;
+  const COST_STICK = 50;
+  const COST_SAP = 100;
+  const COST_REPAIR = 35;
+  const REPAIR_HP = 18;
+  const BUILD_FIRST = 12;
+  const BUILD_NEXT = 8;
+
+  const KINDS = {
+    rat:   { hp: 26, spd: 96, wood: 8,  leak: 8,  r: 13, armor: 0 },
+    crab:  { hp: 90, spd: 40, wood: 18, leak: 16, r: 18, armor: 0.4 },
+    otter: { hp: 44, spd: 112, wood: 14, leak: 12, r: 15, armor: 0 }
+  };
+
+  const TOWERS = {
+    stick: { cost: COST_STICK, range: 138, cd: 0.58, dmg: 16, splash: 0, slow: 0, pspd: 440 },
+    sap:   { cost: COST_SAP,   range: 108, cd: 1.12, dmg: 8,  splash: 74, slow: 2.2, pspd: 340 }
+  };
+
+  const WAVES = [
+    { interval: 0.88, hpMul: 1.00, spdMul: 1.00, seq: "rrrrrrrr" },
+    { interval: 0.76, hpMul: 1.08, spdMul: 1.04, seq: "rrcrrcrrc" },
+    { interval: 0.66, hpMul: 1.18, spdMul: 1.08, seq: "rocrorcrocror" },
+    { interval: 0.54, hpMul: 1.32, spdMul: 1.12, seq: "rrocrrcocrrocrocr" },
+    { interval: 0.38, hpMul: 1.62, spdMul: 1.16, seq: "rrococrrococrrooccoorrccro" }
+  ];
+
+  const PATH_N = [
+    [-0.08, 0.13], [0.16, 0.14], [0.38, 0.17], [0.56, 0.25],
+    [0.66, 0.36], [0.58, 0.47], [0.40, 0.53], [0.24, 0.60],
+    [0.18, 0.70], [0.30, 0.80], [0.50, 0.84], [0.68, 0.78],
+    [0.72, 0.68], [0.76, 0.56]
+  ];
+  const PAD_N = [
+    [0.433, 0.099],
+    [0.580, 0.220],
+    [0.139, 0.552],
+    [0.489, 0.762],
+    [0.560, 0.640]
+  ];
+
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const chipWood = document.getElementById("chip-wood");
+  const chipWave = document.getElementById("chip-wave");
+  const chipHp = document.getElementById("chip-hp");
+  const btnMute = document.getElementById("btn-mute");
+  const btnRestart = document.getElementById("btn-restart");
+  const btnPlay = document.getElementById("btn-play");
+  const btnAgain = document.getElementById("btn-again");
+  const btnStick = document.getElementById("btn-stick");
+  const btnSap = document.getElementById("btn-sap");
+  const btnRepair = document.getElementById("btn-repair");
+  const btnGo = document.getElementById("btn-go");
+  const splash = document.getElementById("splash");
+  const endcard = document.getElementById("endcard");
+  const endTitle = document.getElementById("end-title");
+  const endMsg = document.getElementById("end-msg");
+
+  const stars = Array.from({ length: 48 }, (_, i) => ({
+    x: ((i * 97 + 13) % 100) / 100,
+    y: ((i * 53 + 7) % 78) / 100,
+    r: 0.6 + (i % 3) * 0.45,
+    a: 0.25 + (i % 5) * 0.12
+  }));
+
+  let viewW = 360, viewH = 640, dpr = 1;
+  let path = [], pathLen = 1, pathCum = [0];
+  let pads = [];
+  let dam = { x: 0, y: 0, w: 0, h: 0 };
+  let riverW = 46;
+
+  let running = false;
+  let phase = "splash";
+  let wood = START_WOOD;
+  let damHp = DAM_MAX;
+  let wave = 0;
+  let buildT = 0;
+  let selected = "stick";
+  let spawnQ = [];
+  let spawnT = 0;
+  let hpMul = 1;
+  let spdMul = 1;
+  let spawnInterval = 1;
+  let enemies = [];
+  let towers = [];
+  let shots = [];
+  let fx = [];
+  let floaters = [];
+  let banner = "";
+  let bannerT = 0;
+  let shake = 0;
+  let tWorld = 0;
+  let hoverPad = -1;
+
+  const SFX = {
+    ctx: null,
+    muted: localStorage.getItem("bober-dam-mute") === "1",
+    ensure: function () {
+      if (!this.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) this.ctx = new AC();
+      }
+      if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+    },
+    tone: function (freq, dur, type, gain, slide) {
+      if (this.muted || !this.ctx) return;
+      const o = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      o.type = type || "square";
+      o.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, slide), this.ctx.currentTime + dur);
+      g.gain.setValueAtTime(gain || 0.05, this.ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+      o.connect(g); g.connect(this.ctx.destination);
+      o.start(); o.stop(this.ctx.currentTime + dur);
+    }
+  };
+  function syncMute() {
+    btnMute.textContent = SFX.muted ? "🔇" : "🔊";
+    btnMute.setAttribute("aria-label", SFX.muted ? "Unmute" : "Mute");
+  }
+  syncMute();
+
+  function layout() {
+    const stage = document.getElementById("stage");
+    viewW = Math.max(280, stage.clientWidth);
+    viewH = Math.max(240, stage.clientHeight);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(viewW * dpr);
+    canvas.height = Math.floor(viewH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const progress = enemies.map(function (e) { return e.dist / pathLen; });
+    path = PATH_N.map(function (p) { return { x: p[0] * viewW, y: p[1] * viewH }; });
+    pathCum = [0];
+    pathLen = 0;
+    for (let i = 1; i < path.length; i++) {
+      const dx = path[i].x - path[i - 1].x, dy = path[i].y - path[i - 1].y;
+      pathLen += Math.hypot(dx, dy);
+      pathCum.push(pathLen);
+    }
+    pathLen = Math.max(1, pathLen);
+    enemies.forEach(function (e, i) { e.dist = progress[i] * pathLen; });
+
+    riverW = Math.max(40, Math.min(viewW, viewH) * 0.11);
+    const last = path[path.length - 1];
+    dam.w = Math.min(viewW * 0.34, 150);
+    dam.h = viewH * 0.64;
+    dam.x = viewW - dam.w - 6;
+    dam.y = Math.max(8, last.y - dam.h * 0.42);
+    pads = PAD_N.map(function (p, i) {
+      const t = towers.find(function (tw) { return tw.pad === i; });
+      return { x: p[0] * viewW, y: p[1] * viewH, r: Math.max(26, Math.min(viewW, viewH) * 0.055), type: t ? t.type : null };
+    });
+  }
+
+  function pointAt(dist) {
+    const d = Math.max(0, Math.min(pathLen, dist));
+    for (let i = 1; i < pathCum.length; i++) {
+      if (d <= pathCum[i]) {
+        const span = pathCum[i] - pathCum[i - 1] || 1;
+        const t = (d - pathCum[i - 1]) / span;
+        return {
+          x: path[i - 1].x + (path[i].x - path[i - 1].x) * t,
+          y: path[i - 1].y + (path[i].y - path[i - 1].y) * t
+        };
+      }
+    }
+    return { x: path[path.length - 1].x, y: path[path.length - 1].y };
+  }
+  function tangentAt(dist) {
+    const a = pointAt(dist), b = pointAt(dist + 8);
+    return Math.atan2(b.y - a.y, b.x - a.x);
+  }
+
+  function hud() {
+    chipWood.textContent = "Wood " + wood;
+    const waveShown = phase === "build" ? Math.min(WAVES.length, wave + 1) : Math.max(1, wave);
+    chipWave.textContent = "Wave " + waveShown + "/" + WAVES.length;
+    chipHp.textContent = "Dam " + Math.max(0, Math.ceil(damHp));
+    btnStick.classList.toggle("on", selected === "stick");
+    btnSap.classList.toggle("on", selected === "sap");
+    btnGo.classList.toggle("hidden", !(running && phase === "build"));
+    if (running && phase === "build") {
+      btnGo.textContent = "GO " + Math.ceil(Math.max(0, buildT));
+    }
+  }
+
+  function resetRun() {
+    wood = START_WOOD;
+    damHp = DAM_MAX;
+    wave = 0;
+    selected = "stick";
+    enemies = [];
+    towers = [];
+    shots = [];
+    fx = [];
+    floaters = [];
+    spawnQ = [];
+    banner = "";
+    bannerT = 0;
+    shake = 0;
+    hoverPad = -1;
+    phase = "build";
+    buildT = BUILD_FIRST;
+    running = true;
+    splash.classList.add("hidden");
+    endcard.classList.add("hidden");
+    document.getElementById("app").classList.remove("booting");
+    layout();
+    pads.forEach(function (p) { p.type = null; });
+    banner = "BUILD";
+    bannerT = 2.2;
+    hud();
+  }
+
+  function startWave() {
+    if (wave >= WAVES.length) return win();
+    wave += 1;
+    const w = WAVES[wave - 1];
+    spawnQ = w.seq.split("");
+    spawnT = 0.25;
+    spawnInterval = w.interval;
+    hpMul = w.hpMul;
+    spdMul = w.spdMul;
+    phase = "wave";
+    banner = "WAVE " + wave;
+    bannerT = 2;
+    SFX.tone(220, 0.12, "square", 0.05);
+    SFX.tone(330, 0.18, "square", 0.04);
+    hud();
+  }
+
+  function win() {
+    phase = "win";
+    running = false;
+    endTitle.textContent = "DAM HELD";
+    endMsg.textContent = "Five waves. The logs still stand. Bober keeps the river.";
+    endcard.classList.remove("hidden");
+    document.getElementById("app").classList.add("booting");
+    SFX.tone(392, 0.15, "square", 0.05);
+    SFX.tone(523, 0.2, "square", 0.05, 784);
+    hud();
+  }
+  function lose() {
+    phase = "lose";
+    running = false;
+    damHp = 0;
+    endTitle.textContent = "THE DAM BURST";
+    endMsg.textContent = "The river punched through. Patch it up and hold the line again.";
+    endcard.classList.remove("hidden");
+    document.getElementById("app").classList.add("booting");
+    SFX.tone(180, 0.4, "sawtooth", 0.05, 70);
+    hud();
+  }
+
+  function spawnEnemy(ch) {
+    const kind = ch === "c" ? "crab" : ch === "o" ? "otter" : "rat";
+    const k = KINDS[kind];
+    enemies.push({
+      kind: kind,
+      dist: 0,
+      hp: k.hp * hpMul,
+      max: k.hp * hpMul,
+      spd: k.spd * spdMul,
+      wood: k.wood,
+      leak: k.leak,
+      r: k.r,
+      armor: k.armor,
+      slowT: 0,
+      bob: Math.random() * Math.PI * 2
+    });
+  }
+
+  function firstInRange(x, y, range) {
+    let best = null, bestD = -1;
+    for (let i = 0; i < enemies.length; i++) {
+      const e = enemies[i];
+      const p = pointAt(e.dist);
+      if (Math.hypot(p.x - x, p.y - y) <= range + e.r && e.dist > bestD) {
+        best = e; bestD = e.dist;
+      }
+    }
+    return best;
+  }
+
+  function hurt(e, raw) {
+    const dmg = raw * (1 - e.armor);
+    e.hp -= dmg;
+    const p = pointAt(e.dist);
+    fx.push({ kind: "chip", x: p.x, y: p.y, vx: (Math.random() - 0.5) * 40, vy: -30 - Math.random() * 30, t: 0.35, col: CREAM });
+    if (e.hp <= 0) {
+      wood += e.wood;
+      floaters.push({ x: p.x, y: p.y - 10, text: "+" + e.wood, t: 0.9, col: YEL });
+      fx.push({ kind: "pop", x: p.x, y: p.y, t: 0.3, r: e.r });
+      SFX.tone(140, 0.08, "triangle", 0.04);
+      const i = enemies.indexOf(e);
+      if (i >= 0) enemies.splice(i, 1);
+      hud();
+    }
+  }
+
+  function placeTower(padIndex, type) {
+    const spec = TOWERS[type];
+    if (!spec || pads[padIndex].type) return false;
+    if (wood < spec.cost) {
+      chipWood.classList.remove("flash");
+      void chipWood.offsetWidth;
+      chipWood.classList.add("flash");
+      SFX.tone(90, 0.1, "square", 0.04);
+      return false;
+    }
+    wood -= spec.cost;
+    pads[padIndex].type = type;
+    towers.push({ pad: padIndex, type: type, cd: 0, ang: -0.4, recoil: 0 });
+    SFX.tone(180, 0.07, "triangle", 0.05);
+    SFX.tone(240, 0.1, "triangle", 0.03);
+    hud();
+    return true;
+  }
+
+  function repairDam() {
+    if (!running || phase === "win" || phase === "lose") return;
+    if (damHp >= DAM_MAX) return;
+    if (wood < COST_REPAIR) {
+      chipWood.classList.remove("flash");
+      void chipWood.offsetWidth;
+      chipWood.classList.add("flash");
+      return;
+    }
+    wood -= COST_REPAIR;
+    damHp = Math.min(DAM_MAX, damHp + REPAIR_HP);
+    floaters.push({ x: dam.x + dam.w * 0.35, y: dam.y + 40, text: "+" + REPAIR_HP + " HP", t: 0.9, col: "#7ED957" });
+    SFX.tone(200, 0.08, "square", 0.04);
+    SFX.tone(280, 0.1, "square", 0.03);
+    hud();
+  }
+
+  function update(dt) {
+    tWorld += dt;
+    if (shake > 0) shake = Math.max(0, shake - dt * 8);
+    if (bannerT > 0) bannerT -= dt;
+
+    if (phase === "build") {
+      buildT -= dt;
+      if (buildT <= 0) startWave();
+    }
+
+    if (phase === "wave") {
+      spawnT -= dt;
+      if (spawnT <= 0 && spawnQ.length) {
+        spawnEnemy(spawnQ.shift());
+        spawnT = spawnInterval;
+      }
+    }
+
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      const e = enemies[i];
+      e.bob += dt * (e.kind === "crab" ? 6 : 14);
+      if (e.slowT > 0) e.slowT -= dt;
+      const slow = e.slowT > 0 ? 0.45 : 1;
+      e.dist += e.spd * slow * dt;
+      if (e.dist >= pathLen) {
+        damHp -= e.leak;
+        shake = 1;
+        const p = pointAt(pathLen);
+        for (let n = 0; n < 10; n++) {
+          fx.push({
+            kind: "water",
+            x: p.x, y: p.y,
+            vx: 20 + Math.random() * 50,
+            vy: (Math.random() - 0.5) * 80,
+            t: 0.5 + Math.random() * 0.3,
+            col: "#8ab4ff"
+          });
+        }
+        floaters.push({ x: p.x, y: p.y - 16, text: "-" + e.leak, t: 0.8, col: "#E85D4C" });
+        SFX.tone(110, 0.16, "sine", 0.05, 70);
+        enemies.splice(i, 1);
+        hud();
+        if (damHp <= 0) { lose(); return; }
+      }
+    }
+
+    for (let i = 0; i < towers.length; i++) {
+      const tw = towers[i];
+      const pad = pads[tw.pad];
+      const spec = TOWERS[tw.type];
+      tw.cd -= dt;
+      if (tw.recoil > 0) tw.recoil -= dt;
+      const tgt = firstInRange(pad.x, pad.y, spec.range);
+      if (tgt) {
+        const p = pointAt(tgt.dist);
+        tw.ang = Math.atan2(p.y - pad.y, p.x - pad.x);
+        if (tw.cd <= 0) {
+          tw.cd = spec.cd;
+          tw.recoil = 0.12;
+          shots.push({
+            type: tw.type,
+            x: pad.x + Math.cos(tw.ang) * 18,
+            y: pad.y + Math.sin(tw.ang) * 18,
+            tx: p.x, ty: p.y,
+            target: tgt,
+            spd: spec.pspd,
+            dmg: spec.dmg,
+            splash: spec.splash,
+            slow: spec.slow
+          });
+          if (tw.type === "stick") SFX.tone(320, 0.05, "square", 0.03);
+          else SFX.tone(210, 0.08, "sine", 0.03, 140);
+        }
+      }
+    }
+
+    for (let i = shots.length - 1; i >= 0; i--) {
+      const s = shots[i];
+      if (s.target && s.target.hp > 0) {
+        const p = pointAt(s.target.dist);
+        s.tx = p.x; s.ty = p.y;
+      }
+      const dx = s.tx - s.x, dy = s.ty - s.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const step = s.spd * dt;
+      if (step >= dist) {
+        if (s.splash > 0) {
+          fx.push({ kind: "sap", x: s.tx, y: s.ty, t: 0.35, r: s.splash });
+          for (let j = enemies.length - 1; j >= 0; j--) {
+            const e = enemies[j];
+            const p = pointAt(e.dist);
+            if (Math.hypot(p.x - s.tx, p.y - s.ty) <= s.splash + e.r) {
+              e.slowT = Math.max(e.slowT, s.slow);
+              hurt(e, s.dmg);
+            }
+          }
+        } else if (s.target && s.target.hp > 0) {
+          hurt(s.target, s.dmg);
+        }
+        shots.splice(i, 1);
+      } else {
+        s.x += dx / dist * step;
+        s.y += dy / dist * step;
+      }
+    }
+
+    for (let i = fx.length - 1; i >= 0; i--) {
+      fx[i].t -= dt;
+      if (fx[i].vx) { fx[i].x += fx[i].vx * dt; fx[i].y += fx[i].vy * dt; fx[i].vy += 80 * dt; }
+      if (fx[i].t <= 0) fx.splice(i, 1);
+    }
+    for (let i = floaters.length - 1; i >= 0; i--) {
+      floaters[i].t -= dt;
+      floaters[i].y -= 28 * dt;
+      if (floaters[i].t <= 0) floaters.splice(i, 1);
+    }
+
+    if (phase === "wave" && spawnQ.length === 0 && enemies.length === 0 && shots.length === 0) {
+      if (wave >= WAVES.length) win();
+      else {
+        phase = "build";
+        buildT = BUILD_NEXT;
+        banner = "BUILD";
+        bannerT = 1.6;
+        hud();
+      }
+    }
+    hud();
+  }
+
+  function roundRect(c, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    c.beginPath();
+    c.moveTo(x + rr, y);
+    c.arcTo(x + w, y, x + w, y + h, rr);
+    c.arcTo(x + w, y + h, x, y + h, rr);
+    c.arcTo(x, y + h, x, y, rr);
+    c.arcTo(x, y, x + w, y, rr);
+    c.closePath();
+  }
+
+  function strokeRiver(width, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
+    ctx.stroke();
+  }
+
+  function drawBeaver(c, x, y, s, mood) {
+    c.save();
+    c.translate(x, y);
+    c.scale(s, s);
+    c.lineJoin = "round";
+    c.lineCap = "round";
+    c.strokeStyle = INK;
+    c.lineWidth = 2.2 / s;
+    // tail
+    c.fillStyle = WOOD;
+    c.beginPath();
+    c.ellipse(-16, 10, 10, 6, -0.5, 0, Math.PI * 2);
+    c.fill(); c.stroke();
+    // body
+    c.fillStyle = FUR;
+    c.beginPath();
+    c.ellipse(0, 8, 14, 12, 0, 0, Math.PI * 2);
+    c.fill(); c.stroke();
+    // ears
+    c.beginPath(); c.arc(-8, -16, 5, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.beginPath(); c.arc(8, -16, 5, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.fillStyle = YEL;
+    c.beginPath(); c.arc(-8, -16, 2.4, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(8, -16, 2.4, 0, Math.PI * 2); c.fill();
+    // head
+    c.fillStyle = FUR;
+    c.beginPath(); c.arc(0, -8, 12, 0, Math.PI * 2); c.fill(); c.stroke();
+    // snout
+    c.fillStyle = CREAM;
+    c.beginPath(); c.ellipse(0, -4, 8, 6, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    // teeth
+    c.fillStyle = CREAM;
+    roundRect(c, -5, 0, 4.2, 6, 1); c.fill(); c.stroke();
+    roundRect(c, 0.8, 0, 4.2, 6, 1); c.fill(); c.stroke();
+    // eyes
+    c.fillStyle = INK;
+    const squint = mood === "mad" ? 1.2 : 2.1;
+    c.beginPath(); c.ellipse(-4.5, -11, 1.6, squint, 0, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.ellipse(4.5, -11, 1.6, squint, 0, 0, Math.PI * 2); c.fill();
+    if (mood === "wow") {
+      c.fillStyle = "#E85D4C";
+      c.beginPath(); c.arc(0, -2, 1.4, 0, Math.PI * 2); c.fill();
+    }
+    c.restore();
+  }
+
+  function drawEnemy(e) {
+    const p = pointAt(e.dist);
+    const ang = tangentAt(e.dist);
+    const bob = Math.sin(e.bob) * (e.kind === "crab" ? 1 : 2.4);
+    ctx.save();
+    ctx.translate(p.x, p.y + bob);
+    ctx.rotate(ang);
+    if (e.slowT > 0) {
+      ctx.fillStyle = "rgba(245,196,0,0.28)";
+      ctx.beginPath(); ctx.arc(0, 0, e.r + 8, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = INK;
+    if (e.kind === "rat") {
+      ctx.fillStyle = "#6a4422";
+      ctx.beginPath(); ctx.ellipse(0, 0, 12, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#4a2e16";
+      ctx.beginPath(); ctx.moveTo(10, -2); ctx.lineTo(18, 0); ctx.lineTo(10, 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = CREAM;
+      ctx.fillRect(16, -2, 5, 2.2);
+      ctx.strokeRect(16, -2, 5, 2.2);
+      ctx.fillStyle = INK;
+      ctx.beginPath(); ctx.arc(4, -2, 1.3, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#3a2412";
+      ctx.beginPath(); ctx.moveTo(-10, 0); ctx.quadraticCurveTo(-18, -6, -22, 2); ctx.stroke();
+    } else if (e.kind === "crab") {
+      ctx.fillStyle = "#a06a3a";
+      roundRect(ctx, -16, -8, 32, 16, 5); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#7a4a22";
+      ctx.fillRect(-10, -4, 20, 3);
+      ctx.beginPath(); ctx.arc(-18, -2, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(18, -2, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = INK;
+      ctx.fillRect(-6, -6, 3, 3);
+      ctx.fillRect(3, -6, 3, 3);
+    } else {
+      ctx.fillStyle = FUR;
+      ctx.beginPath(); ctx.ellipse(0, 0, 16, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = CREAM;
+      ctx.beginPath(); ctx.ellipse(2, 3, 10, 4, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = FUR;
+      ctx.beginPath(); ctx.arc(12, -2, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = INK;
+      ctx.beginPath(); ctx.arc(14, -3, 1.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = CREAM;
+      ctx.fillRect(16, 0, 3, 3);
+      ctx.strokeRect(16, 0, 3, 3);
+    }
+    ctx.restore();
+    const hpPct = Math.max(0, e.hp / e.max);
+    ctx.fillStyle = "#1A102888";
+    ctx.fillRect(p.x - 12, p.y - e.r - 10, 24, 4);
+    ctx.fillStyle = hpPct > 0.4 ? "#7ED957" : "#E85D4C";
+    ctx.fillRect(p.x - 12, p.y - e.r - 10, 24 * hpPct, 4);
+  }
+
+  function drawTower(tw) {
+    const pad = pads[tw.pad];
+    const spec = TOWERS[tw.type];
+    ctx.save();
+    ctx.strokeStyle = "rgba(244,230,195,0.18)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath(); ctx.arc(pad.x, pad.y, spec.range, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.translate(pad.x, pad.y);
+    ctx.fillStyle = WOOD;
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 2.4;
+    ctx.beginPath(); ctx.arc(0, 6, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = FUR;
+    roundRect(ctx, -11, -8, 22, 18, 6); ctx.fill(); ctx.stroke();
+    ctx.save();
+    ctx.rotate(tw.ang);
+    ctx.translate(tw.recoil > 0 ? -6 : 0, 0);
+    if (tw.type === "stick") {
+      ctx.fillStyle = "#c48a4a";
+      roundRect(ctx, 6, -3, 22, 6, 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = YEL;
+      ctx.beginPath(); ctx.arc(8, 0, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else {
+      ctx.fillStyle = YEL;
+      ctx.beginPath(); ctx.arc(4, -10, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#c4dc6a";
+      ctx.beginPath(); ctx.arc(4, -10, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#6a8a22";
+      roundRect(ctx, 10, -4, 16, 7, 3); ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function drawDam() {
+    ctx.save();
+    const x = dam.x, y = dam.y, w = dam.w, h = dam.h;
+    const barW = 18;
+    const logW = w - barW - 10;
+    const logs = 9;
+    const lh = h / logs;
+    ctx.fillStyle = "#2a1810";
+    roundRect(ctx, x - 6, y - 8, logW + 16, h + 16, 10);
+    ctx.fill();
+    for (let i = 0; i < logs; i++) {
+      ctx.fillStyle = i % 2 ? FUR : "#6e4622";
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 2.2;
+      roundRect(ctx, x, y + i * lh, logW, lh - 4, 8);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#3a2412";
+      ctx.beginPath(); ctx.arc(x + 12, y + i * lh + lh * 0.42, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + logW - 12, y + i * lh + lh * 0.42, 4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.strokeStyle = "#c4a06a";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x + 10, y + 6);
+    ctx.lineTo(x + 10, y + h - 6);
+    ctx.moveTo(x + logW - 10, y + 6);
+    ctx.lineTo(x + logW - 10, y + h - 6);
+    ctx.stroke();
+
+    const mood = damHp < 30 ? "wow" : damHp < 70 ? "mad" : "ok";
+    drawBeaver(ctx, x + logW * 0.5, y + 36, 1.45, mood);
+
+    const bx = viewW - 16;
+    const by = y + 8;
+    const bh = h - 16;
+    ctx.fillStyle = "#1A1028";
+    roundRect(ctx, bx - 10, by - 4, 18, bh + 8, 6); ctx.fill();
+    ctx.strokeStyle = CREAM; ctx.lineWidth = 2; ctx.stroke();
+    const pct = Math.max(0, damHp / DAM_MAX);
+    const fh = bh * pct;
+    ctx.fillStyle = pct > 0.45 ? "#7ED957" : pct > 0.2 ? YEL : "#E85D4C";
+    ctx.fillRect(bx - 7, by + bh - fh, 12, fh);
+    ctx.save();
+    ctx.translate(bx + 2, by + bh / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = CREAM;
+    ctx.font = "bold 11px Trebuchet MS, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("DAM HP", 0, 4);
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function render() {
+    const ox = (Math.random() - 0.5) * shake * 8;
+    const oy = (Math.random() - 0.5) * shake * 8;
+    ctx.save();
+    ctx.translate(ox, oy);
+    const g = ctx.createLinearGradient(0, 0, 0, viewH);
+    g.addColorStop(0, "#4a3678");
+    g.addColorStop(0.45, SKY);
+    g.addColorStop(1, "#241848");
+    ctx.fillStyle = g;
+    ctx.fillRect(-10, -10, viewW + 20, viewH + 20);
+
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      ctx.fillStyle = "rgba(244,230,195," + (s.a + Math.sin(tWorld * 2 + i) * 0.08) + ")";
+      ctx.beginPath();
+      ctx.arc(s.x * viewW, s.y * viewH * 0.55, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = YEL;
+    ctx.beginPath();
+    ctx.arc(viewW * 0.82, viewH * 0.1, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#e8b000";
+    ctx.beginPath(); ctx.arc(viewW * 0.82 + 6, viewH * 0.1 - 4, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(viewW * 0.82 - 8, viewH * 0.1 + 6, 4, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = "#1a1230";
+    ctx.beginPath();
+    ctx.moveTo(0, viewH * 0.26);
+    ctx.quadraticCurveTo(viewW * 0.10, viewH * 0.14, viewW * 0.22, viewH * 0.24);
+    ctx.lineTo(viewW * 0.22, viewH * 0.30);
+    ctx.lineTo(0, viewH * 0.30);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(viewW * 0.70, viewH * 0.22);
+    ctx.quadraticCurveTo(viewW * 0.84, viewH * 0.12, viewW, viewH * 0.20);
+    ctx.lineTo(viewW, viewH * 0.28);
+    ctx.lineTo(viewW * 0.70, viewH * 0.28);
+    ctx.fill();
+
+    strokeRiver(riverW + 38, "#2f4a2c");
+    strokeRiver(riverW + 22, "#243822");
+    strokeRiver(riverW + 10, "#1e2a18");
+    strokeRiver(riverW, "#3D5C9A");
+    strokeRiver(riverW * 0.72, "#4a6eaa");
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.setLineDash([18, 22]);
+    ctx.lineDashOffset = -tWorld * 40;
+    strokeRiver(6, "#c8dcff");
+    ctx.restore();
+
+    drawDam();
+
+    for (let i = 0; i < pads.length; i++) {
+      const p = pads[i];
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      const pulse = p.type ? 1 : 0.55 + 0.45 * Math.sin(tWorld * 4 + i);
+      ctx.fillStyle = p.type ? "#5C3A1A" : (hoverPad === i ? "#a07a40" : "#6e5230");
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = p.type ? INK : YEL;
+      ctx.globalAlpha = pulse;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      if (!p.type) {
+        ctx.fillStyle = CREAM;
+        ctx.font = "bold 18px Trebuchet MS, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("+", p.x, p.y + 1);
+      }
+    }
+
+    for (let i = 0; i < towers.length; i++) drawTower(towers[i]);
+    for (let i = 0; i < enemies.length; i++) drawEnemy(enemies[i]);
+
+    for (let i = 0; i < shots.length; i++) {
+      const s = shots[i];
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(Math.atan2(s.ty - s.y, s.tx - s.x));
+      if (s.type === "stick") {
+        ctx.fillStyle = "#c48a4a";
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = 1.5;
+        roundRect(ctx, -10, -2.5, 20, 5, 2); ctx.fill(); ctx.stroke();
+      } else {
+        ctx.fillStyle = YEL;
+        ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#c4dc6a";
+        ctx.beginPath(); ctx.arc(-1, -1, 3, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    for (let i = 0; i < fx.length; i++) {
+      const f = fx[i];
+      const a = Math.max(0, f.t * 3);
+      ctx.globalAlpha = Math.min(1, a);
+      if (f.kind === "sap") {
+        ctx.fillStyle = "rgba(196,220,106,0.35)";
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (1.15 - f.t), 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = YEL;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      } else if (f.kind === "pop") {
+        ctx.strokeStyle = CREAM;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r + (0.3 - f.t) * 40, 0, Math.PI * 2); ctx.stroke();
+      } else {
+        ctx.fillStyle = f.col || CREAM;
+        ctx.beginPath(); ctx.arc(f.x, f.y, 3, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    ctx.font = "bold 14px Trebuchet MS, sans-serif";
+    ctx.textAlign = "center";
+    for (let i = 0; i < floaters.length; i++) {
+      const f = floaters[i];
+      ctx.globalAlpha = Math.min(1, f.t * 2);
+      ctx.fillStyle = f.col;
+      ctx.fillText(f.text, f.x, f.y);
+      ctx.globalAlpha = 1;
+    }
+
+    if (bannerT > 0 && running && banner !== "BUILD") {
+      ctx.globalAlpha = Math.min(1, bannerT);
+      ctx.fillStyle = "#1A1028cc";
+      roundRect(ctx, viewW / 2 - 90, 16, 180, 40, 12); ctx.fill();
+      ctx.strokeStyle = YEL; ctx.lineWidth = 3; ctx.stroke();
+      ctx.fillStyle = YEL;
+      ctx.font = "bold 22px Trebuchet MS, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(banner, viewW / 2, 36);
+      ctx.globalAlpha = 1;
+    }
+
+    if (running && phase === "build") {
+      ctx.fillStyle = CREAM;
+      ctx.font = "bold 13px Trebuchet MS, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      const next = WAVES[wave] || WAVES[WAVES.length - 1];
+      const bits = [];
+      if (next.seq.indexOf("r") >= 0) bits.push("Twig Rats");
+      if (next.seq.indexOf("c") >= 0) bits.push("Log Crabs");
+      if (next.seq.indexOf("o") >= 0) bits.push("Otter Scouts");
+      ctx.fillText("Next: " + bits.join(" · "), viewW / 2, viewH - 10);
+    }
+
+    ctx.restore();
+  }
+
+  function padAt(x, y) {
+    let best = -1, bestD = 1e9;
+    for (let i = 0; i < pads.length; i++) {
+      const d = Math.hypot(pads[i].x - x, pads[i].y - y);
+      if (d < pads[i].r + 14 && d < bestD) { best = i; bestD = d; }
+    }
+    return best;
+  }
+
+  function canvasXY(ev) {
+    const r = canvas.getBoundingClientRect();
+    const t = ev.changedTouches ? ev.changedTouches[0] : ev;
+    return { x: (t.clientX - r.left) * (viewW / r.width), y: (t.clientY - r.top) * (viewH / r.height) };
+  }
+
+  canvas.addEventListener("pointerdown", function (ev) {
+    if (!running) return;
+    const p = canvasXY(ev);
+    const i = padAt(p.x, p.y);
+    if (i >= 0) placeTower(i, selected);
+  });
+  canvas.addEventListener("pointermove", function (ev) {
+    const p = canvasXY(ev);
+    hoverPad = padAt(p.x, p.y);
+  });
+
+  btnStick.addEventListener("click", function () { selected = "stick"; SFX.ensure(); hud(); });
+  btnSap.addEventListener("click", function () { selected = "sap"; SFX.ensure(); hud(); });
+  btnRepair.addEventListener("click", function () { SFX.ensure(); repairDam(); });
+  btnGo.addEventListener("click", function () {
+    SFX.ensure();
+    if (running && phase === "build") startWave();
+  });
+  btnPlay.addEventListener("click", function () { SFX.ensure(); resetRun(); });
+  btnAgain.addEventListener("click", function () { SFX.ensure(); resetRun(); });
+  btnRestart.addEventListener("click", function () {
+    SFX.ensure();
+    splash.classList.remove("hidden");
+    endcard.classList.add("hidden");
+    document.getElementById("app").classList.add("booting");
+    running = false;
+    phase = "splash";
+    enemies = []; towers = []; shots = []; fx = [];
+    hud();
+  });
+  btnMute.addEventListener("click", function () {
+    SFX.muted = !SFX.muted;
+    localStorage.setItem("bober-dam-mute", SFX.muted ? "1" : "0");
+    syncMute();
+    if (!SFX.muted) SFX.ensure();
+  });
+
+  let last = 0;
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
+    last = now;
+    if (running && (phase === "build" || phase === "wave")) update(dt);
+    else {
+      tWorld += dt;
+      if (shake > 0) shake = Math.max(0, shake - dt * 8);
+    }
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener("resize", layout);
+  window.addEventListener("orientationchange", function () { setTimeout(layout, 80); });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) last = performance.now();
+  });
+
+  layout();
+  hud();
+  requestAnimationFrame(function (t) { last = t; loop(t); });
+  if (/(?:^|[?&])play=1(?:&|$)/.test(location.search)) {
+    resetRun();
+  }
+})();
+  </script>
+</body>
+</html>

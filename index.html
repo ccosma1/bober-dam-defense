@@ -119,6 +119,19 @@
     .card.on { border-color: var(--yellow); box-shadow: 0 0 0 2px #F5C40088; background: #a06a34; }
     .card:disabled { opacity: 0.45; }
     .card.repair { background: #4a3a28; }
+    .card.repair.need { box-shadow: 0 0 0 2px #E85D4C99; border-color: #E85D4C; }
+    .card.flash { animation: shake 0.35s ease; background: #6a2a3a; }
+    #shop-hint {
+      grid-column: 1 / -1;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--yellow);
+      letter-spacing: 0.02em;
+      min-height: 14px;
+      padding: 0 4px 2px;
+    }
+    #shop-hint.hidden { display: none; }
     #btn-go {
       grid-column: 1 / -1;
       min-height: 48px;
@@ -404,6 +417,7 @@
         <span class="name">Repair Dam</span>
         <span class="cost">30 wood</span>
       </button>
+      <div id="shop-hint" class="hidden">Tap your tower to upgrade / evolve</div>
     </footer>
   </div>
   <script>
@@ -470,13 +484,13 @@
       wv(0.80, 1.06, 1.02, "rrcrrcrr")
     ]},
     { name: "Scout Line", wood: 100, dam: 100, waves: [
-      wv(0.92, 1.00, 1.00, "rrrrrrrr"),
-      wv(0.82, 1.04, 1.02, "rrcrrcrr"),
-      wv(0.74, 1.08, 1.04, "rrocrroc"),
-      wv(0.68, 1.12, 1.06, "rrocrrocrr")
+      wv(0.88, 1.15, 1.00, "rrrrrrrrr"),
+      wv(0.78, 1.20, 1.02, "rrcrrcrrr"),
+      wv(0.70, 1.24, 1.04, "rrocrrocr"),
+      wv(0.64, 1.29, 1.06, "rrocrrocrrr")
     ]},
-    { name: "Pack Night", wood: 100, dam: 100, waves: [
-      wv(0.85, 1.10, 1.06, "rrcrrcrr"),
+    { name: "Pack Night", wood: 130, dam: 100, waves: [
+      wv(0.90, 1.08, 1.06, "rrcrrcrr"),
       wv(0.68, 1.22, 1.10, "rrocrrcocr"),
       wv(0.50, 1.38, 1.16, "rrocrrcocrrocr"),
       wv(0.36, 1.48, 1.20, "rrococrrococrro"),
@@ -643,6 +657,7 @@
   const btnStick = document.getElementById("btn-stick");
   const btnSap = document.getElementById("btn-sap");
   const btnRepair = document.getElementById("btn-repair");
+  const shopHint = document.getElementById("shop-hint");
   const btnGo = document.getElementById("btn-go");
   const cameoEl = document.getElementById("cameo");
   const cameoImg = document.getElementById("cameo-img");
@@ -1099,6 +1114,11 @@
     chipHp.textContent = "Dam " + Math.max(0, Math.ceil(damHp));
     btnStick.classList.toggle("on", selected === "stick");
     btnSap.classList.toggle("on", selected === "sap");
+    btnRepair.classList.toggle("need", running && damHp < damMax && wood < COST_REPAIR);
+    const canTune = towers.some(function (t) {
+      return t.type === "stick" || t.type === "sap";
+    });
+    shopHint.classList.toggle("hidden", !running || !canTune);
     btnPause.classList.toggle("on", paused);
     btnPause.textContent = paused ? "▶" : "⏸";
     btnPause.setAttribute("aria-label", paused ? "Resume" : "Pause");
@@ -1267,7 +1287,7 @@
       hp: k.hp * hpMul,
       max: k.hp * hpMul,
       spd: k.spd * spdMul,
-      wood: k.wood,
+      wood: k.wood + (kind === "rat" && levelIndex >= 2 && levelIndex <= 4 ? 1 : 0),
       leak: k.leak,
       r: k.r,
       armor: k.armor,
@@ -1302,10 +1322,13 @@
     return countType(dest) < 1;
   }
   function evolveHint(tw) {
-    if (!tw || tw.type === "truck" || tw.type === "flame") return null;
-    if ((tw.rank || 0) < MAX_RANK) return null;
+    if (!tw) return null;
+    if (tw.type === "truck" || tw.type === "flame") return { text: "MAX 1", big: false };
+    if ((tw.rank || 0) < MAX_RANK) {
+      return { text: "UP · " + TOWERS[tw.type].upCost, big: true };
+    }
     const dest = evolvedType(tw.type);
-    if (!dest) return null;
+    if (!dest) return { text: "MAX 1", big: false };
     const unlocked = dest === "truck" ? !!save.unlockTruck : !!save.unlockFlame;
     if (!unlocked) return { text: "EVOLVE 🔒", big: false };
     if (countType(dest) >= 1) return { text: "MAX 1", big: false };
@@ -1422,6 +1445,10 @@
     if (damHp >= damMax) return;
     if (wood < COST_REPAIR) {
       cantAfford();
+      btnRepair.classList.remove("flash");
+      void btnRepair.offsetWidth;
+      btnRepair.classList.add("flash");
+      floaters.push({ x: dam.x + dam.w * 0.35, y: dam.y + 36, text: "need wood", t: 0.9, col: "#E85D4C" });
       return;
     }
     wood -= COST_REPAIR;
@@ -2228,30 +2255,21 @@
         ctx.fillText(String(TOWERS[selected].cost), p.x, p.y + 9);
       } else {
         const tw = towers.find(function (t) { return t.pad === i; });
-        if (tw && tw.type !== "truck" && tw.type !== "flame") {
-          const rank = tw.rank || 0;
-          if (rank < MAX_RANK) {
-            ctx.fillStyle = YEL;
-            ctx.font = "bold 12px Trebuchet MS, sans-serif";
-            ctx.fillText("▲ " + TOWERS[tw.type].upCost, p.x, p.y + p.r - 12);
-          } else {
-            const hint = evolveHint(tw);
-            if (hint) {
-              ctx.font = hint.big ? "bold 13px Trebuchet MS, sans-serif" : "bold 11px Trebuchet MS, sans-serif";
-              const twm = ctx.measureText(hint.text).width;
-              const pw = twm + (hint.big ? 16 : 10);
-              const ph = hint.big ? 20 : 16;
-              const px = p.x - pw / 2;
-              const py = p.y + p.r - 6 - ph / 2;
-              ctx.fillStyle = hint.big ? "#1A1028ee" : "#1A1028aa";
-              roundRect(ctx, px, py, pw, ph, 8); ctx.fill();
-              ctx.strokeStyle = hint.big ? YEL : CREAM;
-              ctx.lineWidth = hint.big ? 2.4 : 1.6;
-              ctx.stroke();
-              ctx.fillStyle = hint.big ? YEL : CREAM;
-              ctx.fillText(hint.text, p.x, p.y + p.r - 6);
-            }
-          }
+        const hint = evolveHint(tw);
+        if (hint) {
+          ctx.font = hint.big ? "bold 13px Trebuchet MS, sans-serif" : "bold 11px Trebuchet MS, sans-serif";
+          const twm = ctx.measureText(hint.text).width;
+          const pw = twm + (hint.big ? 16 : 10);
+          const ph = hint.big ? 20 : 16;
+          const px = p.x - pw / 2;
+          const py = p.y + p.r - 6 - ph / 2;
+          ctx.fillStyle = hint.big ? "#1A1028ee" : "#1A1028aa";
+          roundRect(ctx, px, py, pw, ph, 8); ctx.fill();
+          ctx.strokeStyle = hint.big ? YEL : CREAM;
+          ctx.lineWidth = hint.big ? 2.4 : 1.6;
+          ctx.stroke();
+          ctx.fillStyle = hint.big ? YEL : CREAM;
+          ctx.fillText(hint.text, p.x, p.y + p.r - 6);
         }
       }
     }

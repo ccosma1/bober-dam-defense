@@ -46,13 +46,13 @@ LEVELS = [
         wv(0.80, 1.06, 1.02, "rrcrrcrr"),
     ]},
     {"name": "Scout Line", "wood": 100, "dam": 100, "waves": [
-        wv(0.92, 1.00, 1.00, "rrrrrrrr"),
-        wv(0.82, 1.04, 1.02, "rrcrrcrr"),
-        wv(0.74, 1.08, 1.04, "rrocrroc"),
-        wv(0.68, 1.12, 1.06, "rrocrrocrr"),
+        wv(0.88, 1.15, 1.00, "rrrrrrrrr"),
+        wv(0.78, 1.20, 1.02, "rrcrrcrrr"),
+        wv(0.70, 1.24, 1.04, "rrocrrocr"),
+        wv(0.64, 1.29, 1.06, "rrocrrocrrr"),
     ]},
-    {"name": "Pack Night", "wood": 100, "dam": 100, "waves": [
-        wv(0.85, 1.10, 1.06, "rrcrrcrr"),
+    {"name": "Pack Night", "wood": 130, "dam": 100, "waves": [
+        wv(0.90, 1.08, 1.06, "rrcrrcrr"),
         wv(0.68, 1.22, 1.10, "rrocrrcocr"),
         wv(0.50, 1.38, 1.16, "rrocrrcocrrocr"),
         wv(0.36, 1.48, 1.20, "rrococrrococrro"),
@@ -236,7 +236,7 @@ def bank_pads(pts):
     return out
 
 
-def simulate(level, plan, repair_below=None, repair_cost=30, repair_hp=24, hp_scale=1.0):
+def simulate(level, plan, repair_below=None, repair_cost=30, repair_hp=24, hp_scale=1.0, rat_wood=None):
     pts, cum, plen = build_path()
     pads = bank_pads(pts)
     wood = level["wood"]
@@ -278,7 +278,7 @@ def simulate(level, plan, repair_below=None, repair_cost=30, repair_hp=24, hp_sc
                 enemies.append({
                     "hp": k["hp"] * wave["hpMul"] * hp_scale,
                     "spd": k["spd"] * wave["spdMul"],
-                    "wood": k["wood"],
+                    "wood": rat_wood if (ch == "r" and rat_wood is not None) else k["wood"],
                     "leak": k["leak"],
                     "r": k["r"],
                     "armor": k["armor"],
@@ -377,9 +377,10 @@ def main():
     rows = []
     for i, lv in enumerate(LEVELS):
         hp_scale = 1.08 if 9 <= i <= 11 else 1.0
-        two = simulate(lv, TWO, hp_scale=hp_scale)
-        g = simulate(lv, GREEDY, hp_scale=hp_scale)
-        r = simulate(lv, GREEDY, repair_below=35, hp_scale=hp_scale)
+        rat_wood = 7 if 2 <= i <= 4 else None
+        two = simulate(lv, TWO, hp_scale=hp_scale, rat_wood=rat_wood)
+        g = simulate(lv, GREEDY, hp_scale=hp_scale, rat_wood=rat_wood)
+        r = simulate(lv, GREEDY, repair_below=35, hp_scale=hp_scale, rat_wood=rat_wood)
         rows.append((i, lv, two, g, r))
         def fmt(x):
             if not x["win"]:
@@ -394,6 +395,10 @@ def main():
     for i in range(3):
         g = rows[i][3]
         assert g["win"], (LEVELS[i]["name"], "early greedy should hold", g)
+    # L3 two sticks should leak (not a free 3-star)
+    two3 = rows[2][2]
+    assert two3["win"], ("Scout Line two sticks should hold", two3)
+    assert pct(two3) < 1.0 or two3["leaks"] > 0, ("Scout Line", "two sticks should chip", two3)
 
     assert len(LEVELS) == 20, len(LEVELS)
     # 10-12 unupgraded greedy must not steamroll

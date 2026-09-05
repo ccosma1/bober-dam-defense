@@ -119,9 +119,6 @@
     .card.on { border-color: var(--yellow); box-shadow: 0 0 0 2px #F5C40088; background: #a06a34; }
     .card:disabled { opacity: 0.45; }
     .card.repair { background: #4a3a28; }
-    .card.late { display: none; background: #3a3a48; }
-    .card.late.on { background: #4a4a5a; }
-    .card.late.show { display: flex; }
     #btn-go {
       grid-column: 1 / -1;
       min-height: 48px;
@@ -358,7 +355,7 @@
         <img class="hero" src="assets/splash.jpg" alt="" />
         <h1>BOBER DAM<br>DEFENSE</h1>
         <p class="tagline">Fan game by a holder.</p>
-        <p class="how">12 levels. Stick Thrower is cheap DPS. Sap Sprayer slows packs. Earn 1–3 stars from dam HP left. Beat a level to unlock the next.</p>
+        <p class="how">12 levels. Stick Thrower is cheap DPS. Sap Sprayer slows packs. Upgrade twice, then evolve. Earn 1–3 stars from dam HP left. Beat a level to unlock the next.</p>
         <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
         <button class="play ghost reset-sm" id="btn-reset-splash" type="button">Reset</button>
       </div>
@@ -397,23 +394,15 @@
       <button id="btn-go" type="button">START WAVE</button>
       <button class="card on" id="btn-stick" type="button">
         <span class="name">Stick Thrower</span>
-        <span class="cost">50 wood</span>
+        <span class="cost">55 wood</span>
       </button>
       <button class="card" id="btn-sap" type="button">
         <span class="name">Sap Sprayer</span>
-        <span class="cost">100 wood</span>
+        <span class="cost">75 wood</span>
       </button>
       <button class="card repair" id="btn-repair" type="button">
         <span class="name">Repair Dam</span>
         <span class="cost">30 wood</span>
-      </button>
-      <button class="card late" id="btn-truck" type="button">
-        <span class="name">Cybertruck</span>
-        <span class="cost">220 wood · max 1</span>
-      </button>
-      <button class="card late" id="btn-flame" type="button">
-        <span class="name">Flame Beaver</span>
-        <span class="cost">180 wood · max 1</span>
       </button>
     </footer>
   </div>
@@ -428,11 +417,13 @@
   const INK = "#1A1028";
   const WOOD = "#5C3A1A";
 
-  const COST_STICK = 50;
-  const COST_SAP = 100;
+  const COST_STICK = 55;
+  const COST_SAP = 75;
   const COST_REPAIR = 30;
-  const COST_UP_STICK = 80;
-  const COST_UP_SAP = 90;
+  const COST_UP_STICK = 110;
+  const COST_UP_SAP = 85;
+  const COST_EVOLVE_TRUCK = 160;
+  const COST_EVOLVE_FLAME = 140;
   const REPAIR_HP = 24;
   const BUILD_FIRST = 12;
   const BUILD_NEXT = 8;
@@ -440,18 +431,16 @@
   const SAVE_KEY = "bober-dam-campaign-v1";
 
   const KINDS = {
-    rat:   { hp: 24, spd: 92, wood: 6,  leak: 14, r: 14, armor: 0 },
-    crab:  { hp: 96, spd: 38, wood: 12, leak: 24, r: 20, armor: 0.4 },
-    otter: { hp: 44, spd: 110, wood: 9, leak: 18, r: 16, armor: 0 }
+    rat:   { hp: 24, spd: 92, wood: 5,  leak: 14, r: 14, armor: 0 },
+    crab:  { hp: 96, spd: 38, wood: 11, leak: 24, r: 20, armor: 0.4 },
+    otter: { hp: 44, spd: 110, wood: 8, leak: 18, r: 16, armor: 0 }
   };
 
-  const COST_TRUCK = 220;
-  const COST_FLAME = 180;
   const TOWERS = {
-    stick: { cost: COST_STICK, range: 150, cd: 0.38, dmg: 18, splash: 0, slow: 0, pspd: 820, upCost: COST_UP_STICK },
-    sap:   { cost: COST_SAP,   range: 120, cd: 0.82, dmg: 7,  splash: 96, slow: 2.8, pspd: 640, upCost: COST_UP_SAP },
-    truck: { cost: COST_TRUCK, range: 168, cd: 0.95, dmg: 34, splash: 0, slow: 0, pspd: 900, upCost: 0, pierce: true, max: 1 },
-    flame: { cost: COST_FLAME, range: 92,  cd: 0.14, dmg: 5,  splash: 0, slow: 0, pspd: 0,   upCost: 0, cone: 0.72, max: 1 }
+    stick: { cost: COST_STICK, range: 140, cd: 0.45, dmg: 14, splash: 0, slow: 0, pspd: 820, upCost: COST_UP_STICK },
+    sap:   { cost: COST_SAP,   range: 125, cd: 0.70, dmg: 11, splash: 110, slow: 3.2, pspd: 640, upCost: COST_UP_SAP },
+    truck: { cost: COST_EVOLVE_TRUCK, range: 168, cd: 0.85, dmg: 48, splash: 0, slow: 0, pspd: 900, upCost: 0, pierce: true, max: 1 },
+    flame: { cost: COST_EVOLVE_FLAME, range: 115, cd: 0.14, dmg: 6,  splash: 0, slow: 0, pspd: 0,   upCost: 0, cone: 0.72, max: 1 }
   };
   const CAMEOS = {
     l5:  { src: "assets/cameo-truck.jpg", line: "Roads? We have a river.", sfx: "truck" },
@@ -580,8 +569,6 @@
   const btnStick = document.getElementById("btn-stick");
   const btnSap = document.getElementById("btn-sap");
   const btnRepair = document.getElementById("btn-repair");
-  const btnTruck = document.getElementById("btn-truck");
-  const btnFlame = document.getElementById("btn-flame");
   const btnGo = document.getElementById("btn-go");
   const cameoEl = document.getElementById("cameo");
   const cameoImg = document.getElementById("cameo-img");
@@ -747,8 +734,7 @@
     levelIndex = i;
     WAVES = LEVELS[i].waves;
     damMax = LEVELS[i].dam;
-    if (selected === "truck" && !save.unlockTruck) selected = "stick";
-    if (selected === "flame" && !save.unlockFlame) selected = "stick";
+    if (selected !== "stick" && selected !== "sap") selected = "stick";
     resetRun();
   }
 
@@ -936,10 +922,6 @@
     chipHp.textContent = "Dam " + Math.max(0, Math.ceil(damHp));
     btnStick.classList.toggle("on", selected === "stick");
     btnSap.classList.toggle("on", selected === "sap");
-    btnTruck.classList.toggle("show", !!save.unlockTruck);
-    btnFlame.classList.toggle("show", !!save.unlockFlame);
-    btnTruck.classList.toggle("on", selected === "truck");
-    btnFlame.classList.toggle("on", selected === "flame");
     btnPause.classList.toggle("on", paused);
     btnPause.textContent = paused ? "▶" : "⏸";
     btnPause.setAttribute("aria-label", paused ? "Resume" : "Pause");
@@ -1024,7 +1006,7 @@
     spawnQ = w.seq.split("");
     spawnT = 0.25;
     spawnInterval = w.interval;
-    hpMul = w.hpMul;
+    hpMul = w.hpMul * (levelIndex >= 7 ? 1.15 : 1);
     spdMul = w.spdMul;
     phase = "wave";
     banner = "WAVE " + wave;
@@ -1103,15 +1085,41 @@
     });
   }
 
+  function evolvedType(type) {
+    if (type === "stick") return "truck";
+    if (type === "sap") return "flame";
+    return null;
+  }
+  function evolveCostOf(type) {
+    if (type === "stick") return COST_EVOLVE_TRUCK;
+    if (type === "sap") return COST_EVOLVE_FLAME;
+    return 0;
+  }
+  function countType(type) {
+    let n = 0;
+    for (let i = 0; i < towers.length; i++) if (towers[i].type === type) n++;
+    return n;
+  }
+  function canEvolve(tw) {
+    if (!tw) return false;
+    if (tw.type === "truck" || tw.type === "flame") return false;
+    if ((tw.rank || 0) < MAX_RANK) return false;
+    const dest = evolvedType(tw.type);
+    if (!dest) return false;
+    if (dest === "truck" && !save.unlockTruck) return false;
+    if (dest === "flame" && !save.unlockFlame) return false;
+    return countType(dest) < 1;
+  }
   function specFor(tw) {
     const b = TOWERS[tw.type];
-    const r = tw.rank || 0;
+    const evolved = tw.type === "truck" || tw.type === "flame";
+    const r = evolved ? 0 : (tw.rank || 0);
     return {
-      range: b.range + r * 14,
-      cd: Math.max(0.2, b.cd * (1 - r * 0.14)),
-      dmg: b.dmg + r * 3,
-      splash: b.splash + r * 20,
-      slow: b.slow + r * 0.45,
+      range: b.range + r * 8,
+      cd: b.cd,
+      dmg: b.dmg + r * 2,
+      splash: b.splash ? b.splash + r * 10 : 0,
+      slow: b.slow ? b.slow + r * 0.25 : 0,
       pspd: b.pspd,
       pierce: !!b.pierce,
       cone: b.cone || 0
@@ -1162,25 +1170,41 @@
     const pad = pads[padIndex];
     if (pad.type) {
       const tw = towers.find(function (t) { return t.pad === padIndex; });
-      if (!tw || (tw.rank || 0) >= MAX_RANK) return;
-      const cost = TOWERS[tw.type].upCost;
-      if (!cost) return;
+      if (!tw) return;
+      if (tw.type === "truck" || tw.type === "flame") return;
+      const rank = tw.rank || 0;
+      if (rank < MAX_RANK) {
+        const cost = TOWERS[tw.type].upCost;
+        if (!cost) return;
+        if (wood < cost) { cantAfford(); return; }
+        wood -= cost;
+        tw.rank = rank + 1;
+        pad.rank = tw.rank;
+        floaters.push({ x: pad.x, y: pad.y - 18, text: "UP " + tw.rank, t: 0.8, col: YEL });
+        SFX.tone(260, 0.07, "triangle", 0.05);
+        SFX.tone(340, 0.1, "triangle", 0.03);
+        hud();
+        return;
+      }
+      if (!canEvolve(tw)) return;
+      const dest = evolvedType(tw.type);
+      const cost = evolveCostOf(tw.type);
       if (wood < cost) { cantAfford(); return; }
       wood -= cost;
-      tw.rank = (tw.rank || 0) + 1;
-      pad.rank = tw.rank;
-      floaters.push({ x: pad.x, y: pad.y - 18, text: "UP " + tw.rank, t: 0.8, col: YEL });
-      SFX.tone(260, 0.07, "triangle", 0.05);
-      SFX.tone(340, 0.1, "triangle", 0.03);
+      tw.type = dest;
+      tw.rank = 0;
+      tw.cd = 0;
+      pad.type = dest;
+      pad.rank = 0;
+      floaters.push({ x: pad.x, y: pad.y - 18, text: dest === "truck" ? "TRUCK" : "FLAME", t: 0.9, col: YEL });
+      SFX.tone(140, 0.1, "square", 0.05, 90);
+      SFX.tone(280, 0.12, "triangle", 0.04);
       hud();
       return;
     }
+    if (selected !== "stick" && selected !== "sap") return;
     const spec = TOWERS[selected];
     if (!spec) return;
-    if (spec.max === 1 && towers.some(function (t) { return t.type === selected; })) {
-      floaters.push({ x: pad.x, y: pad.y - 16, text: "MAX 1", t: 0.7, col: "#E85D4C" });
-      return;
-    }
     if (wood < spec.cost) { cantAfford(); return; }
     wood -= spec.cost;
     pad.type = selected;
@@ -1340,14 +1364,22 @@
               hurt(e, s.dmg);
             }
           }
+        } else if (s.pierce) {
+          for (let j = enemies.length - 1; j >= 0; j--) {
+            const e = enemies[j];
+            const p = pointAt(e.dist);
+            if (Math.hypot(p.x - s.tx, p.y - s.ty) <= e.r + 22) {
+              hurt(e, s.dmg, true);
+            }
+          }
         } else if (s.target && s.target.hp > 0) {
-          hurt(s.target, s.dmg, s.pierce);
+          hurt(s.target, s.dmg);
         } else {
           for (let j = enemies.length - 1; j >= 0; j--) {
             const e = enemies[j];
             const p = pointAt(e.dist);
             if (Math.hypot(p.x - s.tx, p.y - s.ty) <= e.r + 10) {
-              hurt(e, s.dmg, s.pierce);
+              hurt(e, s.dmg);
               break;
             }
           }
@@ -1407,56 +1439,6 @@
     ctx.moveTo(path[0].x, path[0].y);
     for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
     ctx.stroke();
-  }
-
-  function drawBeaver(c, x, y, s, mood) {
-    c.save();
-    c.translate(x, y);
-    c.scale(s, s);
-    c.lineJoin = "round";
-    c.lineCap = "round";
-    c.strokeStyle = INK;
-    c.lineWidth = 3.2 / s;
-    // tail
-    c.fillStyle = WOOD;
-    c.beginPath();
-    c.ellipse(-16, 10, 10, 6, -0.5, 0, Math.PI * 2);
-    c.fill(); c.stroke();
-    // body
-    c.fillStyle = FUR;
-    c.beginPath();
-    c.ellipse(0, 8, 14, 12, 0, 0, Math.PI * 2);
-    c.fill(); c.stroke();
-    c.fillStyle = "rgba(60, 30, 12, 0.28)";
-    c.beginPath();
-    c.ellipse(-5, 9, 7, 10, 0, 0, Math.PI * 2);
-    c.fill();
-    // ears
-    c.beginPath(); c.arc(-8, -16, 5, 0, Math.PI * 2); c.fill(); c.stroke();
-    c.beginPath(); c.arc(8, -16, 5, 0, Math.PI * 2); c.fill(); c.stroke();
-    c.fillStyle = YEL;
-    c.beginPath(); c.arc(-8, -16, 2.4, 0, Math.PI * 2); c.fill();
-    c.beginPath(); c.arc(8, -16, 2.4, 0, Math.PI * 2); c.fill();
-    // head
-    c.fillStyle = FUR;
-    c.beginPath(); c.arc(0, -8, 12, 0, Math.PI * 2); c.fill(); c.stroke();
-    // snout
-    c.fillStyle = CREAM;
-    c.beginPath(); c.ellipse(0, -4, 8, 6, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-    // teeth
-    c.fillStyle = CREAM;
-    roundRect(c, -5, 0, 4.2, 6, 1); c.fill(); c.stroke();
-    roundRect(c, 0.8, 0, 4.2, 6, 1); c.fill(); c.stroke();
-    // eyes
-    c.fillStyle = INK;
-    const squint = mood === "mad" ? 1.2 : 2.1;
-    c.beginPath(); c.ellipse(-4.5, -11, 1.6, squint, 0, 0, Math.PI * 2); c.fill();
-    c.beginPath(); c.ellipse(4.5, -11, 1.6, squint, 0, 0, Math.PI * 2); c.fill();
-    if (mood === "wow") {
-      c.fillStyle = "#E85D4C";
-      c.beginPath(); c.arc(0, -2, 1.4, 0, Math.PI * 2); c.fill();
-    }
-    c.restore();
   }
 
   function drawEnemy(e) {
@@ -1531,7 +1513,7 @@
   function drawTower(tw) {
     const pad = pads[tw.pad];
     const spec = specFor(tw);
-    const late = tw.type === "truck" || tw.type === "flame";
+    const evolved = tw.type === "truck" || tw.type === "flame";
     ctx.save();
     if (hoverPad === tw.pad) {
       ctx.strokeStyle = "rgba(244,230,195,0.28)";
@@ -1540,14 +1522,15 @@
       ctx.beginPath(); ctx.arc(pad.x, pad.y, spec.range, 0, Math.PI * 2); ctx.stroke();
       ctx.setLineDash([]);
     }
-    const rk = tw.rank || 0;
+    const rk = evolved ? 0 : (tw.rank || 0);
     ctx.fillStyle = "rgba(20, 10, 24, 0.4)";
-    ctx.beginPath(); ctx.ellipse(pad.x + 3, pad.y + 16 + rk * 3, 16 + rk * 4, 7 + rk, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(pad.x + 3, pad.y + 18 + rk * 3, evolved ? 22 : 16 + rk * 4, evolved ? 9 : 7 + rk, 0, 0, Math.PI * 2); ctx.fill();
     ctx.translate(pad.x, pad.y);
-    ctx.scale(1 + rk * 0.18, 1 + rk * 0.18);
+    if (evolved) ctx.scale(1.22, 1.22);
+    else ctx.scale(1 + rk * 0.18, 1 + rk * 0.18);
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 3 + rk;
-    if (!late) {
+    ctx.lineWidth = evolved ? 3.6 : 3 + rk;
+    if (!evolved) {
       ctx.fillStyle = WOOD;
       ctx.beginPath(); ctx.arc(0, 10, 18, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#6B4220";
@@ -1591,32 +1574,63 @@
         ctx.beginPath(); ctx.arc(22, 8, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       }
     } else if (tw.type === "truck") {
-      ctx.fillStyle = "#C8D0D8";
-      roundRect(ctx, -16, -11, 32, 22, 3); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = "rgba(40, 50, 60, 0.25)";
-      roundRect(ctx, -16, -11, 12, 22, 3); ctx.fill();
       ctx.fillStyle = "#9AA4AE";
-      ctx.fillRect(-12, -7, 10, 7);
+      ctx.beginPath();
+      ctx.moveTo(-22, 10);
+      ctx.lineTo(-18, -8);
+      ctx.lineTo(8, -12);
+      ctx.lineTo(24, -2);
+      ctx.lineTo(22, 12);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#C8D0D8";
+      ctx.beginPath();
+      ctx.moveTo(-14, -6);
+      ctx.lineTo(6, -10);
+      ctx.lineTo(8, -2);
+      ctx.lineTo(-16, 2);
+      ctx.closePath();
+      ctx.fill();
       ctx.fillStyle = "#5AD0FF";
-      ctx.fillRect(-14, 6, 28, 3);
+      ctx.fillRect(-16, 5, 34, 4);
       ctx.fillStyle = INK;
-      roundRect(ctx, 10, -4, 14, 8, 1); ctx.fill();
+      ctx.beginPath(); ctx.arc(-10, 12, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(12, 12, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#C8D0D8";
+      ctx.beginPath(); ctx.arc(-10, 12, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(12, 12, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = INK;
+      roundRect(ctx, 14, -5, 16, 8, 1); ctx.fill();
+      ctx.fillStyle = YEL;
+      ctx.fillRect(26, -3, 6, 4);
     } else {
       if (tw.coneT > 0) {
-        ctx.fillStyle = "rgba(255,120,40,0.28)";
+        ctx.fillStyle = "rgba(255,120,40,0.34)";
         ctx.beginPath();
-        ctx.moveTo(10, 0);
-        ctx.arc(10, 0, 14, -spec.cone, spec.cone);
+        ctx.moveTo(12, 0);
+        ctx.arc(12, 0, 36, -spec.cone, spec.cone);
         ctx.closePath();
         ctx.fill();
       }
+      ctx.fillStyle = "#5A2214";
+      roundRect(ctx, -14, -14, 28, 28, 10); ctx.fill(); ctx.stroke();
       ctx.fillStyle = FUR;
-      roundRect(ctx, -16, -11, 32, 22, 8); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, -4, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = CREAM;
+      ctx.beginPath(); ctx.ellipse(2, 2, 8, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = CREAM;
+      roundRect(ctx, -3, 5, 3.5, 5, 1); ctx.fill(); ctx.stroke();
+      roundRect(ctx, 1.5, 5, 3.5, 5, 1); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = INK;
+      ctx.beginPath(); ctx.arc(-3, -7, 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(5, -7, 1.6, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#E85D4C";
-      roundRect(ctx, 8, -5, 14, 10, 3); ctx.fill(); ctx.stroke();
+      roundRect(ctx, 10, -6, 18, 12, 4); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#FFB040";
-      ctx.beginPath(); ctx.arc(20, 0, 5, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(24, -6, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(26, 0, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(32, -7, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = YEL;
+      ctx.beginPath(); ctx.arc(30, 5, 3, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
     ctx.restore();
@@ -1698,9 +1712,6 @@
       roundRect(ctx, x, y, logW, h, 8);
       ctx.fill();
     }
-
-    const mood = damHp < 30 ? "wow" : damHp < 70 ? "mad" : "ok";
-    drawBeaver(ctx, x + logW * 0.5, y + 36, 1.45, mood);
 
     const bx = viewW - 16;
     const by = y + 8;
@@ -1811,8 +1822,17 @@
       ctx.globalAlpha = 1;
       if (p.type) {
         const twRing = towers.find(function (t) { return t.pad === i; });
-        const rk = twRing ? (twRing.rank || 0) : 0;
-        if (rk >= 1) {
+        const evolvedPad = p.type === "truck" || p.type === "flame";
+        const rk = twRing && !evolvedPad ? (twRing.rank || 0) : 0;
+        if (p.type === "truck") {
+          ctx.strokeStyle = "#5AD0FF";
+          ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 6, 0, Math.PI * 2); ctx.stroke();
+        } else if (p.type === "flame") {
+          ctx.strokeStyle = "#E85D4C";
+          ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 6, 0, Math.PI * 2); ctx.stroke();
+        } else if (rk >= 1) {
           ctx.strokeStyle = YEL;
           ctx.lineWidth = 2 + rk;
           ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 4, 0, Math.PI * 2); ctx.stroke();
@@ -1843,11 +1863,17 @@
         ctx.fillText(String(TOWERS[selected].cost), p.x, p.y + 9);
       } else {
         const tw = towers.find(function (t) { return t.pad === i; });
-        const rank = tw ? (tw.rank || 0) : 0;
-        if (rank < MAX_RANK) {
-          ctx.fillStyle = YEL;
-          ctx.font = "bold 12px Trebuchet MS, sans-serif";
-          ctx.fillText("▲ " + TOWERS[p.type].upCost, p.x, p.y + p.r - 12);
+        if (tw && tw.type !== "truck" && tw.type !== "flame") {
+          const rank = tw.rank || 0;
+          if (rank < MAX_RANK) {
+            ctx.fillStyle = YEL;
+            ctx.font = "bold 12px Trebuchet MS, sans-serif";
+            ctx.fillText("▲ " + TOWERS[tw.type].upCost, p.x, p.y + p.r - 12);
+          } else if (canEvolve(tw)) {
+            ctx.fillStyle = YEL;
+            ctx.font = "bold 10px Trebuchet MS, sans-serif";
+            ctx.fillText("EVOLVE · " + evolveCostOf(tw.type), p.x, p.y + p.r - 12);
+          }
         }
       }
     }
@@ -1975,14 +2001,6 @@
 
   btnStick.addEventListener("click", function () { selected = "stick"; SFX.ensure(); hud(); });
   btnSap.addEventListener("click", function () { selected = "sap"; SFX.ensure(); hud(); });
-  btnTruck.addEventListener("click", function () {
-    if (!save.unlockTruck) return;
-    selected = "truck"; SFX.ensure(); hud();
-  });
-  btnFlame.addEventListener("click", function () {
-    if (!save.unlockFlame) return;
-    selected = "flame"; SFX.ensure(); hud();
-  });
   btnRepair.addEventListener("click", function () { SFX.ensure(); repairDam(); });
   cameoEl.addEventListener("click", function () { SFX.ensure(); dismissCameo(); });
   cameoEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissCameo(); }, { passive: false });

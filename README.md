@@ -16,14 +16,14 @@ Run `START.bat` or open `index.html` in a browser.
 
 1. Tap **HOLD THE DAM**, then pick a level. Level 1 is unlocked; beat a level to open the next.
 2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause**, **Mute**, and **Restart** always work.
-3. Tap a **bank pad** to place the selected tower (cost is on the pad). Tap an existing tower to upgrade it.
-4. **Stick Thrower** (50 wood) — cheap single-target DPS.
-5. **Sap Sprayer** (100 wood) — splash sap that slows a pack.
+3. Tap a **bank pad** to place the selected tower (cost is on the pad). Tap an existing Stick or Sap to upgrade it (rank 1, then rank 2).
+4. **Stick Thrower** (55 wood) — cheap single-target DPS. Upgrade twice, then **evolve to Cybertruck** (160 wood, unlocks after clearing level 4, max 1).
+5. **Sap Sprayer** (75 wood) — splash sap that slows a pack. Upgrade twice, then **evolve to Flame Beaver** (140 wood, unlocks after clearing level 8, max 1).
 6. Leaks **flash the dam** and drop HP. Low HP shows cracks.
 7. Optional: **Repair Dam** (30 wood) for HP back.
 8. Hold the dam. Stars (1–3) come from HP left. Win returns to the map. Lose does not unlock.
 
-Pause, mute, and restart sit in the top-right.
+Pause, mute, and restart sit in the top-right. Footer is Stick, Sap, Repair, Start Wave.
 
 ### Enemies
 
@@ -35,7 +35,7 @@ Pause, mute, and restart sit in the top-right.
 
 Wood drops from kills. Spend it on pads along the river.
 
-Late unlocks (after campaign beats): **Cybertruck** turret (armor pierce, max 1) and **Flame Beaver** (short cone, max 1). Short skippable cartoon cameos; mute still kills their SFX.
+Evolved towers replace the Stick or Sap on that pad. Cybertruck pierces armor (max 1). Flame Beaver is a short cone (max 1). Neither upgrades further. Short skippable cartoon cameos; mute still kills their SFX.
 
 ## GitHub Pages
 

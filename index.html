@@ -260,24 +260,59 @@
     }
     #cameo {
       z-index: 20;
-      justify-content: flex-end;
+      justify-content: center;
+      align-items: center;
       cursor: pointer;
+      background: rgba(26, 16, 40, 0.4);
+      padding: 12px;
+    }
+    #cameo .cameo-stage {
+      position: relative;
+      width: min(920px, 96vw);
+      height: min(300px, 46vh);
+      overflow: hidden;
+      border-radius: 14px;
+      box-shadow: 0 10px 36px #0009;
+      background: #1A1028;
+    }
+    #cameo img.hero {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+    #cameo .cameo-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 2;
+      height: 60px;
+      background: rgba(58, 42, 106, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 12px;
     }
     #cameo .cameo-line {
-      margin: 0 12px 8px;
-      max-width: 18em;
-      font-size: clamp(20px, 5.4vw, 28px);
+      margin: 0;
+      max-width: 36em;
+      font-size: clamp(15px, 3.6vw, 20px);
       font-weight: 900;
       line-height: 1.15;
       color: var(--yellow);
-      text-shadow: 0 3px 0 #1A1028, 0 8px 18px #000;
+      text-shadow: 0 2px 0 #1A1028;
     }
     #cameo .cameo-skip {
-      margin: 0 0 18px;
-      font-size: 12px;
+      margin: 0;
+      font-size: 11px;
       font-weight: 700;
       color: var(--cream);
-      opacity: 0.85;
+      opacity: 0.9;
     }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
@@ -336,9 +371,13 @@
         <button class="play ghost" id="btn-pause-levels" type="button">LEVELS</button>
       </div>
       <div id="cameo" class="overlay hidden" role="dialog" aria-label="Cameo">
-        <img id="cameo-img" class="hero" alt="" />
-        <p class="cameo-line" id="cameo-line"></p>
-        <p class="cameo-skip">tap to skip</p>
+        <div class="cameo-stage">
+          <img id="cameo-img" class="hero" alt="" />
+          <div class="cameo-bar">
+            <p class="cameo-line" id="cameo-line"></p>
+            <p class="cameo-skip">tap to skip</p>
+          </div>
+        </div>
       </div>
     </div>
     <footer id="shop">
@@ -504,11 +543,11 @@
     [0.72, 0.68], [0.76, 0.56]
   ];
   const PAD_N = [
-    [0.36, 0.09],
-    [0.66, 0.26],
-    [0.12, 0.52],
-    [0.40, 0.82],
-    [0.58, 0.58]
+    [0.28, 0.14],
+    [0.62, 0.12],
+    [0.88, 0.22],
+    [0.22, 0.78],
+    [0.55, 0.86]
   ];
 
   const canvas = document.getElementById("game");
@@ -717,7 +756,7 @@
     cameoLine.textContent = c.line;
     cameoEl.classList.remove("hidden");
     playCameoSfx(c.sfx);
-    cameoTimer = setTimeout(dismissCameo, 2800);
+    cameoTimer = setTimeout(dismissCameo, 2500);
   }
   function pickCameo(clearedIndex) {
     if (clearedIndex >= 3) save.unlockTruck = true;
@@ -756,10 +795,50 @@
     dam.h = viewH * 0.64;
     dam.x = viewW - dam.w - 6;
     dam.y = Math.max(8, last.y - dam.h * 0.42);
+    const minClear = riverW / 2 + 16 + 8;
     pads = PAD_N.map(function (p, i) {
       const t = towers.find(function (tw) { return tw.pad === i; });
-      return { x: p[0] * viewW, y: p[1] * viewH, r: Math.max(42, Math.min(viewW, viewH) * 0.08), type: t ? t.type : null, rank: t ? t.rank : 0 };
+      const placed = placePadOnBank(p[0] * viewW, p[1] * viewH, minClear);
+      return {
+        x: placed.x, y: placed.y, r: Math.max(42, Math.min(viewW, viewH) * 0.08),
+        type: t ? t.type : null, rank: t ? t.rank : 0,
+        bankNx: placed.nx, bankNy: placed.ny
+      };
     });
+  }
+
+  function nearestPathInfo(px, py) {
+    let bestD = 1e9, nx = 0, ny = -1, qx = px, qy = py;
+    for (let i = 1; i < path.length; i++) {
+      const ax = path[i - 1].x, ay = path[i - 1].y, bx = path[i].x, by = path[i].y;
+      const vx = bx - ax, vy = by - ay;
+      const l2 = vx * vx + vy * vy || 1;
+      let t = ((px - ax) * vx + (py - ay) * vy) / l2;
+      t = Math.max(0, Math.min(1, t));
+      const sx = ax + t * vx, sy = ay + t * vy;
+      const d = Math.hypot(px - sx, py - sy);
+      if (d < bestD) {
+        bestD = d; qx = sx; qy = sy;
+        let rx = -vy, ry = vx;
+        const nl = Math.hypot(rx, ry) || 1;
+        rx /= nl; ry /= nl;
+        if ((px - sx) * rx + (py - sy) * ry < 0) { rx = -rx; ry = -ry; }
+        nx = rx; ny = ry;
+      }
+    }
+    return { d: bestD, nx: nx, ny: ny, qx: qx, qy: qy };
+  }
+  function placePadOnBank(x, y, minD) {
+    let info = nearestPathInfo(x, y);
+    if (info.d < minD) {
+      const push = minD - info.d + 1;
+      x += info.nx * push;
+      y += info.ny * push;
+      x = Math.max(28, Math.min(viewW - 28, x));
+      y = Math.max(28, Math.min(viewH - 28, y));
+      info = nearestPathInfo(x, y);
+    }
+    return { x: x, y: y, nx: info.nx, ny: info.ny };
   }
 
   function pointAt(dist) {
@@ -1369,22 +1448,27 @@
   function drawTower(tw) {
     const pad = pads[tw.pad];
     const spec = specFor(tw);
+    const late = tw.type === "truck" || tw.type === "flame";
+    const ox = late ? (pad.bankNx || 0) * 10 : 0;
+    const oy = late ? (pad.bankNy || 0) * 10 : 0;
     ctx.save();
     ctx.strokeStyle = "rgba(244,230,195,0.18)";
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 6]);
     ctx.beginPath(); ctx.arc(pad.x, pad.y, spec.range, 0, Math.PI * 2); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.translate(pad.x, pad.y);
-    ctx.fillStyle = WOOD;
+    ctx.translate(pad.x + ox, pad.y + oy);
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 2.4;
-    ctx.beginPath(); ctx.arc(0, 6, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = FUR;
-    roundRect(ctx, -11, -8, 22, 18, 6); ctx.fill(); ctx.stroke();
+    ctx.lineWidth = 2.2;
+    if (!late) {
+      ctx.fillStyle = WOOD;
+      ctx.beginPath(); ctx.arc(0, 6, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = FUR;
+      roundRect(ctx, -11, -8, 22, 18, 6); ctx.fill(); ctx.stroke();
+    }
     ctx.save();
     ctx.rotate(tw.ang);
-    ctx.translate(tw.recoil > 0 ? -6 : 0, 0);
+    ctx.translate(tw.recoil > 0 ? -4 : 0, 0);
     if (tw.type === "stick") {
       ctx.fillStyle = "#c48a4a";
       roundRect(ctx, 6, -3, 22, 6, 2); ctx.fill(); ctx.stroke();
@@ -1399,24 +1483,24 @@
       roundRect(ctx, 10, -4, 16, 7, 3); ctx.fill(); ctx.stroke();
     } else if (tw.type === "truck") {
       ctx.fillStyle = "#C8D0D8";
-      roundRect(ctx, 4, -8, 28, 16, 2); ctx.fill(); ctx.stroke();
+      roundRect(ctx, -11, -8, 22, 16, 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#9AA4AE";
-      ctx.fillRect(6, -6, 10, 6);
+      ctx.fillRect(-8, -5, 8, 5);
       ctx.fillStyle = INK;
-      ctx.fillRect(26, -3, 4, 6);
+      roundRect(ctx, 8, -3, 14, 6, 1); ctx.fill();
     } else {
       if (tw.coneT > 0) {
         ctx.fillStyle = "rgba(255,120,40,0.28)";
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, spec.range, -spec.cone, spec.cone);
+        ctx.moveTo(8, 0);
+        ctx.arc(8, 0, 14, -spec.cone, spec.cone);
         ctx.closePath();
         ctx.fill();
       }
       ctx.fillStyle = "#E85D4C";
-      roundRect(ctx, 6, -5, 20, 10, 3); ctx.fill(); ctx.stroke();
+      roundRect(ctx, -11, -8, 22, 16, 4); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#FFB040";
-      ctx.beginPath(); ctx.arc(24, 0, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      roundRect(ctx, 8, -4, 14, 8, 2); ctx.fill(); ctx.stroke();
     }
     ctx.restore();
     if (tw.rank) {

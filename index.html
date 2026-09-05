@@ -119,6 +119,9 @@
     .card.on { border-color: var(--yellow); box-shadow: 0 0 0 2px #F5C40088; background: #a06a34; }
     .card:disabled { opacity: 0.45; }
     .card.repair { background: #4a3a28; }
+    .card.late { display: none; background: #3a3a48; }
+    .card.late.on { background: #4a4a5a; }
+    .card.late.show { display: flex; }
     #btn-go {
       grid-column: 1 / -1;
       min-height: 48px;
@@ -255,6 +258,27 @@
       box-shadow: none;
       margin-top: 8px;
     }
+    #cameo {
+      z-index: 20;
+      justify-content: flex-end;
+      cursor: pointer;
+    }
+    #cameo .cameo-line {
+      margin: 0 12px 8px;
+      max-width: 18em;
+      font-size: clamp(20px, 5.4vw, 28px);
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--yellow);
+      text-shadow: 0 3px 0 #1A1028, 0 8px 18px #000;
+    }
+    #cameo .cameo-skip {
+      margin: 0 0 18px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--cream);
+      opacity: 0.85;
+    }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-4px); }
@@ -311,6 +335,11 @@
         <button class="play" id="btn-resume" type="button">RESUME</button>
         <button class="play ghost" id="btn-pause-levels" type="button">LEVELS</button>
       </div>
+      <div id="cameo" class="overlay hidden" role="dialog" aria-label="Cameo">
+        <img id="cameo-img" class="hero" alt="" />
+        <p class="cameo-line" id="cameo-line"></p>
+        <p class="cameo-skip">tap to skip</p>
+      </div>
     </div>
     <footer id="shop">
       <button id="btn-go" type="button">START WAVE</button>
@@ -325,6 +354,14 @@
       <button class="card repair" id="btn-repair" type="button">
         <span class="name">Repair Dam</span>
         <span class="cost">30 wood</span>
+      </button>
+      <button class="card late" id="btn-truck" type="button">
+        <span class="name">Cybertruck</span>
+        <span class="cost">220 wood · max 1</span>
+      </button>
+      <button class="card late" id="btn-flame" type="button">
+        <span class="name">Flame Beaver</span>
+        <span class="cost">180 wood · max 1</span>
       </button>
     </footer>
   </div>
@@ -356,9 +393,19 @@
     otter: { hp: 44, spd: 110, wood: 9, leak: 18, r: 16, armor: 0 }
   };
 
+  const COST_TRUCK = 220;
+  const COST_FLAME = 180;
   const TOWERS = {
     stick: { cost: COST_STICK, range: 150, cd: 0.38, dmg: 18, splash: 0, slow: 0, pspd: 820, upCost: COST_UP_STICK },
-    sap:   { cost: COST_SAP,   range: 120, cd: 0.82, dmg: 7,  splash: 96, slow: 2.8, pspd: 640, upCost: COST_UP_SAP }
+    sap:   { cost: COST_SAP,   range: 120, cd: 0.82, dmg: 7,  splash: 96, slow: 2.8, pspd: 640, upCost: COST_UP_SAP },
+    truck: { cost: COST_TRUCK, range: 168, cd: 0.95, dmg: 34, splash: 0, slow: 0, pspd: 900, upCost: 0, pierce: true, max: 1 },
+    flame: { cost: COST_FLAME, range: 92,  cd: 0.14, dmg: 5,  splash: 0, slow: 0, pspd: 0,   upCost: 0, cone: 0.72, max: 1 }
+  };
+  const CAMEOS = {
+    l5:  { src: "assets/cameo-truck.jpg", line: "Roads? We have a river.", sfx: "truck" },
+    l7:  { src: "assets/cameo-mars.jpg", line: "Next stop: red planet dam.", sfx: "mars" },
+    l8:  { src: "assets/cameo-flame.jpg", line: "This is fine. Also on fire.", sfx: "flame" },
+    l12: { src: "assets/cameo-mars-pack.jpg", line: "Dam secured. To Mars.", sfx: "finale" }
   };
 
   function wv(interval, hp, spd, seq) {
@@ -480,7 +527,12 @@
   const btnStick = document.getElementById("btn-stick");
   const btnSap = document.getElementById("btn-sap");
   const btnRepair = document.getElementById("btn-repair");
+  const btnTruck = document.getElementById("btn-truck");
+  const btnFlame = document.getElementById("btn-flame");
   const btnGo = document.getElementById("btn-go");
+  const cameoEl = document.getElementById("cameo");
+  const cameoImg = document.getElementById("cameo-img");
+  const cameoLine = document.getElementById("cameo-line");
   const splash = document.getElementById("splash");
   const levelsEl = document.getElementById("levels");
   const levelGrid = document.getElementById("level-grid");
@@ -573,11 +625,14 @@
               return (s.stars && s.stars[i]) || 0;
             });
           }
+          s.cameos = s.cameos || {};
+          s.unlockTruck = !!s.unlockTruck;
+          s.unlockFlame = !!s.unlockFlame;
           return s;
         }
       }
     } catch (err) {}
-    return { unlocked: 1, stars: Array(LEVELS.length).fill(0) };
+    return { unlocked: 1, stars: Array(LEVELS.length).fill(0), cameos: {}, unlockTruck: false, unlockFlame: false };
   }
   function writeSave() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
@@ -599,6 +654,7 @@
     levelsEl.classList.add("hidden");
     endcard.classList.add("hidden");
     pausedEl.classList.add("hidden");
+    cameoEl.classList.add("hidden");
   }
   function showLevels() {
     running = false;
@@ -633,7 +689,44 @@
     levelIndex = i;
     WAVES = LEVELS[i].waves;
     damMax = LEVELS[i].dam;
+    if (selected === "truck" && !save.unlockTruck) selected = "stick";
+    if (selected === "flame" && !save.unlockFlame) selected = "stick";
     resetRun();
+  }
+
+  let cameoTimer = 0;
+  let cameoDone = null;
+  function playCameoSfx(kind) {
+    if (kind === "truck") { SFX.tone(90, 0.35, "sawtooth", 0.05, 60); SFX.tone(140, 0.2, "square", 0.03); }
+    else if (kind === "mars") { SFX.tone(520, 0.25, "sine", 0.04, 260); SFX.tone(330, 0.3, "triangle", 0.03); }
+    else if (kind === "flame") { SFX.tone(180, 0.28, "sawtooth", 0.045, 90); SFX.tone(70, 0.22, "square", 0.03); }
+    else { SFX.tone(392, 0.12, "square", 0.05); SFX.tone(523, 0.18, "square", 0.05, 784); }
+  }
+  function dismissCameo() {
+    if (cameoTimer) { clearTimeout(cameoTimer); cameoTimer = 0; }
+    cameoEl.classList.add("hidden");
+    const cb = cameoDone;
+    cameoDone = null;
+    if (cb) cb();
+  }
+  function showCameo(key, after) {
+    const c = CAMEOS[key];
+    if (!c) { after(); return; }
+    cameoDone = after;
+    cameoImg.src = c.src;
+    cameoLine.textContent = c.line;
+    cameoEl.classList.remove("hidden");
+    playCameoSfx(c.sfx);
+    cameoTimer = setTimeout(dismissCameo, 2800);
+  }
+  function pickCameo(clearedIndex) {
+    if (clearedIndex >= 3) save.unlockTruck = true;
+    if (clearedIndex >= 7) save.unlockFlame = true;
+    if (clearedIndex >= 11 && !save.cameos.l12) { save.cameos.l12 = true; return "l12"; }
+    if (clearedIndex >= 7 && !save.cameos.l8) { save.cameos.l8 = true; return "l8"; }
+    if (clearedIndex >= 6 && !save.cameos.l7) { save.cameos.l7 = true; return "l7"; }
+    if (clearedIndex >= 3 && !save.cameos.l5) { save.cameos.l5 = true; return "l5"; }
+    return null;
   }
 
   function layout() {
@@ -695,6 +788,10 @@
     chipHp.textContent = "Dam " + Math.max(0, Math.ceil(damHp));
     btnStick.classList.toggle("on", selected === "stick");
     btnSap.classList.toggle("on", selected === "sap");
+    btnTruck.classList.toggle("show", !!save.unlockTruck);
+    btnFlame.classList.toggle("show", !!save.unlockFlame);
+    btnTruck.classList.toggle("on", selected === "truck");
+    btnFlame.classList.toggle("on", selected === "flame");
     btnPause.classList.toggle("on", paused);
     btnPause.textContent = paused ? "▶" : "⏸";
     btnPause.setAttribute("aria-label", paused ? "Resume" : "Pause");
@@ -730,6 +827,8 @@
     hoverPad = -1;
     paused = false;
     pausedEl.classList.add("hidden");
+    if (cameoTimer) { clearTimeout(cameoTimer); cameoTimer = 0; }
+    cameoDone = null;
     phase = "build";
     buildT = BUILD_FIRST;
     running = true;
@@ -787,26 +886,37 @@
     hud();
   }
 
+  function revealEndcard() {
+    hideMenus();
+    endcard.classList.remove("hidden");
+    document.getElementById("app").classList.add("booting");
+    hud();
+  }
   function win() {
     phase = "win";
     running = false;
     paused = false;
     pausedEl.classList.add("hidden");
+    if (!save.cameos) save.cameos = {};
     const earned = starsFromHp(Math.max(0, damHp), damMax);
     if (earned > (save.stars[levelIndex] || 0)) save.stars[levelIndex] = earned;
     if (levelIndex + 1 < LEVELS.length) save.unlocked = Math.max(save.unlocked, levelIndex + 2);
+    const beat = pickCameo(levelIndex);
     writeSave();
     endTitle.textContent = "DAM HELD";
     endStars.textContent = starString(earned);
     endMsg.textContent = LEVELS[levelIndex].name + " · " + earned + " star" + (earned === 1 ? "" : "s") + ". Next level unlocked.";
     if (levelIndex + 1 >= LEVELS.length) endMsg.textContent = "Last Stand held. " + earned + " star" + (earned === 1 ? "" : "s") + ".";
     btnAgain.textContent = "LEVELS";
-    hideMenus();
-    endcard.classList.remove("hidden");
     document.getElementById("app").classList.add("booting");
-    SFX.tone(392, 0.15, "square", 0.05);
-    SFX.tone(523, 0.2, "square", 0.05, 784);
-    hud();
+    if (beat) {
+      hideMenus();
+      showCameo(beat, revealEndcard);
+    } else {
+      SFX.tone(392, 0.15, "square", 0.05);
+      SFX.tone(523, 0.2, "square", 0.05, 784);
+      revealEndcard();
+    }
   }
   function lose() {
     phase = "lose";
@@ -852,7 +962,9 @@
       dmg: b.dmg + r * (tw.type === "stick" ? 7 : 3),
       splash: b.splash + r * 20,
       slow: b.slow + r * 0.45,
-      pspd: b.pspd
+      pspd: b.pspd,
+      pierce: !!b.pierce,
+      cone: b.cone || 0
     };
   }
 
@@ -872,8 +984,8 @@
     return best;
   }
 
-  function hurt(e, raw) {
-    const dmg = raw * (1 - e.armor);
+  function hurt(e, raw, pierce) {
+    const dmg = pierce ? raw : raw * (1 - e.armor);
     e.hp -= dmg;
     const p = pointAt(e.dist);
     fx.push({ kind: "chip", x: p.x, y: p.y, vx: (Math.random() - 0.5) * 40, vy: -30 - Math.random() * 30, t: 0.35, col: CREAM });
@@ -902,6 +1014,7 @@
       const tw = towers.find(function (t) { return t.pad === padIndex; });
       if (!tw || (tw.rank || 0) >= MAX_RANK) return;
       const cost = TOWERS[tw.type].upCost;
+      if (!cost) return;
       if (wood < cost) { cantAfford(); return; }
       wood -= cost;
       tw.rank = (tw.rank || 0) + 1;
@@ -914,6 +1027,10 @@
     }
     const spec = TOWERS[selected];
     if (!spec) return;
+    if (spec.max === 1 && towers.some(function (t) { return t.type === selected; })) {
+      floaters.push({ x: pad.x, y: pad.y - 16, text: "MAX 1", t: 0.7, col: "#E85D4C" });
+      return;
+    }
     if (wood < spec.cost) { cantAfford(); return; }
     wood -= spec.cost;
     pad.type = selected;
@@ -1006,6 +1123,7 @@
       const spec = specFor(tw);
       tw.cd -= dt;
       if (tw.recoil > 0) tw.recoil -= dt;
+      if (tw.coneT > 0) tw.coneT -= dt;
       const tgt = firstInRange(pad.x, pad.y, spec.range, tw.lock);
       tw.lock = tgt;
       if (tgt) {
@@ -1015,19 +1133,38 @@
         if (tw.cd <= 0) {
           tw.cd = spec.cd;
           tw.recoil = 0.08;
-          shots.push({
-            type: tw.type,
-            x: pad.x + Math.cos(tw.ang) * 20,
-            y: pad.y + Math.sin(tw.ang) * 20,
-            tx: p.x, ty: p.y,
-            target: tgt,
-            spd: spec.pspd,
-            dmg: spec.dmg,
-            splash: spec.splash,
-            slow: spec.slow
-          });
-          if (tw.type === "stick") SFX.tone(380, 0.04, "square", 0.035);
-          else SFX.tone(210, 0.07, "sine", 0.035, 140);
+          if (spec.cone) {
+            tw.coneT = 0.12;
+            for (let j = enemies.length - 1; j >= 0; j--) {
+              const e = enemies[j];
+              const ep = pointAt(e.dist);
+              const dist = Math.hypot(ep.x - pad.x, ep.y - pad.y);
+              let dAng = Math.atan2(ep.y - pad.y, ep.x - pad.x) - tw.ang;
+              while (dAng > Math.PI) dAng -= Math.PI * 2;
+              while (dAng < -Math.PI) dAng += Math.PI * 2;
+              if (dist <= spec.range + e.r && Math.abs(dAng) <= spec.cone) {
+                hurt(e, spec.dmg);
+                fx.push({ kind: "flame", x: ep.x, y: ep.y, t: 0.18, col: "#FF8A2A" });
+              }
+            }
+            SFX.tone(200, 0.05, "sawtooth", 0.03, 90);
+          } else {
+            shots.push({
+              type: tw.type,
+              x: pad.x + Math.cos(tw.ang) * 20,
+              y: pad.y + Math.sin(tw.ang) * 20,
+              tx: p.x, ty: p.y,
+              target: tgt,
+              spd: spec.pspd,
+              dmg: spec.dmg,
+              splash: spec.splash,
+              slow: spec.slow,
+              pierce: spec.pierce
+            });
+            if (tw.type === "stick") SFX.tone(380, 0.04, "square", 0.035);
+            else if (tw.type === "truck") SFX.tone(110, 0.08, "square", 0.04, 70);
+            else SFX.tone(210, 0.07, "sine", 0.035, 140);
+          }
         }
       }
     }
@@ -1054,13 +1191,13 @@
             }
           }
         } else if (s.target && s.target.hp > 0) {
-          hurt(s.target, s.dmg);
+          hurt(s.target, s.dmg, s.pierce);
         } else {
           for (let j = enemies.length - 1; j >= 0; j--) {
             const e = enemies[j];
             const p = pointAt(e.dist);
             if (Math.hypot(p.x - s.tx, p.y - s.ty) <= e.r + 10) {
-              hurt(e, s.dmg);
+              hurt(e, s.dmg, s.pierce);
               break;
             }
           }
@@ -1253,13 +1390,33 @@
       roundRect(ctx, 6, -3, 22, 6, 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = YEL;
       ctx.beginPath(); ctx.arc(8, 0, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    } else {
+    } else if (tw.type === "sap") {
       ctx.fillStyle = YEL;
       ctx.beginPath(); ctx.arc(4, -10, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#c4dc6a";
       ctx.beginPath(); ctx.arc(4, -10, 6, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#6a8a22";
       roundRect(ctx, 10, -4, 16, 7, 3); ctx.fill(); ctx.stroke();
+    } else if (tw.type === "truck") {
+      ctx.fillStyle = "#C8D0D8";
+      roundRect(ctx, 4, -8, 28, 16, 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#9AA4AE";
+      ctx.fillRect(6, -6, 10, 6);
+      ctx.fillStyle = INK;
+      ctx.fillRect(26, -3, 4, 6);
+    } else {
+      if (tw.coneT > 0) {
+        ctx.fillStyle = "rgba(255,120,40,0.28)";
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, spec.range, -spec.cone, spec.cone);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.fillStyle = "#E85D4C";
+      roundRect(ctx, 6, -5, 20, 10, 3); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#FFB040";
+      ctx.beginPath(); ctx.arc(24, 0, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     }
     ctx.restore();
     if (tw.rank) {
@@ -1472,6 +1629,13 @@
         roundRect(ctx, -16, -4, 32, 8, 3); ctx.fill(); ctx.stroke();
         ctx.fillStyle = CREAM;
         roundRect(ctx, 8, -3, 10, 6, 2); ctx.fill();
+      } else if (s.type === "truck") {
+        ctx.fillStyle = "#C8D0D8";
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = 2;
+        roundRect(ctx, -14, -5, 28, 10, 1); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#5AD0FF";
+        ctx.fillRect(6, -3, 8, 6);
       } else {
         ctx.fillStyle = YEL;
         ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.fill();
@@ -1496,6 +1660,9 @@
         ctx.strokeStyle = CREAM;
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(f.x, f.y, f.r + (0.3 - f.t) * 40, 0, Math.PI * 2); ctx.stroke();
+      } else if (f.kind === "flame") {
+        ctx.fillStyle = "#FF8A2A";
+        ctx.beginPath(); ctx.arc(f.x, f.y, 6 + (0.18 - f.t) * 20, 0, Math.PI * 2); ctx.fill();
       } else {
         ctx.fillStyle = f.col || CREAM;
         ctx.beginPath(); ctx.arc(f.x, f.y, 3, 0, Math.PI * 2); ctx.fill();
@@ -1570,7 +1737,17 @@
 
   btnStick.addEventListener("click", function () { selected = "stick"; SFX.ensure(); hud(); });
   btnSap.addEventListener("click", function () { selected = "sap"; SFX.ensure(); hud(); });
+  btnTruck.addEventListener("click", function () {
+    if (!save.unlockTruck) return;
+    selected = "truck"; SFX.ensure(); hud();
+  });
+  btnFlame.addEventListener("click", function () {
+    if (!save.unlockFlame) return;
+    selected = "flame"; SFX.ensure(); hud();
+  });
   btnRepair.addEventListener("click", function () { SFX.ensure(); repairDam(); });
+  cameoEl.addEventListener("click", function () { SFX.ensure(); dismissCameo(); });
+  cameoEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissCameo(); }, { passive: false });
   btnGo.addEventListener("click", function () { requestNextWave(); });
   btnPlay.addEventListener("click", function () { SFX.ensure(); showLevels(); });
   btnAgain.addEventListener("click", function () { SFX.ensure(); showLevels(); });

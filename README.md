@@ -35,6 +35,8 @@ Pause, mute, and restart sit in the top-right.
 
 Wood drops from kills. Spend it on pads along the river.
 
+Late unlocks (after campaign beats): **Cybertruck** turret (armor pierce, max 1) and **Flame Beaver** (short cone, max 1). Short skippable cartoon cameos; mute still kills their SFX.
+
 ## GitHub Pages
 
 Live at **https://ccosma1.github.io/bober-dam-defense/**
@@ -47,6 +49,7 @@ Repo: https://github.com/ccosma1/bober-dam-defense
 
 - `index.html` — the whole game (HTML, CSS, canvas JS)
 - `assets/splash.jpg` — title art
+- `assets/cameo-*.jpg` — skippable cartoon meme overlays
 - `assets/icons/` — original dam-defense mark (not the Yeet slingshot)
 - `scripts/make_icon.py` — regenerates the mark
 

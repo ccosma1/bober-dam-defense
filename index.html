@@ -443,10 +443,15 @@
     flame: { cost: COST_EVOLVE_FLAME, range: 128, cd: 0.12, dmg: 7,  splash: 0, slow: 0, pspd: 0,   upCost: 0, cone: 0.85, max: 1 }
   };
   const CAMEOS = {
-    l5:  { src: "assets/cameo-truck.jpg", line: "Roads? We have a river.", sfx: "truck" },
-    l7:  { src: "assets/cameo-mars.jpg", line: "Next stop: red planet dam.", sfx: "mars" },
-    l8:  { src: "assets/cameo-flame.jpg", line: "This is fine. Also on fire.", sfx: "flame" },
-    l20: { src: "assets/cameo-mars-pack.jpg", line: "Dam secured. To Mars.", sfx: "finale" }
+    sink:     { src: "assets/cameo-sink.jpg",     line: "The Sink Special. Holds water. Barely.", sfx: "sink" },
+    l5:       { src: "assets/cameo-truck.jpg",    line: "Roads? We have a river.", sfx: "truck" },
+    l7:       { src: "assets/cameo-mars.jpg",     line: "Next stop: red planet dam.", sfx: "mars" },
+    l8:       { src: "assets/cameo-flame.jpg",    line: "This is fine. Also on fire.", sfx: "flame" },
+    tunnel:   { src: "assets/cameo-tunnel.jpg",   line: "Tunnel vision. Straight to the dam.", sfx: "tunnel" },
+    starlink: { src: "assets/cameo-starlink.jpg", line: "Starlink acquired. Lag: zero. Beavers: online.", sfx: "starlink" },
+    bot:      { src: "assets/cameo-bot.jpg",      line: "Bot on dam duty. Union: beavers.", sfx: "bot" },
+    doge:     { src: "assets/cameo-doge.jpg",     line: "Much dam. Very hold. Wow.", sfx: "doge" },
+    endgame:  { src: "assets/cameo-endgame.jpg",  line: "Everyone is here. The dam holds.", sfx: "finale" }
   };
 
   function wv(interval, hp, spd, seq) {
@@ -820,6 +825,11 @@
     if (kind === "truck") { SFX.tone(90, 0.35, "sawtooth", 0.05, 60); SFX.tone(140, 0.2, "square", 0.03); }
     else if (kind === "mars") { SFX.tone(520, 0.25, "sine", 0.04, 260); SFX.tone(330, 0.3, "triangle", 0.03); }
     else if (kind === "flame") { SFX.tone(180, 0.28, "sawtooth", 0.045, 90); SFX.tone(70, 0.22, "square", 0.03); }
+    else if (kind === "sink") { SFX.tone(240, 0.12, "sine", 0.04); SFX.tone(180, 0.18, "triangle", 0.03, 90); }
+    else if (kind === "tunnel") { SFX.tone(70, 0.28, "sawtooth", 0.045, 40); SFX.tone(110, 0.16, "square", 0.03); }
+    else if (kind === "starlink") { SFX.tone(660, 0.12, "sine", 0.04); SFX.tone(880, 0.18, "triangle", 0.03); }
+    else if (kind === "bot") { SFX.tone(200, 0.1, "square", 0.04); SFX.tone(280, 0.14, "square", 0.03); }
+    else if (kind === "doge") { SFX.tone(330, 0.12, "triangle", 0.04); SFX.tone(392, 0.16, "sine", 0.03); }
     else { SFX.tone(392, 0.12, "square", 0.05); SFX.tone(523, 0.18, "square", 0.05, 784); }
   }
   function dismissCameo() {
@@ -843,7 +853,7 @@
   }
   function cameoForClear(idx) {
     if (!save.cameos) save.cameos = {};
-    const map = { 3: "l5", 6: "l7", 7: "l8", 19: "l20" };
+    const map = { 1: "sink", 3: "l5", 6: "l7", 7: "l8", 9: "tunnel", 11: "starlink", 14: "bot", 17: "doge", 19: "endgame" };
     const key = map[idx];
     if (!key || save.cameos[key]) return null;
     return key;

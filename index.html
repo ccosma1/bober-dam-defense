@@ -623,6 +623,11 @@
   let shake = 0;
   let tWorld = 0;
   let hoverPad = -1;
+  const bober = {
+    y: 0, tilt: 0, peek: -0.16, peekT: 1.8,
+    blinkT: 2.0, blink: 0, alertT: 0, flinchT: 0,
+    hammerT: 0, celebT: 0, stamp: 0, near25: false
+  };
 
   const SFX = {
     ctx: null,
@@ -811,6 +816,84 @@
       };
     });
     separatePads(pads, 130 * Math.min(viewW, viewH) / 390, minClear);
+    const bb = boberBounds();
+    if (!bober.y) bober.y = (bb.top + bb.bot) * 0.5;
+    else bober.y = Math.max(bb.top, Math.min(bb.bot, bober.y));
+  }
+
+  function boberBounds() {
+    const top = dam.y + 40;
+    const bot = dam.y + Math.max(88, dam.h) - 42;
+    return { top: top, bot: Math.max(top + 10, bot) };
+  }
+  function resetBober() {
+    const b = boberBounds();
+    bober.y = (b.top + b.bot) * 0.5;
+    bober.tilt = 0;
+    bober.peek = -0.16;
+    bober.peekT = 1.6;
+    bober.blinkT = 1.8;
+    bober.blink = 0;
+    bober.alertT = 0;
+    bober.flinchT = 0;
+    bober.hammerT = 0;
+    bober.celebT = 0;
+    bober.stamp = 0;
+    bober.near25 = false;
+  }
+  function tickBober(dt) {
+    if (bober.alertT > 0) bober.alertT = Math.max(0, bober.alertT - dt);
+    if (bober.flinchT > 0) bober.flinchT = Math.max(0, bober.flinchT - dt);
+    if (bober.hammerT > 0) bober.hammerT = Math.max(0, bober.hammerT - dt);
+    if (bober.celebT > 0) bober.celebT = Math.max(0, bober.celebT - dt);
+    if (bober.stamp > 0) bober.stamp = Math.max(0, bober.stamp - dt);
+    if (bober.blink > 0) bober.blink = Math.max(0, bober.blink - dt);
+    else {
+      bober.blinkT -= dt;
+      if (bober.blinkT <= 0) {
+        bober.blink = 0.12;
+        bober.blinkT = 2.0 + Math.random() * 2.6;
+      }
+    }
+
+    const box = boberBounds();
+    let threat = null, best = -1, any25 = false;
+    const gate35 = pathLen * 0.65;
+    const gate25 = pathLen * 0.75;
+    for (let i = 0; i < enemies.length; i++) {
+      const e = enemies[i];
+      if (e.dist >= gate25) any25 = true;
+      if (e.dist >= gate35 && e.dist > best) { threat = e; best = e.dist; }
+    }
+    if (any25 && !bober.near25) {
+      bober.alertT = 0.5;
+      bober.stamp = 0.2;
+    }
+    bober.near25 = any25;
+
+    let wantTilt = 0;
+    let wantPeek = bober.peek;
+    if (threat) {
+      const p = pointAt(threat.dist);
+      const wantY = Math.max(box.top, Math.min(box.bot, p.y));
+      const lerp = 1 - Math.exp(-dt * 2.5);
+      let dy = (wantY - bober.y) * lerp;
+      const cap = 74 * dt;
+      if (dy > cap) dy = cap;
+      if (dy < -cap) dy = -cap;
+      bober.y = Math.max(box.top, Math.min(box.bot, bober.y + dy));
+      wantTilt = Math.max(-0.34, Math.min(0.34, (p.y - bober.y) / 88));
+      wantPeek = -0.2;
+    } else {
+      bober.peekT -= dt;
+      if (bober.peekT <= 0) {
+        bober.peekT = 2.3 + Math.random() * 2.8;
+        wantPeek = Math.random() < 0.78 ? -0.3 : 0.12;
+      }
+      wantTilt = bober.peek * 0.35;
+    }
+    bober.peek += (wantPeek - bober.peek) * Math.min(1, dt * 3.2);
+    bober.tilt += (wantTilt - bober.tilt) * Math.min(1, dt * 5);
   }
 
   function nearestPathInfo(px, py) {
@@ -965,6 +1048,7 @@
     hideMenus();
     document.getElementById("app").classList.remove("booting");
     layout();
+    resetBober();
     pads.forEach(function (p) { p.type = null; });
     banner = "BUILD";
     bannerT = 2.2;
@@ -1026,6 +1110,7 @@
     phase = "win";
     running = false;
     paused = false;
+    bober.celebT = 0.6;
     pausedEl.classList.add("hidden");
     if (!save.cameos) save.cameos = {};
     const earned = starsFromHp(Math.max(0, damHp), damMax);
@@ -1224,6 +1309,7 @@
     }
     wood -= COST_REPAIR;
     damHp = Math.min(damMax, damHp + REPAIR_HP);
+    bober.hammerT = 0.5;
     floaters.push({ x: dam.x + dam.w * 0.35, y: dam.y + 40, text: "+" + REPAIR_HP + " HP", t: 0.9, col: "#7ED957" });
     SFX.tone(200, 0.08, "square", 0.04);
     SFX.tone(280, 0.1, "square", 0.03);
@@ -1234,6 +1320,7 @@
     damHp -= amount;
     damFlash = 0.5;
     shake = 1.2;
+    bober.flinchT = 0.32;
     chipHp.classList.remove("flash");
     void chipHp.offsetWidth;
     chipHp.classList.add("flash");
@@ -1246,6 +1333,7 @@
     tWorld += dt;
     if (shake > 0) shake = Math.max(0, shake - dt * 6);
     if (bannerT > 0) bannerT -= dt;
+    tickBober(dt);
 
     if (phase === "build") {
       buildT -= dt;
@@ -1413,6 +1501,7 @@
         buildT = BUILD_NEXT;
         banner = "BUILD";
         bannerT = 1.6;
+        bober.celebT = 0.6;
         hud();
       }
     }
@@ -1660,6 +1749,171 @@
     ctx.restore();
   }
 
+  function drawSpark(c, x, y, r) {
+    c.save();
+    c.translate(x, y);
+    c.fillStyle = YEL;
+    c.strokeStyle = INK;
+    c.lineWidth = 1.8;
+    c.beginPath();
+    c.moveTo(0, -r);
+    c.lineTo(r * 0.28, -r * 0.28);
+    c.lineTo(r, 0);
+    c.lineTo(r * 0.28, r * 0.28);
+    c.lineTo(0, r);
+    c.lineTo(-r * 0.28, r * 0.28);
+    c.lineTo(-r, 0);
+    c.lineTo(-r * 0.28, -r * 0.28);
+    c.closePath();
+    c.fill(); c.stroke();
+    c.restore();
+  }
+
+  function drawBoberNpc() {
+    if (!dam.h) return;
+    const logW = dam.w - 28;
+    const x = dam.x + Math.max(40, logW * 0.56);
+    const y = bober.y || (dam.y + dam.h * 0.45);
+    const stressed = damMax > 0 && damHp / damMax < 0.35;
+    const bob = Math.sin(tWorld * (stressed ? 9.5 : 3.3)) * (stressed ? 2.8 : 1.5);
+    let sx = 1, sy = 1;
+    if (bober.flinchT > 0) {
+      const u = bober.flinchT / 0.32;
+      sy = 1 - 0.22 * u;
+      sx = 1 + 0.16 * u;
+    } else if (bober.stamp > 0) {
+      const u = bober.stamp / 0.2;
+      sy = 1 - 0.14 * u;
+      sx = 1 + 0.1 * u;
+    } else if (bober.celebT > 0) {
+      sy = 1 + 0.06 * Math.sin((0.6 - bober.celebT) / 0.6 * Math.PI);
+    }
+
+    ctx.fillStyle = "rgba(26, 16, 40, 0.34)";
+    ctx.beginPath();
+    ctx.ellipse(x + 1, y + 30, 17 * sx, 6.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(x, y + bob);
+    ctx.rotate(bober.tilt * 0.55);
+    ctx.scale(sx, sy);
+    const sc = 1.72;
+    ctx.scale(sc, sc);
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 3.1 / sc;
+
+    ctx.fillStyle = WOOD;
+    ctx.beginPath();
+    ctx.ellipse(-15, 11, 11, 6.5, -0.55, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = YEL;
+    ctx.lineWidth = 1.5 / sc;
+    ctx.beginPath(); ctx.moveTo(-21, 8.5); ctx.lineTo(-10, 13); ctx.stroke();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 3.1 / sc;
+
+    ctx.fillStyle = FUR;
+    ctx.beginPath();
+    ctx.ellipse(0, 9, 16, 14, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = CREAM;
+    ctx.beginPath();
+    ctx.ellipse(1.5, 12, 9.2, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = FUR;
+    ctx.beginPath(); ctx.arc(-9, -16, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(9, -16, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = YEL;
+    ctx.beginPath(); ctx.arc(-9, -16, 2.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(9, -16, 2.8, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = FUR;
+    ctx.beginPath(); ctx.arc(0, -7, 13.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = CREAM;
+    ctx.beginPath(); ctx.ellipse(0, -2.5, 9, 6.5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    roundRect(ctx, -5.2, 2.2, 4.6, 6.5, 1.2); ctx.fill(); ctx.stroke();
+    roundRect(ctx, 0.6, 2.2, 4.6, 6.5, 1.2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = INK;
+    ctx.beginPath(); ctx.ellipse(0, -5.2, 2.2, 1.6, 0, 0, Math.PI * 2); ctx.fill();
+
+    const lx = (bober.peek || 0) * 2.2 - 0.5;
+    const ly = bober.tilt * 2.2;
+    if (bober.blink > 0) {
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 2.3 / sc;
+      ctx.beginPath(); ctx.moveTo(-7.2, -10); ctx.lineTo(-2.6, -10); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(2.6, -10); ctx.lineTo(7.2, -10); ctx.stroke();
+      ctx.lineWidth = 3.1 / sc;
+    } else {
+      ctx.fillStyle = CREAM;
+      ctx.beginPath(); ctx.ellipse(-5, -10.5, 3.3, 3.7, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(5, -10.5, 3.3, 3.7, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = INK;
+      ctx.beginPath(); ctx.ellipse(-5 + lx, -10.5 + ly, 1.7, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(5 + lx, -10.5 + ly, 1.7, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ctx.fillStyle = FUR;
+    ctx.strokeStyle = INK;
+    if (bober.hammerT > 0) {
+      const p = 1 - bober.hammerT / 0.5;
+      const swing = -1.2 + Math.sin(Math.min(1, p) * Math.PI) * 1.8;
+      ctx.save();
+      ctx.translate(12, 6);
+      ctx.rotate(swing);
+      ctx.beginPath(); ctx.ellipse(4, 0, 6, 3.4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = WOOD;
+      roundRect(ctx, 6, -2, 14, 4, 1.5); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = YEL;
+      roundRect(ctx, 16, -6.5, 9, 13, 2); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      ctx.beginPath(); ctx.ellipse(-13, 8, 5.5, 3.2, 0.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else if (bober.celebT > 0) {
+      ctx.beginPath(); ctx.ellipse(-14, -8, 5.2, 3.4, -1.15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(14, -8, 5.2, 3.4, 1.15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      const spark = Math.sin(bober.celebT * 18) * 2;
+      drawSpark(ctx, -18, -20 + spark, 5);
+      drawSpark(ctx, 17, -22 - spark, 4.2);
+    } else {
+      ctx.beginPath(); ctx.ellipse(-14, 8, 5.5, 3.2, 0.45, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(13, 8, 5.5, 3.2, -0.45, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+
+    ctx.fillStyle = YEL;
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath(); ctx.arc(-8, -4, 2.1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(8, -4, 2.1, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    if (bober.alertT > 0) {
+      ctx.globalAlpha = Math.min(1, bober.alertT * 3);
+      ctx.fillStyle = YEL;
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 2.4 / sc;
+      roundRect(ctx, -3.5, -38, 7, 13, 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, -20, 2.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    if (stressed) {
+      const drop = (tWorld * 1.55) % 1;
+      ctx.fillStyle = CREAM;
+      ctx.globalAlpha = 1 - drop * 0.55;
+      ctx.beginPath();
+      ctx.ellipse(12, -14 + drop * 16, 2.2, 3.3, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 1.6 / sc;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
+
   function drawDam() {
     ctx.save();
     const x = dam.x, y = dam.y, w = dam.w, h = dam.h;
@@ -1712,6 +1966,8 @@
       roundRect(ctx, x, y, logW, h, 8);
       ctx.fill();
     }
+
+    drawBoberNpc();
 
     const bx = viewW - 16;
     const by = y + 8;
@@ -2042,6 +2298,7 @@
     else {
       tWorld += dt;
       if (shake > 0) shake = Math.max(0, shake - dt * 6);
+      tickBober(dt);
     }
     render();
     requestAnimationFrame(loop);

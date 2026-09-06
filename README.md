@@ -4,6 +4,8 @@ Fan game by a holder. Not affiliated with any token, studio, or official Bober p
 
 **Play online:** https://ccosma1.github.io/bober-dam-defense/
 
+Splash, level select, and endcard show a cream line: Also play · [Yeet](https://ccosma1.github.io/bober-yeet/) · [Frost Lodge](https://ccosma1.github.io/bober-frost-lodge/). Hidden during a fight so it does not cover the tower shop. Dam Defense is standalone; other games are not required.
+
 A mobile-first tower defense in **one HTML page**. 20-level campaign. Hold the wooden dam.
 
 No install. No wallet. No login. No leaderboard.

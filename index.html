@@ -48,7 +48,7 @@
       overflow: hidden;
       padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
     }
-    header, footer {
+    header, #shop {
       flex: 0 0 auto;
       display: flex;
       align-items: center;
@@ -98,14 +98,26 @@
     .icon-btn.on { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
     #stage { flex: 1; min-height: 0; min-width: 0; position: relative; background: var(--sky); }
     canvas { width: 100%; height: 100%; display: block; cursor: pointer; touch-action: none; }
-    footer {
+    #shop {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 6px;
       padding-bottom: max(8px, env(safe-area-inset-bottom));
     }
-    #app.booting footer { display: none; }
+    #app.booting #shop { display: none; }
     #app.booting .chips { visibility: hidden; }
+    #also-play {
+      flex: 0 0 auto;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: #cbbda0;
+      padding: 4px 8px 6px;
+      background: #1a1028ee;
+      z-index: 3;
+    }
+    #also-play a { color: var(--cream); text-decoration: underline; }
+    #app:not(.booting) #also-play { display: none; }
     .card {
       appearance: none;
       border: 3px solid #5C3A1A;
@@ -555,6 +567,7 @@
       </button>
       <div id="shop-hint" class="hidden">Tap your tower to upgrade / evolve</div>
     </footer>
+    <footer id="also-play">Also play · <a href="https://ccosma1.github.io/bober-yeet/">Yeet</a> · <a href="https://ccosma1.github.io/bober-frost-lodge/">Frost Lodge</a></footer>
   </div>
   <script>
 (function () {

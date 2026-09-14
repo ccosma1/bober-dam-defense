@@ -740,7 +740,7 @@
       <button class="card" id="btn-sap" type="button">
         <img class="ico" src="assets/sprites/bober-idle.png" alt="" />
         <span class="name">Sap Sprayer</span>
-        <span class="cost">70 $BOBER</span>
+        <span class="cost">85 $BOBER</span>
       </button>
       <button class="card repair" id="btn-repair" type="button">
         <span class="name">Repair Dam</span>
@@ -762,11 +762,11 @@
   const WOOD = "#5C3A1A";
 
   const COST_STICK = 50;
-  const COST_SAP = 70;
+  const COST_SAP = 85;
   const COST_REPAIR = 30;
   function fmtCost(n) { return n + " $BOBER"; }
   const COST_UP_STICK = 120;
-  const COST_UP_SAP = 70;
+  const COST_UP_SAP = 110;
   const COST_EVOLVE_TRUCK = 140;
   const COST_EVOLVE_FLAME = 120;
   const REPAIR_HP = 24;
@@ -785,9 +785,9 @@
 
   const TOWERS = {
     stick: { cost: COST_STICK, range: 135, cd: 0.52, dmg: 12, splash: 0, slow: 0, pspd: 820, upCost: COST_UP_STICK },
-    sap:   { cost: COST_SAP,   range: 130, cd: 0.65, dmg: 13, splash: 125, slow: 3.6, pspd: 640, upCost: COST_UP_SAP },
+    sap:   { cost: COST_SAP,   range: 118, cd: 0.85, dmg: 6,  splash: 72,  slow: 1.9, pspd: 640, upCost: COST_UP_SAP },
     truck: { cost: COST_EVOLVE_TRUCK, range: 175, cd: 0.78, dmg: 55, splash: 0, slow: 0, pspd: 900, upCost: 0, pierce: true, max: 1 },
-    flame: { cost: COST_EVOLVE_FLAME, range: 128, cd: 0.12, dmg: 7,  splash: 0, slow: 0, pspd: 0,   upCost: 0, cone: 0.85, max: 1 }
+    flame: { cost: COST_EVOLVE_FLAME, range: 118, cd: 0.20, dmg: 7,  splash: 0, slow: 0, pspd: 0,   upCost: 0, cone: 0.70, max: 1 }
   };
   const CAMEOS = {
     sink:     { src: "assets/cameo-sink.jpg",     line: "The Sink Special. Holds water. Barely.", sfx: "sink" },
@@ -1418,7 +1418,7 @@
     { id: "stick", tab: "towers", name: "Stick Thrower", img: "assets/sprites/bober-idle.png", at: 1,
       blurb: "50 $BOBER. Cheap single-target. Upgrade twice, then evolve.", tease: "A beaver with a stick." },
     { id: "sap", tab: "towers", name: "Sap Sprayer", img: "assets/sprites/bober-idle.png", at: 1,
-      blurb: "70 $BOBER. Splash sap that slows a pack.", tease: "Something sticky on the bank." },
+      blurb: "85 $BOBER. Splash sap that slows a pack.", tease: "Something sticky on the bank." },
     { id: "truck", tab: "towers", name: "Cybertruck", img: "assets/cameo-truck.jpg", at: 4,
       blurb: "140 $BOBER. Pierce armor. Max 1. Evolve Stick twice.", tease: "Roads? The river has ideas." },
     { id: "flame", tab: "towers", name: "Flame Beaver", img: "assets/cameo-flame.jpg", at: 8,
@@ -2126,9 +2126,9 @@
     return {
       range: b.range + r * 8,
       cd: b.cd,
-      dmg: b.dmg + r * 2,
-      splash: tw.type === "sap" ? b.splash + r * 10 : 0,
-      slow: tw.type === "sap" ? b.slow + r * 0.25 : 0,
+      dmg: b.dmg + r * (tw.type === "sap" ? 1 : 2),
+      splash: tw.type === "sap" ? b.splash + r * 5 : 0,
+      slow: tw.type === "sap" ? b.slow + r * 0.12 : 0,
       pspd: b.pspd,
       pierce: !!b.pierce,
       cone: b.cone || 0
@@ -2404,7 +2404,7 @@
         if (s.splash > 0) {
           fx.push({ kind: "sap", x: s.tx, y: s.ty, t: 0.4, r: 48 });
           fx.push({ kind: "sap", x: s.tx, y: s.ty, t: 0.22, r: 28 });
-          puddles.push({ x: s.tx, y: s.ty, r: s.splash * 0.72, t: 1.35 });
+          puddles.push({ x: s.tx, y: s.ty, r: s.splash * 0.58, t: 1.05 });
           for (let j = enemies.length - 1; j >= 0; j--) {
             const e = enemies[j];
             const p = pointAt(e.dist);

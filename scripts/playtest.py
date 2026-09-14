@@ -10,9 +10,9 @@ KINDS = {
 }
 TOWERS = {
     "stick": {"cost": 50, "range": 135, "cd": 0.52, "dmg": 12, "splash": 0, "slow": 0, "pspd": 820},
-    "sap": {"cost": 70, "range": 130, "cd": 0.65, "dmg": 13, "splash": 125, "slow": 3.6, "pspd": 640},
+    "sap": {"cost": 85, "range": 118, "cd": 0.85, "dmg": 6, "splash": 72, "slow": 1.9, "pspd": 640},
     "truck": {"cost": 140, "range": 175, "cd": 0.78, "dmg": 55, "splash": 0, "slow": 0, "pspd": 900, "pierce": True},
-    "flame": {"cost": 120, "range": 128, "cd": 0.12, "dmg": 7, "splash": 0, "slow": 0, "pspd": 0, "cone": 0.85},
+    "flame": {"cost": 120, "range": 118, "cd": 0.20, "dmg": 7, "splash": 0, "slow": 0, "pspd": 0, "cone": 0.70},
 }
 PATH_N = [
     [-0.08, 0.13], [0.16, 0.14], [0.38, 0.17], [0.56, 0.25],
@@ -28,6 +28,8 @@ W, H = 390.0, 640.0
 GREEDY = [(0, "stick"), (1, "stick"), (2, "sap"), (3, "sap")]
 TWO = [(0, "stick"), (1, "stick")]
 ONE_MAX = [(0, "stick")]
+STICK_SAP = [(0, "stick"), (1, "sap")]
+SAP_ONLY = [(0, "sap"), (1, "sap"), (2, "sap"), (3, "sap")]
 
 
 def wv(interval, hp, spd, seq):
@@ -338,7 +340,7 @@ def simulate(level, plan, repair_below=None, repair_cost=30, repair_hp=24, hp_sc
                 step = s["pspd"] * dt
                 if step >= dist:
                     if s["splash"] > 0:
-                        puddles.append({"x": s["tx"], "y": s["ty"], "r": s["splash"] * 0.72, "t": 1.35})
+                        puddles.append({"x": s["tx"], "y": s["ty"], "r": s["splash"] * 0.58, "t": 1.05})
                         for e in list(enemies):
                             x, y = point_at(pts, cum, plen, e["dist"])
                             if math.hypot(x - s["tx"], y - s["ty"]) <= s["splash"] + e["r"]:
@@ -409,6 +411,18 @@ def main():
     # 18-20 even harder without evolves
     endgame = [rows[i][3] for i in range(17, 20)]
     assert any(not g["win"] for g in endgame), "18-20 should burst unupgraded greedy"
+
+    print("Lv  name          stick+sap              sap-only")
+    for i, lv in enumerate(LEVELS):
+        hp_scale = 1.08 if 9 <= i <= 11 else 1.0
+        rat_wood = 7 if 2 <= i <= 4 else None
+        mix = simulate(lv, STICK_SAP, hp_scale=hp_scale, rat_wood=rat_wood)
+        sap = simulate(lv, SAP_ONLY, hp_scale=hp_scale, rat_wood=rat_wood)
+        def fmt2(x):
+            if not x["win"]:
+                return "LOSE@w%s" % x["wave"]
+            return "win %s/%s leak%s" % (int(x["dam"]), x["dam_max"], x["leaks"])
+        print("%2d %-12s  %-21s  %s" % (i + 1, lv["name"], fmt2(mix), fmt2(sap)))
     print("OK")
 
 

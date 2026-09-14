@@ -727,7 +727,7 @@
         <button class="play ghost" id="btn-reset-levels" type="button">Reset progress</button>
       </div>
       <div id="endcard" class="overlay hidden">
-        <img class="hero" src="assets/splash.jpg?v=gh7" alt="" />
+        <img class="hero" id="end-hero" src="assets/clear.jpg?v=gh10" alt="" />
         <h2 id="end-title">DAM HELD</h2>
         <div id="end-stars" class="end-stars"></div>
         <p class="end-msg" id="end-msg"></p>
@@ -749,7 +749,7 @@
       </div>
       <div id="hist-menu" class="overlay hidden" role="dialog" aria-label="History">
         <h2>HISTORY</h2>
-        <p class="how">Chapters from the dam. Play unlocks more.</p>
+        <p class="how">Chapters from the dam. Tap to advance.</p>
         <div id="history-list"></div>
         <button class="play ghost" id="btn-history-back" type="button">Back</button>
       </div>
@@ -760,7 +760,7 @@
             <p class="hist-sub" id="hist-sub"></p>
             <p class="hist-line" id="hist-line"></p>
             <p id="hist-n"></p>
-            <button type="button" id="hist-skip">Skip</button>
+            <button type="button" id="hist-skip">Next</button>
           </div>
         </div>
       </div>
@@ -801,24 +801,24 @@
       <button id="btn-go" type="button">START WAVE</button>
       <button class="card on" id="btn-gun" type="button">
         <span class="name" id="gun-name">Arrows</span>
-        <span class="cost" id="gun-cost">90 $BOBER</span>
+        <span class="cost" id="gun-cost">70 $BOBER</span>
       </button>
       <button class="card" id="btn-dam" type="button">
         <span class="name" id="dam-name">DAM Wood</span>
-        <span class="cost" id="dam-cost">120 $BOBER</span>
+        <span class="cost" id="dam-cost">90 $BOBER</span>
       </button>
       <button class="card repair" id="btn-repair" type="button">
         <span class="name">Repair Dam</span>
-        <span class="cost">28 $BOBER</span>
+        <span class="cost">24 $BOBER</span>
       </button>
       <div id="bober-row">
         <button class="card" id="btn-yell" type="button">
           <span class="name">Scout Yell</span>
-          <span class="cost" id="yell-cost">60 $BOBER</span>
+          <span class="cost" id="yell-cost">45 $BOBER</span>
         </button>
         <button class="card" id="btn-laser" type="button">
           <span class="name" id="laser-name">Bober Laser</span>
-          <span class="cost" id="laser-cost">100 $BOBER</span>
+          <span class="cost" id="laser-cost">80 $BOBER</span>
         </button>
       </div>
       <div id="shop-hint">Twin posts. Same fire. Harden the dam.</div>
@@ -836,31 +836,31 @@
   const INK = "#1A1028";
   const WOOD = "#5C3A1A";
 
-  const COST_REPAIR = 28;
+  const COST_REPAIR = 24;
   function fmtCost(n) { return n + " $BOBER"; }
   const REPAIR_HP = 22;
   const BUILD_NEXT = 15;
-  const SAVE_KEY = "bober-dam-campaign-v5";
-  const START_WOOD = [200,190,180,170,160,150,145,140,135,130,140,135,130,125,120,130,125,120,115,120];
-  const COST_YELL = 60;
-  const COST_LASER = 100;
-  const COST_HOT = 150;
+  const SAVE_KEY = "bober-dam-campaign-v6";
+  const START_WOOD = [215,205,195,185,175,165,160,155,150,145,155,150,145,140,135,145,140,135,130,135];
+  const COST_YELL = 45;
+  const COST_LASER = 80;
+  const COST_HOT = 120;
   const HIST_SEEN_KEY = "bober-dam-history-seen";
   const SPEED_KEY = "bober-dam-speed";
 
   const KINDS = {
-    snout:   { hp: 20,  spd: 92,  wood: 8,  leak: 11, r: 13, armor: 0 },
-    pebble:  { hp: 15,  spd: 130, wood: 9,  leak: 13, r: 11, armor: 0 },
-    rider:   { hp: 77,  spd: 40,  wood: 14, leak: 19, r: 20, armor: 0.35 },
-    biter:   { hp: 41,  spd: 100, wood: 12, leak: 14, r: 16, armor: 0 },
-    dart:    { hp: 19,  spd: 140, wood: 10, leak: 16, r: 12, armor: 0 },
-    stalker: { hp: 47,  spd: 88,  wood: 13, leak: 14, r: 15, armor: 0, stealth: true },
-    barrel:  { hp: 119, spd: 36,  wood: 16, leak: 22, r: 22, armor: 0.45 },
-    minnow:  { hp: 31,  spd: 95,  wood: 11, leak: 11, r: 13, armor: 0, spit: true },
-    foam:    { hp: 34,  spd: 70,  wood: 8,  leak: 10, r: 14, armor: 0, buff: 1.12 },
-    eddy:    { hp: 43,  spd: 85,  wood: 12, leak: 13, r: 15, armor: 0, split: true },
-    monk:    { hp: 60,  spd: 60,  wood: 15, leak: 16, r: 17, armor: 0.2, aura: true },
-    maw:     { hp: 340, spd: 45,  wood: 40, leak: 32, r: 28, armor: 0.25, boss: true }
+    snout:   { hp: 20,  spd: 92,  wood: 9,  leak: 11, r: 13, armor: 0 },
+    pebble:  { hp: 15,  spd: 130, wood: 10, leak: 13, r: 11, armor: 0 },
+    rider:   { hp: 77,  spd: 40,  wood: 15, leak: 19, r: 20, armor: 0.35 },
+    biter:   { hp: 41,  spd: 100, wood: 13, leak: 14, r: 16, armor: 0 },
+    dart:    { hp: 19,  spd: 140, wood: 11, leak: 16, r: 12, armor: 0 },
+    stalker: { hp: 47,  spd: 88,  wood: 14, leak: 14, r: 15, armor: 0, stealth: true },
+    barrel:  { hp: 119, spd: 36,  wood: 18, leak: 22, r: 22, armor: 0.45 },
+    minnow:  { hp: 31,  spd: 95,  wood: 12, leak: 11, r: 13, armor: 0, spit: true },
+    foam:    { hp: 34,  spd: 70,  wood: 9,  leak: 10, r: 14, armor: 0, buff: 1.12 },
+    eddy:    { hp: 43,  spd: 85,  wood: 13, leak: 13, r: 15, armor: 0, split: true },
+    monk:    { hp: 60,  spd: 60,  wood: 17, leak: 16, r: 17, armor: 0.2, aura: true },
+    maw:     { hp: 340, spd: 45,  wood: 44, leak: 32, r: 28, armor: 0.25, boss: true }
   };
   const KIND_CH = {
     s: "snout", r: "snout", p: "pebble", l: "rider", c: "rider", b: "biter",
@@ -869,15 +869,15 @@
   };
 
   const GUNS = [
-    { id: "arrow",  name: "Arrows",  cost: 0,   range: 130, cd: 0.55, dmg: 10, splash: 0,  slow: 0, pspd: 880, kind: "arrow" },
-    { id: "bullet", name: "Bullets", cost: 90,  range: 145, cd: 0.42, dmg: 14, splash: 0,  slow: 0, pspd: 980, kind: "bullet" },
-    { id: "rocket", name: "Rockets", cost: 140, range: 155, cd: 0.70, dmg: 28, splash: 36, slow: 0, pspd: 740, kind: "rocket" },
-    { id: "flame",  name: "Flame",   cost: 200, range: 170, cd: 0.18, dmg: 9,  splash: 0,  slow: 0, pspd: 0, cone: 0.72, kind: "flame" }
+    { id: "arrow",  name: "Arrows",  cost: 0,   range: 185, cd: 0.55, dmg: 10, splash: 0,  slow: 0, pspd: 880, kind: "arrow" },
+    { id: "bullet", name: "Bullets", cost: 70,  range: 200, cd: 0.42, dmg: 14, splash: 0,  slow: 0, pspd: 980, kind: "bullet" },
+    { id: "rocket", name: "Rockets", cost: 110, range: 210, cd: 0.70, dmg: 28, splash: 36, slow: 0, pspd: 740, kind: "rocket" },
+    { id: "flame",  name: "Flame",   cost: 160, range: 225, cd: 0.18, dmg: 9,  splash: 0,  slow: 0, pspd: 0, cone: 0.72, kind: "flame" }
   ];
   const DAM_TIERS = [
     { id: "wood",  name: "Wood",  cost: 0,   leakMul: 1.00, hp: 100 },
-    { id: "rock",  name: "Rock",  cost: 120, leakMul: 0.85, hp: 140 },
-    { id: "steel", name: "Steel", cost: 180, leakMul: 0.70, hp: 200 }
+    { id: "rock",  name: "Rock",  cost: 90,  leakMul: 0.85, hp: 140 },
+    { id: "steel", name: "Steel", cost: 140, leakMul: 0.70, hp: 200 }
   ];
   const CAMEOS = {
     sink:     { src: "assets/cameo-sink.jpg",     line: "The Sink Special. Holds water. Barely.", sfx: "sink" },
@@ -896,102 +896,102 @@
   }
 
   const LEVELS = [
-    { name: "Oasis Drip", wood: 200, dam: 100, waves: [
+    { name: "Oasis Drip", wood: 215, dam: 100, waves: [
       wv(1.15, 1.00, 1.00, "ssss"),
       wv(1.05, 1.00, 1.00, "sssss"),
       wv(0.95, 1.00, 1.00, "ssss")
     ]},
-    { name: "Driftwood", wood: 190, dam: 100, waves: [
+    { name: "Driftwood", wood: 205, dam: 100, waves: [
       wv(1.05, 1.00, 1.00, "sssss"),
       wv(0.95, 1.00, 1.00, "ssssss"),
       wv(0.88, 1.02, 1.00, "ssssss")
     ]},
-    { name: "Scout Line", wood: 180, dam: 100, waves: [
+    { name: "Scout Line", wood: 195, dam: 100, waves: [
       wv(0.95, 1.00, 1.00, "ssssss"),
       wv(0.85, 1.00, 1.02, "sspssps"),
       wv(0.75, 1.04, 1.04, "ppssspps")
     ]},
-    { name: "Pack Night", wood: 170, dam: 100, waves: [
+    { name: "Pack Night", wood: 185, dam: 100, waves: [
       wv(0.92, 1.00, 1.00, "ssslsss"),
       wv(0.78, 1.04, 1.02, "sslssls"),
       wv(0.64, 1.08, 1.04, "slslsls")
     ]},
-    { name: "Low Timber", wood: 160, dam: 100, waves: [
+    { name: "Low Timber", wood: 175, dam: 100, waves: [
       wv(0.88, 1.02, 1.02, "ssbsss"),
       wv(0.72, 1.06, 1.04, "sbsbss"),
       wv(0.58, 1.10, 1.06, "lsbsb")
     ]},
-    { name: "Thin Dam", wood: 150, dam: 100, waves: [
+    { name: "Thin Dam", wood: 165, dam: 100, waves: [
       wv(0.90, 1.00, 1.00, "ssssssss"),
       wv(0.70, 1.06, 1.04, "sblsbls"),
       wv(0.56, 1.10, 1.06, "blssbls")
     ]},
-    { name: "Crab Walk", wood: 145, dam: 100, waves: [
+    { name: "Crab Walk", wood: 160, dam: 100, waves: [
       wv(0.80, 1.04, 1.06, "sddsds"),
       wv(0.62, 1.08, 1.10, "dsdsdsd"),
       wv(0.48, 1.12, 1.14, "sddsdsd")
     ]},
-    { name: "Fast Water", wood: 140, dam: 100, waves: [
+    { name: "Fast Water", wood: 155, dam: 100, waves: [
       wv(0.92, 1.02, 1.02, "sskkss"),
       wv(0.74, 1.06, 1.04, "sksksks"),
       wv(0.60, 1.08, 1.06, "kssksks")
     ]},
-    { name: "Pocket Wood", wood: 135, dam: 100, waves: [
+    { name: "Pocket Wood", wood: 150, dam: 100, waves: [
       wv(0.74, 1.06, 1.04, "sskkss"),
       wv(0.56, 1.10, 1.06, "sksksks"),
       wv(0.44, 1.14, 1.08, "kksskkss")
     ]},
-    { name: "Night Rush", wood: 130, dam: 100, waves: [
+    { name: "Night Rush", wood: 145, dam: 100, waves: [
       wv(0.80, 1.04, 1.02, "sssksss"),
       wv(0.64, 1.08, 1.04, "sksasks"),
       wv(0.50, 1.12, 1.06, "saksaks")
     ]},
-    { name: "Hairline", wood: 140, dam: 100, waves: [
+    { name: "Hairline", wood: 155, dam: 100, waves: [
       wv(0.88, 1.02, 1.02, "ssssssssss"),
       wv(0.58, 1.08, 1.04, "ysysys"),
       wv(0.46, 1.12, 1.06, "syaysy")
     ]},
-    { name: "Last Stand", wood: 135, dam: 100, waves: [
+    { name: "Last Stand", wood: 150, dam: 100, waves: [
       wv(0.72, 1.04, 1.02, "ssfss"),
       wv(0.56, 1.08, 1.04, "sfsfs"),
       wv(0.44, 1.10, 1.06, "ssfsy")
     ]},
-    { name: "Spring Leak", wood: 130, dam: 100, waves: [
+    { name: "Spring Leak", wood: 145, dam: 100, waves: [
       wv(0.64, 1.06, 1.04, "ssyyss"),
       wv(0.50, 1.10, 1.06, "ysfys"),
       wv(0.38, 1.12, 1.08, "syfysy")
     ]},
-    { name: "Twin Bend", wood: 125, dam: 100, waves: [
+    { name: "Twin Bend", wood: 140, dam: 100, waves: [
       wv(0.60, 1.08, 1.06, "sseess"),
       wv(0.46, 1.12, 1.08, "eseses"),
       wv(0.34, 1.16, 1.10, "seesees")
     ]},
-    { name: "Armor Night", wood: 120, dam: 100, waves: [
+    { name: "Armor Night", wood: 135, dam: 100, waves: [
       wv(0.66, 1.08, 1.04, "sseess"),
       wv(0.50, 1.12, 1.06, "easaes"),
       wv(0.38, 1.14, 1.08, "eeaass")
     ]},
-    { name: "Timber Tax", wood: 130, dam: 100, waves: [
+    { name: "Timber Tax", wood: 145, dam: 100, waves: [
       wv(0.64, 1.08, 1.04, "ssnnss"),
       wv(0.50, 1.12, 1.06, "nsnsns"),
       wv(0.38, 1.16, 1.08, "snnsnns")
     ]},
-    { name: "Flood Gate", wood: 125, dam: 100, waves: [
+    { name: "Flood Gate", wood: 140, dam: 100, waves: [
       wv(0.56, 1.10, 1.06, "nnyynn"),
       wv(0.42, 1.14, 1.08, "nynyny"),
       wv(0.32, 1.18, 1.10, "nnyanyn")
     ]},
-    { name: "Cone Drill", wood: 120, dam: 100, waves: [
+    { name: "Cone Drill", wood: 135, dam: 100, waves: [
       wv(0.56, 1.10, 1.06, "ssnens"),
       wv(0.42, 1.12, 1.08, "nenens"),
       wv(0.32, 1.16, 1.10, "nneess")
     ]},
-    { name: "Cracked Wall", wood: 115, dam: 100, waves: [
+    { name: "Cracked Wall", wood: 130, dam: 100, waves: [
       wv(0.82, 1.00, 1.00, "sssssssssssssssss"),
       wv(0.50, 1.10, 1.06, "nanans"),
       wv(0.38, 1.14, 1.08, "annaans")
     ]},
-    { name: "Cataract Maw", wood: 120, dam: 100, waves: [
+    { name: "Cataract Maw", wood: 135, dam: 100, waves: [
       wv(0.80, 1.00, 1.00, "sssssssssssssssss"),
       wv(0.50, 1.06, 1.04, "nanaen"),
       wv(0.38, 1.10, 1.06, "aannaann"),
@@ -999,7 +999,7 @@
     ]}
   ];
   const PATH_N = [
-    [0.50, 0.08], [0.40, 0.18], [0.58, 0.30], [0.42, 0.42], [0.60, 0.54], [0.36, 0.66], [0.52, 0.76]
+    [0.50, 0.07], [0.34, 0.18], [0.64, 0.32], [0.36, 0.46], [0.66, 0.58], [0.38, 0.70], [0.50, 0.76]
   ];
   const DAM_GAP = 8;
 
@@ -1299,43 +1299,43 @@
     {
       id: "oasis", name: "Oasis Opens", at: 1, always: true,
       frames: [
-        { src: "assets/history/gh9-oasis.jpg", sub: "Oasis Opens.", line: "Pretty water. Ugly intentions." }
+        { src: "assets/history/gh10-oasis.jpg", sub: "Oasis Opens.", line: "Pretty water. Bad traffic." }
       ]
     },
     {
-      id: "twin", name: "Twin Posts Same Bite", at: 1, always: true,
+      id: "twin", name: "Twin Posts Raised", at: 1, always: true,
       frames: [
-        { src: "assets/history/gh9-twin.jpg", sub: "Twin Posts.", line: "Two posts. Same bite. No third." }
+        { src: "assets/history/gh10-twin.jpg", sub: "Twin Posts.", line: "Same bite. Both sides. No third." }
       ]
     },
     {
       id: "guns", name: "Arrows → Bullets → Rockets → Flame", at: 4,
       frames: [
-        { src: "assets/history/gh9-guns.jpg", sub: "Same Fire.", line: "Arrows, then Bullets, then Rockets, then Flame." }
+        { src: "assets/history/gh10-guns.jpg", sub: "Same Fire.", line: "Arrows, then Bullets, then Rockets, then Flame." }
       ]
     },
     {
       id: "harden", name: "Wood → Rock → Steel", at: 6,
       frames: [
-        { src: "assets/history/gh9-wall.jpg", sub: "The Wall.", line: "Wood, then Rock 120, then Steel 180." }
+        { src: "assets/history/gh10-wall.jpg", sub: "The Face.", line: "Wood, then Rock 90, then Steel 140." }
       ]
     },
     {
       id: "pests", name: "New Pests", at: 8,
       frames: [
-        { src: "assets/history/gh9-pests.jpg", sub: "New Pests.", line: "Skip, stalk, barrel, spit, twin, monk." }
+        { src: "assets/history/gh10-pests.jpg", sub: "New Pests.", line: "New pests from the mouth." }
       ]
     },
     {
-      id: "beam", name: "Bober Beam", at: 9,
+      id: "beam", name: "Bober Finds a Beam", at: 9,
       frames: [
-        { src: "assets/history/gh9-beam.jpg", sub: "Assist.", line: "Bober beam is help. Not a third post." }
+        { src: "assets/history/gh10-beam.jpg", sub: "Assist.", line: "Bober finds a beam. Not a third post." }
       ]
     },
     {
       id: "holds", name: "Dam Holds", at: 12,
       frames: [
-        { src: "assets/history/gh9-holds.jpg", sub: "Dam Holds.", line: "Kill every foe. The wall still stands.", chorus: true }
+        { src: "assets/history/gh10-holds.jpg", sub: "Dam Holds.", line: "River blinks first.", chorus: true }
       ]
     }
   ];
@@ -1449,14 +1449,9 @@
       return;
     }
     applyHistBeat(histI + 1);
-    scheduleHist();
   }
   function scheduleHist() {
     haltHistory();
-    histTimer = setTimeout(function () {
-      histTimer = 0;
-      histNext();
-    }, 3200);
   }
   function playHistory(id) {
     let r = null;
@@ -1479,18 +1474,17 @@
     SFX.ensure();
     SFX.tone(392, 0.08, "square", 0.03);
     applyHistBeat(0);
-    scheduleHist();
   }
 
   const MUSEUM = [
     { id: "arrow", tab: "towers", name: "Arrows", img: "assets/museum/arrow.jpg", at: 1,
-      blurb: "Tier 0. Both posts fire wood arrows.", tease: "Two bows. One ladder." },
+      blurb: "Tier 0. Both posts fire wood arrows. Range 185.", tease: "Two bows. One ladder." },
     { id: "bullet", tab: "towers", name: "Bullets", img: "assets/museum/bullet.jpg", at: 2,
-      blurb: "Tier 1. 90 $BOBER. Range 145.", tease: "The wall learns to snap." },
+      blurb: "Tier 1. 70 $BOBER. Range 200.", tease: "The wall learns to snap." },
     { id: "rocket", tab: "towers", name: "Rockets", img: "assets/museum/rocket.jpg", at: 4,
-      blurb: "Tier 2. 140 $BOBER. Splash 36.", tease: "Both muzzles boom together." },
+      blurb: "Tier 2. 110 $BOBER. Splash 36. Range 210.", tease: "Both muzzles boom together." },
     { id: "flame", tab: "towers", name: "Flame", img: "assets/museum/flame.jpg", at: 8,
-      blurb: "Tier 3. 200 $BOBER. Range 170. Cone DPS beats Rockets.", tease: "The stream burns." },
+      blurb: "Tier 3. 160 $BOBER. Range 225. Cone DPS beats Rockets.", tease: "The stream burns." },
     { id: "twin", tab: "towers", name: "Twin Tower", img: "assets/museum/twin.jpg", at: 1,
       blurb: "Two log posts on the dam. Same fire. Crew on top.", tease: "Buildings, not beaver-guns." },
     { id: "snout", tab: "foes", name: "Drift Snout", img: "assets/museum/snout.jpg", at: 1,
@@ -1518,21 +1512,21 @@
     { id: "maw", tab: "foes", name: "Cataract Maw", img: "assets/museum/maw.jpg", at: 20,
       blurb: "Finale boss. Telegraph. Never farms Bober.", tease: "Something huge behind the fall." },
     { id: "wood", tab: "dam", name: "Dam Wood", img: "assets/museum/wood.jpg", at: 1, mile: true,
-      blurb: "Starter wall. Then Rock 120, Steel 180.", tease: "Timber across the mouth." },
+      blurb: "Starter wall. Then Rock 90, Steel 140.", tease: "Timber across the mouth." },
     { id: "rock", tab: "dam", name: "Dam Rock", img: "assets/museum/rock.jpg", at: 2, mile: true,
-      blurb: "Dam upgrade. 120 $BOBER.", tease: "The wood wants to be stone." },
+      blurb: "Dam upgrade. 90 $BOBER.", tease: "The wood wants to be stone." },
     { id: "steel", tab: "dam", name: "Dam Steel", img: "assets/museum/steel.jpg", at: 4, mile: true,
-      blurb: "Dam upgrade. 180 $BOBER.", tease: "Metal in the night." },
+      blurb: "Dam upgrade. 140 $BOBER.", tease: "Metal in the night." },
     { id: "oasis", tab: "dam", name: "Waterfall Oasis", img: "assets/museum/oasis.jpg", at: 1, mile: true,
       blurb: "Spawn only. Pretty water. Ugly intentions.", tease: "The fall has a mouth." },
     { id: "stream", tab: "dam", name: "Big Stream", img: "assets/museum/stream.jpg", at: 1, mile: true,
       blurb: "Natural river. Hits the wall.", tease: "A road of water." },
     { id: "crew", tab: "dam", name: "Repair Crew Bober", img: "assets/museum/crew.jpg", at: 1, mile: true,
-      blurb: "Repair 28 $BOBER. +22 HP. Not a gun.", tease: "A hammer behind the wall." },
+      blurb: "Repair 24 $BOBER. +22 HP. Not a gun.", tease: "A hammer behind the wall." },
     { id: "yell", tab: "dam", name: "Scout Yell", img: "assets/museum/yell.jpg", at: 6,
-      blurb: "Cost 60. Short buff both posts. Once per wave.", tease: "A shout from the wall." },
+      blurb: "Cost 45. Short buff both posts. Once per wave.", tease: "A shout from the wall." },
     { id: "laser", tab: "dam", name: "Bober Laser", img: "assets/museum/laser.jpg", at: 8,
-      blurb: "Hold-to-carve. CD 2.0. Not a third tower. Does not replace gun upgrades.", tease: "A green line from the face." }
+      blurb: "Arm 80 $BOBER. Hold-to-carve. CD 2.0. Not a third tower. Does not replace gun upgrades.", tease: "A green line from the face." }
   ];
   let musTab = "towers";
   let museumFrom = "splash";
@@ -1743,8 +1737,8 @@
     riverW = Math.max(76, Math.min(viewW * 0.26, 118));
     const padR = Math.max(26, Math.min(viewW, viewH) * 0.05);
     pads = [
-      { x: dam.x + dam.w * 0.28, y: dam.y + 8, r: padR, type: "left", rank: towerLv, locked: false },
-      { x: dam.x + dam.w * 0.72, y: dam.y + 8, r: padR, type: "right", rank: towerLv, locked: false }
+      { x: dam.x + dam.w * 0.38, y: dam.y + 6, r: padR, type: "left", rank: towerLv, locked: false },
+      { x: dam.x + dam.w * 0.62, y: dam.y + 6, r: padR, type: "right", rank: towerLv, locked: false }
     ];
     const bb = boberBounds();
     if (!bober.x) bober.x = (bb.left + bb.right) * 0.5;
@@ -2195,9 +2189,11 @@
     if (levelIndex + 1 < LEVELS.length) save.unlocked = Math.max(save.unlocked, levelIndex + 2);
     const beat = cameoForClear(levelIndex);
     writeSave();
-    endTitle.textContent = "LEVEL CLEAR";
+    endTitle.textContent = "DAM HELD";
     endStars.textContent = starString(earned);
-    endMsg.textContent = starWhy(earned, Math.max(0, damHp), damMax, totalLeaks);
+    const endHero = document.getElementById("end-hero");
+    if (endHero) endHero.src = "assets/clear.jpg?v=gh10";
+    endMsg.textContent = (damSkin() === "Wood" ? "Wood stands. Wave done." : "Dam held. River blinked.") + "\n" + starWhy(earned, Math.max(0, damHp), damMax, totalLeaks);
     endMsg.textContent += "\nDam " + damSkin() + ".";
     if (levelIndex + 1 >= LEVELS.length) endMsg.textContent += "\nCampaign clear.";
     else endMsg.textContent += "\nNext level unlocked.";
@@ -2219,6 +2215,8 @@
     paused = false;
     pausedEl.classList.add("hidden");
     damHp = 0;
+    const endHeroLose = document.getElementById("end-hero");
+    if (endHeroLose) endHeroLose.src = "assets/splash.jpg?v=gh7";
     endTitle.textContent = "THE DAM BURST";
     endStars.textContent = "";
     endMsg.textContent = LEVELS[levelIndex].name + " broke. Try again from the map.";
@@ -2778,9 +2776,9 @@
     for (let i = 1; i < L.length; i++) ctx.lineTo(L[i].x, L[i].y);
     for (let i = R.length - 1; i >= 0; i--) ctx.lineTo(R[i].x, R[i].y);
     ctx.closePath();
-    ctx.fillStyle = "#243a62";
+    ctx.fillStyle = "#2a2048";
     ctx.fill();
-    ctx.fillStyle = "#3D5C9A";
+    ctx.fillStyle = "#6b5aab";
     ctx.beginPath();
     ctx.moveTo(L[0].x * 0.35 + path[0].x * 0.65, L[0].y);
     const inset = riverW * 0.22;
@@ -2800,15 +2798,15 @@
     }
     ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = "#6a8bc0";
-    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = "#c8b8ee";
+    ctx.globalAlpha = 0.42;
     for (let i = 3; i < steps; i += 4) {
       const t = i / steps;
       const p = pointAt(pathLen * t);
       ctx.beginPath(); ctx.ellipse(p.x + Math.sin(i) * 6, p.y, 10, 4, 0.2, 0, Math.PI * 2); ctx.fill();
     }
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#3a4a38";
+    ctx.fillStyle = "#5a3e28";
     for (let i = 2; i < steps - 2; i += 5) {
       const t = i / steps;
       const p = pointAt(pathLen * t);
@@ -3208,6 +3206,10 @@
       ctx.lineWidth = 2.4;
       roundRect(ctx, x + 4, ly, w - 8, lh - 3, 4);
       ctx.fill(); ctx.stroke();
+      if (skin === "Wood") {
+        ctx.fillStyle = "rgba(70, 110, 50, 0.28)";
+        ctx.fillRect(x + 18 + (i % 3) * 40, ly + 2, 36, Math.max(3, lh - 7));
+      }
       ctx.strokeStyle = skin === "Steel" ? "rgba(200,220,240,0.35)" : "rgba(244,230,195,0.22)";
       ctx.lineWidth = 1.1;
       ctx.beginPath();
@@ -3438,11 +3440,11 @@
     ctx.lineTo(viewW * 0.70, viewH * 0.28);
     ctx.fill();
 
-    strokeRiver(riverW + 78, "#243018");
-    strokeRiver(riverW + 62, "#3a5224");
-    strokeRiver(riverW + 48, "#4a6a30");
-    strokeRiver(riverW + 34, "#2f4a22");
-    strokeRiver(riverW + 22, "#1c2c16");
+    strokeRiver(riverW + 78, "#2a1c12");
+    strokeRiver(riverW + 62, "#4a3220");
+    strokeRiver(riverW + 48, "#6a4a2c");
+    strokeRiver(riverW + 34, "#3a2818");
+    strokeRiver(riverW + 22, "#1c140c");
     if (pathLen > 8) {
       for (let i = 0; i < 26; i++) {
         const t = (i + 0.28) / 26;
@@ -3453,7 +3455,7 @@
         const d = riverW * 0.52 + 12 + (i % 4) * 4;
         const tx = p.x + nx * d, ty = p.y + ny * d;
         if (inDamKeepout(tx, ty)) continue;
-        ctx.fillStyle = i % 3 ? "#3a5224" : "#4e6a30";
+        ctx.fillStyle = i % 3 ? "#4a3420" : "#6a4a28";
         ctx.beginPath();
         ctx.ellipse(tx, ty, 6 + (i % 3), 3.4, ang, 0, Math.PI * 2);
         ctx.fill();
@@ -3497,25 +3499,58 @@
       }
     }
     const fallX = path[0].x, fallY = Math.max(8, path[0].y - 36);
-    ctx.fillStyle = "#2a3a28";
+    ctx.fillStyle = "#6a4a32";
     ctx.beginPath();
-    ctx.ellipse(fallX - 70, fallY + 8, 50, 22, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(fallX + 70, fallY + 8, 50, 22, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#5a6a52";
-    roundRect(ctx, fallX - 58, fallY - 28, 36, 40, 8); ctx.fill();
-    roundRect(ctx, fallX + 22, fallY - 32, 40, 44, 8); ctx.fill();
-    ctx.fillStyle = "#7a9ad0";
-    ctx.globalAlpha = 0.85;
-    ctx.beginPath();
-    ctx.moveTo(fallX - 28, fallY - 18);
-    ctx.lineTo(fallX + 28, fallY - 18);
-    ctx.lineTo(fallX + 18, path[0].y + 8);
-    ctx.lineTo(fallX - 18, path[0].y + 8);
+    ctx.moveTo(fallX - 88, fallY + 22);
+    ctx.lineTo(fallX - 62, fallY - 36);
+    ctx.lineTo(fallX - 18, fallY - 20);
+    ctx.lineTo(fallX - 8, fallY + 18);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle = CREAM;
-    ctx.globalAlpha = 0.45 + 0.2 * Math.sin(tWorld * 6);
-    ctx.beginPath(); ctx.ellipse(fallX, path[0].y + 6, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(fallX + 88, fallY + 22);
+    ctx.lineTo(fallX + 64, fallY - 40);
+    ctx.lineTo(fallX + 16, fallY - 18);
+    ctx.lineTo(fallX + 8, fallY + 18);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#8a6a48";
+    roundRect(ctx, fallX - 54, fallY - 34, 28, 38, 6); ctx.fill();
+    roundRect(ctx, fallX + 24, fallY - 38, 32, 42, 6); ctx.fill();
+    ctx.fillStyle = "#3a2a18";
+    for (let c = -2; c <= 2; c++) {
+      ctx.beginPath();
+      ctx.moveTo(fallX + c * 10 - 2, fallY + 10);
+      ctx.quadraticCurveTo(fallX + c * 10, fallY - 18, fallX + c * 10 + (c % 2) * 4, fallY - 28);
+      ctx.strokeStyle = "#4a3820";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "#c4a060";
+      ctx.beginPath(); ctx.ellipse(fallX + c * 10 + (c % 2) * 4, fallY - 30, 3.4, 6, -0.3, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = "#e8eef8";
+    ctx.globalAlpha = 0.92;
+    ctx.beginPath();
+    ctx.moveTo(fallX - 34, fallY - 16);
+    ctx.lineTo(fallX - 8, fallY - 20);
+    ctx.lineTo(fallX - 12, path[0].y + 10);
+    ctx.lineTo(fallX - 26, path[0].y + 10);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(fallX - 6, fallY - 22);
+    ctx.lineTo(fallX + 8, fallY - 18);
+    ctx.lineTo(fallX + 10, path[0].y + 12);
+    ctx.lineTo(fallX - 8, path[0].y + 12);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(fallX + 10, fallY - 16);
+    ctx.lineTo(fallX + 32, fallY - 20);
+    ctx.lineTo(fallX + 24, path[0].y + 10);
+    ctx.lineTo(fallX + 8, path[0].y + 10);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#f4eefc";
+    ctx.globalAlpha = 0.55 + 0.2 * Math.sin(tWorld * 5);
+    ctx.beginPath(); ctx.ellipse(fallX, path[0].y + 8, 42, 14, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath(); ctx.ellipse(fallX, path[0].y + 18, 52, 18, 0, 0, Math.PI * 2); ctx.fill();
     ctx.globalAlpha = 1;
     drawNaturalRiver();
     drawRiverFoam();
@@ -3844,12 +3879,13 @@
   cameoEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissCameo(); }, { passive: false });
   btnGo.addEventListener("click", function () { requestNextWave(); });
   if (histSkipBtn) {
-    histSkipBtn.addEventListener("click", requestSkipHistory);
-    histSkipBtn.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
-    histSkipBtn.addEventListener("touchend", function (ev) {
+    histSkipBtn.addEventListener("click", function (ev) {
       ev.preventDefault();
-      requestSkipHistory(ev);
-    }, { passive: false });
+      ev.stopPropagation();
+      SFX.ensure();
+      histNext();
+    });
+    histSkipBtn.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
   }
   document.addEventListener("keydown", function (ev) {
     if (ev.key !== "Escape") return;

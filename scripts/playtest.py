@@ -98,8 +98,8 @@ KINDS = _kinds()
 LEVELS = _levels()
 PATH_N = _path_n()
 W, H = 390.0, 640.0
-COST_REPAIR, REPAIR_HP = 28, 22
-COST_LASER, COST_HOT, COST_YELL = 100, 150, 60
+COST_REPAIR, REPAIR_HP = 24, 22
+COST_LASER, COST_HOT, COST_YELL = 80, 120, 45
 
 
 def build_path():
@@ -115,7 +115,7 @@ def build_path():
     for i in range(1, len(pts)):
         plen += math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])
         cum.append(plen)
-    pads = [(dam_x + dam_w * 0.28, dam_y + 8), (dam_x + dam_w * 0.72, dam_y + 8)]
+    pads = [(dam_x + dam_w * 0.38, dam_y + 6), (dam_x + dam_w * 0.62, dam_y + 6)]
     laser_o = (W * 0.5, dam_y)
     return pts, cum, max(1.0, plen), pads, laser_o, dam_y
 
@@ -250,15 +250,15 @@ class Run:
     def try_buys(self, wave_i):
         s = self.strat
         if s == "dam_first":
-            if self.tlv == 0 and self.dam_lv < 1 and self.wood >= 120:
+            if self.tlv == 0 and self.dam_lv < 1 and self.wood >= DAM_TIERS[1]["cost"]:
                 self.buy_dam()
-            if self.tlv == 0 and self.wood >= 90:
+            if self.tlv == 0 and self.wood >= GUNS[1]["cost"]:
                 self.buy_gun()
-            elif self.tlv == 1 and self.wood >= 140:
+            elif self.tlv == 1 and self.wood >= GUNS[2]["cost"]:
                 self.buy_gun()
-            elif self.tlv == 2 and self.li >= 15 and self.wood >= 200:
+            elif self.tlv == 2 and self.li >= 15 and self.wood >= GUNS[3]["cost"]:
                 self.buy_gun()
-            elif self.dam_lv < 2 and self.wood >= 180:
+            elif self.dam_lv < 2 and self.wood >= DAM_TIERS[2]["cost"]:
                 self.buy_dam()
             if self.dam_hp < self.dam_max * (0.35 if self.tlv == 0 else 0.72):
                 self.repair()
@@ -273,29 +273,29 @@ class Run:
                 self.repair()
             self.try_yell(wave_i)
         elif s == "balanced":
-            if self.tlv == 0 and self.wood >= 90:
+            if self.tlv == 0 and self.wood >= GUNS[1]["cost"]:
                 self.buy_gun()
-            elif self.dam_lv < 1 and self.wood >= 120:
+            elif self.dam_lv < 1 and self.wood >= DAM_TIERS[1]["cost"]:
                 self.buy_dam()
-            elif self.tlv == 1 and self.wood >= 140:
+            elif self.tlv == 1 and self.wood >= GUNS[2]["cost"]:
                 self.buy_gun()
-            elif self.dam_lv < 2 and self.wood >= 180:
+            elif self.dam_lv < 2 and self.wood >= DAM_TIERS[2]["cost"]:
                 self.buy_dam()
-            elif self.tlv == 2 and self.li >= 15 and self.wood >= 200:
+            elif self.tlv == 2 and self.li >= 15 and self.wood >= GUNS[3]["cost"]:
                 self.buy_gun()
             if self.dam_hp < self.dam_max * 0.55:
                 self.repair()
             self.try_yell(wave_i)
         elif s == "bober_assist":
-            if self.tlv == 0 and self.wood >= 90:
+            if self.tlv == 0 and self.wood >= GUNS[1]["cost"]:
                 self.buy_gun()
             cost_l = COST_HOT if self.hot else COST_LASER
             if not self.laser and (self.tlv >= 1 or self.li >= 8) and self.wood >= cost_l:
                 self.wood -= cost_l
                 self.laser = True
-            elif self.tlv == 1 and self.wood >= 140:
+            elif self.tlv == 1 and self.wood >= GUNS[2]["cost"]:
                 self.buy_gun()
-            elif self.tlv == 2 and self.li >= 14 and self.wood >= 200:
+            elif self.tlv == 2 and self.li >= 14 and self.wood >= GUNS[3]["cost"]:
                 self.buy_gun()
             if self.dam_hp < self.dam_max * 0.5:
                 self.repair()
@@ -466,28 +466,33 @@ def next_rung(start_wood: int) -> int:
 
 def main():
     assert len(LEVELS) == 20, len(LEVELS)
-    assert START_WOOD == [200, 190, 180, 170, 160, 150, 145, 140, 135, 130, 140, 135, 130, 125, 120, 130, 125, 120, 115, 120]
+    assert START_WOOD == [215, 205, 195, 185, 175, 165, 160, 155, 150, 145, 155, 150, 145, 140, 135, 145, 140, 135, 130, 135]
     assert [g["name"] for g in GUNS] == ["Arrows", "Bullets", "Rockets", "Flame"]
-    assert GUNS[1]["cost"] == 90 and GUNS[1]["range"] == 145 and GUNS[1]["cd"] == 0.42 and GUNS[1]["dmg"] == 14
-    assert GUNS[2]["cost"] == 140 and GUNS[2]["range"] == 155 and GUNS[2]["cd"] == 0.70 and GUNS[2]["dmg"] == 28
+    assert GUNS[1]["cost"] == 70 and GUNS[1]["range"] == 200 and GUNS[1]["cd"] == 0.42 and GUNS[1]["dmg"] == 14
+    assert GUNS[2]["cost"] == 110 and GUNS[2]["range"] == 210 and GUNS[2]["cd"] == 0.70 and GUNS[2]["dmg"] == 28
     assert GUNS[2].get("splash") == 36
-    assert GUNS[3]["cost"] == 200 and GUNS[3]["range"] == 170 and GUNS[3]["cd"] == 0.18 and GUNS[3]["dmg"] == 9
+    assert GUNS[3]["cost"] == 160 and GUNS[3]["range"] == 225 and GUNS[3]["cd"] == 0.18 and GUNS[3]["dmg"] == 9
     flame_dps = GUNS[3]["dmg"] / GUNS[3]["cd"]
     rocket_dps = GUNS[2]["dmg"] / GUNS[2]["cd"]
     assert flame_dps > rocket_dps, (flame_dps, rocket_dps)
     assert GUNS[3]["range"] >= GUNS[2]["range"]
     assert DAM_TIERS[0]["hp"] == 100 and DAM_TIERS[1]["hp"] == 140 and DAM_TIERS[2]["hp"] == 200
-    assert DAM_TIERS[1]["cost"] == 120 and DAM_TIERS[2]["cost"] == 180
+    assert DAM_TIERS[1]["cost"] == 90 and DAM_TIERS[2]["cost"] == 140
     assert abs(DAM_TIERS[1]["leakMul"] - 0.85) < 1e-6
     assert abs(DAM_TIERS[2]["leakMul"] - 0.70) < 1e-6
     assert KINDS["snout"]["hp"] == 20 and KINDS["maw"]["hp"] == 340
     assert KINDS["barrel"]["armor"] == 0.45
     assert KINDS["snout"]["leak"] == 11
-    assert "COST_REPAIR = 28" in HTML and "REPAIR_HP = 22" in HTML
-    assert "28 $BOBER" in HTML
+    assert "COST_REPAIR = 24" in HTML and "REPAIR_HP = 22" in HTML
+    assert "24 $BOBER" in HTML
     assert "Twin posts on the dam face. Hold the flood." in HTML
     assert "Defend the dam." in HTML
-    assert "bober-dam-campaign-v5" in HTML
+    assert "bober-dam-campaign-v6" in HTML
+    assert "Tap to advance" in HTML
+    assert "histNext" in HTML
+    assert "assets/clear.jpg" in HTML
+    assert "assets/history/gh10-oasis.jpg" in HTML
+    assert "Dam held. River blinked." in HTML
     assert "canWinLevel" in HTML and "remainingEnemies" in HTML
     assert "Not a third tower" in HTML
     assert "Bolts" not in HTML
@@ -519,7 +524,7 @@ def main():
 
     for i, L in enumerate(LEVELS):
         gold = kill_gold(L)
-        nxt = 90 if i < 3 else 140 if i < 10 else 200
+        nxt = 70 if i < 3 else 110 if i < 10 else 160
         ratio = gold / nxt
         print(f"gold L{i+1:02} {gold:4} / rung {nxt} = {ratio:.2f}x")
 

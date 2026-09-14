@@ -11,7 +11,7 @@ HTML = (ROOT / "index.html").read_text(encoding="utf-8")
 KIND_CH = {
     "s": "snout", "r": "snout", "p": "pebble", "l": "rider", "c": "rider", "b": "biter",
     "d": "dart", "k": "stalker", "a": "barrel", "y": "minnow", "f": "foam",
-    "e": "eddy", "n": "monk", "w": "maw", "m": "maw",
+    "e": "eddy", "n": "monk", "u": "dew", "w": "maw", "m": "maw",
 }
 
 
@@ -84,11 +84,11 @@ def _levels() -> list[dict]:
 
 
 def _path_n() -> list[list[float]]:
-    m = re.search(r"const PATH_N = \[([\s\S]*?)\];", HTML)
-    assert m
+    m = re.search(r"const LANE_N = \[([\s\S]*?)\];", HTML)
+    assert m, "LANE_N"
     pts = [[float(a), float(b)] for a, b in re.findall(r"\[([\d.]+),\s*([\d.]+)\]", m.group(1))]
-    assert len(pts) >= 5
-    return pts
+    assert len(pts) >= 14, len(pts)
+    return pts[7:14]
 
 
 START_WOOD = _num_list("START_WOOD")
@@ -99,25 +99,24 @@ LEVELS = _levels()
 PATH_N = _path_n()
 W, H = 390.0, 640.0
 COST_REPAIR, REPAIR_HP = 24, 22
-COST_LASER, COST_HOT, COST_YELL = 80, 120, 45
 
 
 def build_path():
     dam_h = max(70, round(H * 0.16))
-    dam_w = min(W * 0.88, W - 16)
+    dam_w = min(W * 0.94, W - 8)
     dam_x = (W - dam_w) / 2
     dam_y = H - dam_h - 6
-    frame_t = round(H * 0.08)
+    frame_t = round(H * 0.06)
     mouth = dam_y + 4
-    pts = [(8 + p[0] * (W - 16), frame_t + p[1] * (mouth - frame_t)) for p in PATH_N]
-    pts[-1] = (pts[-1][0], mouth)
+    frame_l = max(4, W * 0.02)
+    pts = [(frame_l + p[0] * (W - 2 * frame_l), frame_t + p[1] * (mouth - frame_t)) for p in PATH_N]
+    pts[-1] = (W * 0.5, mouth)
     cum, plen = [0.0], 0.0
     for i in range(1, len(pts)):
         plen += math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])
         cum.append(plen)
-    pads = [(dam_x + dam_w * 0.38, dam_y + 6), (dam_x + dam_w * 0.62, dam_y + 6)]
-    laser_o = (W * 0.5, dam_y)
-    return pts, cum, max(1.0, plen), pads, laser_o, dam_y
+    pads = [(dam_x + dam_w * 0.30, dam_y + 6), (dam_x + dam_w * 0.70, dam_y + 6)]
+    return pts, cum, max(1.0, plen), pads, dam_y
 
 
 def point_at(pts, cum, plen, dist):
@@ -171,16 +170,12 @@ class Run:
         self.li = level_i
         self.strat = strat
         self.level = LEVELS[level_i]
-        self.pts, self.cum, self.plen, self.pads, self.laser_o, self.dam_y = build_path()
+        self.pts, self.cum, self.plen, self.pads, self.dam_y = build_path()
         self.wood = START_WOOD[level_i] if level_i < len(START_WOOD) else self.level["wood"]
         self.tlv = 0
         self.dam_lv = 0
         self.dam_max = DAM_TIERS[0]["hp"]
         self.dam_hp = self.dam_max
-        self.laser = False
-        self.hot = level_i >= 14
-        self.laser_cd = 0.0
-        self.laser_fire = 0.0
         self.yell_t = 0.0
         self.leaks = 0
         self.flame_bought_before_l6 = False
@@ -238,15 +233,6 @@ class Run:
             return 0
         return GUNS[self.tlv + 1]["cost"]
 
-    def try_yell(self, wave_i):
-        if self.li < 5 or self.yell_t > 0 or wave_i < 2 or self.wood < COST_YELL:
-            return
-        nxt = self.next_gun_cost()
-        if nxt and self.wood < nxt + COST_YELL:
-            return
-        self.wood -= COST_YELL
-        self.yell_t = 4.0
-
     def try_buys(self, wave_i):
         s = self.strat
         if s == "dam_first":
@@ -271,7 +257,6 @@ class Run:
                 self.buy_gun()
             if self.dam_hp < self.dam_max * 0.45:
                 self.repair()
-            self.try_yell(wave_i)
         elif s == "balanced":
             if self.tlv == 0 and self.wood >= GUNS[1]["cost"]:
                 self.buy_gun()
@@ -285,21 +270,6 @@ class Run:
                 self.buy_gun()
             if self.dam_hp < self.dam_max * 0.55:
                 self.repair()
-            self.try_yell(wave_i)
-        elif s == "bober_assist":
-            if self.tlv == 0 and self.wood >= GUNS[1]["cost"]:
-                self.buy_gun()
-            cost_l = COST_HOT if self.hot else COST_LASER
-            if not self.laser and (self.tlv >= 1 or self.li >= 8) and self.wood >= cost_l:
-                self.wood -= cost_l
-                self.laser = True
-            elif self.tlv == 1 and self.wood >= GUNS[2]["cost"]:
-                self.buy_gun()
-            elif self.tlv == 2 and self.li >= 14 and self.wood >= GUNS[3]["cost"]:
-                self.buy_gun()
-            if self.dam_hp < self.dam_max * 0.5:
-                self.repair()
-            self.try_yell(wave_i)
 
     def simulate(self):
         dt = 1 / 30
@@ -310,16 +280,11 @@ class Run:
             q = list(wave["seq"])
             spawn_t = 0.25
             enemies, shots = [], []
-            laser_hold = True
             t = 0.0
             while q or enemies or shots:
                 t += dt
                 if t > 240:
                     return {"win": False, "wave": wi, "dam": max(0, self.dam_hp), "leaks": self.leaks, "tlv": self.tlv, "timeout": True}
-                if self.yell_t > 0:
-                    self.yell_t = max(0.0, self.yell_t - dt)
-                if self.laser_cd > 0:
-                    self.laser_cd = max(0.0, self.laser_cd - dt)
                 spawn_t -= dt
                 if spawn_t <= 0 and q:
                     enemies.extend(spawn_one(q.pop(0), wave, wave["hpMul"], wave["spdMul"]))
@@ -412,18 +377,6 @@ class Run:
                         sh["y"] += dy / dist * step
                         live.append(sh)
                 shots = live
-                if self.laser and laser_hold and self.laser_cd <= 0:
-                    lt = first_in_range(enemies, self.pts, self.cum, self.plen, self.laser_o[0], self.laser_o[1], 120)
-                    if lt:
-                        prev = self.laser_fire
-                        self.laser_fire += dt
-                        if math.floor(self.laser_fire / 0.18) > math.floor(prev / 0.18):
-                            self.hurt(lt, 12 if self.hot else 8, enemies)
-                        if self.laser_fire >= 1.0:
-                            self.laser_cd = 1.6 if self.hot else 2.0
-                            self.laser_fire = 0.0
-                    else:
-                        self.laser_fire = 0.0
                 enemies = [e for e in enemies if e["hp"] > 0]
                 self.try_buys(wi)
         pct = self.dam_hp / self.dam_max if self.dam_max else 0
@@ -431,7 +384,7 @@ class Run:
         return {
             "win": True, "wave": len(self.level["waves"]), "dam": self.dam_hp,
             "dam_max": self.dam_max, "leaks": self.leaks, "tlv": self.tlv,
-            "dam_lv": self.dam_lv, "stars": stars, "laser": self.laser,
+            "dam_lv": self.dam_lv, "stars": stars,
             "flame_early": self.flame_bought_before_l6,
         }
 
@@ -468,10 +421,11 @@ def main():
     assert len(LEVELS) == 20, len(LEVELS)
     assert START_WOOD == [215, 205, 195, 185, 175, 165, 160, 155, 150, 145, 155, 150, 145, 140, 135, 145, 140, 135, 130, 135]
     assert [g["name"] for g in GUNS] == ["Arrows", "Bullets", "Rockets", "Flame"]
-    assert GUNS[1]["cost"] == 70 and GUNS[1]["range"] == 200 and GUNS[1]["cd"] == 0.42 and GUNS[1]["dmg"] == 14
-    assert GUNS[2]["cost"] == 110 and GUNS[2]["range"] == 210 and GUNS[2]["cd"] == 0.70 and GUNS[2]["dmg"] == 28
+    assert GUNS[1]["cost"] == 70 and GUNS[1]["range"] == 230 and GUNS[1]["cd"] == 0.42 and GUNS[1]["dmg"] == 14
+    assert GUNS[2]["cost"] == 110 and GUNS[2]["range"] == 245 and GUNS[2]["cd"] == 0.70 and GUNS[2]["dmg"] == 28
     assert GUNS[2].get("splash") == 36
-    assert GUNS[3]["cost"] == 160 and GUNS[3]["range"] == 225 and GUNS[3]["cd"] == 0.18 and GUNS[3]["dmg"] == 9
+    assert GUNS[3]["cost"] == 160 and GUNS[3]["range"] == 265 and GUNS[3]["cd"] == 0.18 and GUNS[3]["dmg"] == 9
+    assert GUNS[0]["range"] == 210
     flame_dps = GUNS[3]["dmg"] / GUNS[3]["cd"]
     rocket_dps = GUNS[2]["dmg"] / GUNS[2]["cd"]
     assert flame_dps > rocket_dps, (flame_dps, rocket_dps)
@@ -480,21 +434,26 @@ def main():
     assert DAM_TIERS[1]["cost"] == 90 and DAM_TIERS[2]["cost"] == 140
     assert abs(DAM_TIERS[1]["leakMul"] - 0.85) < 1e-6
     assert abs(DAM_TIERS[2]["leakMul"] - 0.70) < 1e-6
-    assert KINDS["snout"]["hp"] == 20 and KINDS["maw"]["hp"] == 340
+    assert KINDS["snout"]["hp"] == 18 and KINDS["maw"]["hp"] == 313
+    assert KINDS["dew"]["hp"] == 22 and KINDS["dew"]["leak"] == 12
     assert KINDS["barrel"]["armor"] == 0.45
     assert KINDS["snout"]["leak"] == 11
     assert "COST_REPAIR = 24" in HTML and "REPAIR_HP = 22" in HTML
     assert "24 $BOBER" in HTML
     assert "Twin posts on the dam face. Hold the flood." in HTML
     assert "Defend the dam." in HTML
-    assert "bober-dam-campaign-v6" in HTML
+    assert "bober-dam-campaign-v7" in HTML
+    assert "Bober Laser" not in HTML
+    assert "Scout Yell" not in HTML
+    assert "LANE_N" in HTML
+    assert len(LEVELS[0]["waves"]) == 4
+    assert len(LEVELS[19]["waves"]) == 6
     assert "Tap to advance" in HTML
     assert "histNext" in HTML
     assert "assets/clear.jpg" in HTML
     assert "assets/history/gh10-oasis.jpg" in HTML
     assert "Dam held. River blinked." in HTML
     assert "canWinLevel" in HTML and "remainingEnemies" in HTML
-    assert "Not a third tower" in HTML
     assert "Bolts" not in HTML
     mus_imgs = re.findall(r'img: "(assets/museum/[^"]+)"', HTML)
     assert mus_imgs, "museum thumbs missing"
@@ -503,7 +462,8 @@ def main():
         assert (ROOT / p).is_file(), p
     assert "Never farms Bober" in HTML or "never farms Bober" in HTML.lower()
 
-    pts, cum, plen, pads, laser_o, _ = build_path()
+    pts, cum, plen, pads, _ = build_path()
+    assert abs(pads[1][0] - pads[0][0]) >= 110, pads
     up = {"hp": 10, "max": 10, "dist": max(0, plen - 90), "r": 10, "stealth": False, "ally": False}
     down = {"hp": 4, "max": 10, "dist": max(0, plen - 25), "r": 10, "stealth": False, "ally": False}
     bober = {"hp": 1, "max": 99, "dist": max(0, plen - 40), "r": 10, "stealth": False, "ally": True}
@@ -513,7 +473,7 @@ def main():
     pick2 = first_in_range([out_of_range_up, down], pts, cum, plen, pads[0][0], pads[0][1], 140)
     assert pick2 is down, "must ignore upstream foes outside range"
 
-    strats = ["dam_first", "guns_first", "balanced", "bober_assist"]
+    strats = ["dam_first", "guns_first", "balanced"]
     results = {s: [] for s in strats}
     for s in strats:
         for i, L in enumerate(LEVELS):
@@ -536,7 +496,7 @@ def main():
         assert not any(r.get("flame_early") for r in results[s]), f"{s} forced Flame by L5"
 
     end_ok = []
-    for s in ("guns_first", "bober_assist"):
+    for s in ("guns_first", "balanced", "dam_first"):
         if results[s][19]["win"]:
             end_ok.append(s)
     assert end_ok, "endgame L20 must be winnable by Flame+Steel or Laser+Rockets"

@@ -156,14 +156,7 @@
     .card.repair { background: #4a3a28; }
     .card.repair.need { box-shadow: 0 0 0 2px #E85D4C99; border-color: #E85D4C; }
     .card.flash { animation: shake 0.35s ease; background: #6a2a3a; }
-    #bober-row {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-    #bober-row .card { min-height: 48px; }
-    #bober-row.hidden { display: none; }
+    #btn-dam.hidden { display: none; }
     #shop-hint {
       grid-column: 1 / -1;
       text-align: center;
@@ -811,16 +804,6 @@
         <span class="name">Repair Dam</span>
         <span class="cost">24 $BOBER</span>
       </button>
-      <div id="bober-row">
-        <button class="card" id="btn-yell" type="button">
-          <span class="name">Scout Yell</span>
-          <span class="cost" id="yell-cost">45 $BOBER</span>
-        </button>
-        <button class="card" id="btn-laser" type="button">
-          <span class="name" id="laser-name">Bober Laser</span>
-          <span class="cost" id="laser-cost">80 $BOBER</span>
-        </button>
-      </div>
       <div id="shop-hint">Twin posts. Same fire. Harden the dam.</div>
     </footer>
     <p class="hub-link" id="also-play"><a href="https://ccosma1.github.io/green-home-games/">More games · Green Home Games</a></p>
@@ -840,166 +823,141 @@
   function fmtCost(n) { return n + " $BOBER"; }
   const REPAIR_HP = 22;
   const BUILD_NEXT = 15;
-  const SAVE_KEY = "bober-dam-campaign-v6";
+  const SAVE_KEY = "bober-dam-campaign-v7";
   const START_WOOD = [215,205,195,185,175,165,160,155,150,145,155,150,145,140,135,145,140,135,130,135];
-  const COST_YELL = 45;
-  const COST_LASER = 80;
-  const COST_HOT = 120;
   const HIST_SEEN_KEY = "bober-dam-history-seen";
   const SPEED_KEY = "bober-dam-speed";
 
   const KINDS = {
-    snout:   { hp: 20,  spd: 92,  wood: 9,  leak: 11, r: 13, armor: 0 },
-    pebble:  { hp: 15,  spd: 130, wood: 10, leak: 13, r: 11, armor: 0 },
-    rider:   { hp: 77,  spd: 40,  wood: 15, leak: 19, r: 20, armor: 0.35 },
-    biter:   { hp: 41,  spd: 100, wood: 13, leak: 14, r: 16, armor: 0 },
-    dart:    { hp: 19,  spd: 140, wood: 11, leak: 16, r: 12, armor: 0 },
-    stalker: { hp: 47,  spd: 88,  wood: 14, leak: 14, r: 15, armor: 0, stealth: true },
-    barrel:  { hp: 119, spd: 36,  wood: 18, leak: 22, r: 22, armor: 0.45 },
-    minnow:  { hp: 31,  spd: 95,  wood: 12, leak: 11, r: 13, armor: 0, spit: true },
-    foam:    { hp: 34,  spd: 70,  wood: 9,  leak: 10, r: 14, armor: 0, buff: 1.12 },
-    eddy:    { hp: 43,  spd: 85,  wood: 13, leak: 13, r: 15, armor: 0, split: true },
-    monk:    { hp: 60,  spd: 60,  wood: 17, leak: 16, r: 17, armor: 0.2, aura: true },
-    maw:     { hp: 340, spd: 45,  wood: 44, leak: 32, r: 28, armor: 0.25, boss: true }
+    snout:   { hp: 18,  spd: 92,  wood: 9,  leak: 11, r: 13, armor: 0 },
+    pebble:  { hp: 14,  spd: 130, wood: 10, leak: 13, r: 11, armor: 0 },
+    rider:   { hp: 71,  spd: 40,  wood: 15, leak: 19, r: 20, armor: 0.35 },
+    biter:   { hp: 38,  spd: 100, wood: 13, leak: 14, r: 16, armor: 0 },
+    dart:    { hp: 17,  spd: 140, wood: 11, leak: 16, r: 12, armor: 0 },
+    stalker: { hp: 43,  spd: 88,  wood: 14, leak: 14, r: 15, armor: 0, stealth: true },
+    barrel:  { hp: 110, spd: 36,  wood: 18, leak: 22, r: 22, armor: 0.45 },
+    minnow:  { hp: 29,  spd: 95,  wood: 12, leak: 11, r: 13, armor: 0, spit: true },
+    foam:    { hp: 31,  spd: 70,  wood: 9,  leak: 10, r: 14, armor: 0, buff: 1.12 },
+    eddy:    { hp: 40,  spd: 85,  wood: 13, leak: 13, r: 15, armor: 0, split: true },
+    monk:    { hp: 55,  spd: 60,  wood: 17, leak: 16, r: 17, armor: 0.2, aura: true },
+    dew:     { hp: 22,  spd: 48,  wood: 9,  leak: 12, r: 12, armor: 0, floaty: true },
+    maw:     { hp: 313, spd: 45,  wood: 44, leak: 32, r: 28, armor: 0.25, boss: true }
   };
   const KIND_CH = {
     s: "snout", r: "snout", p: "pebble", l: "rider", c: "rider", b: "biter",
     d: "dart", k: "stalker", a: "barrel", y: "minnow", f: "foam",
-    e: "eddy", n: "monk", w: "maw", m: "maw"
+    e: "eddy", n: "monk", u: "dew", w: "maw", m: "maw"
   };
 
   const GUNS = [
-    { id: "arrow",  name: "Arrows",  cost: 0,   range: 185, cd: 0.55, dmg: 10, splash: 0,  slow: 0, pspd: 880, kind: "arrow" },
-    { id: "bullet", name: "Bullets", cost: 70,  range: 200, cd: 0.42, dmg: 14, splash: 0,  slow: 0, pspd: 980, kind: "bullet" },
-    { id: "rocket", name: "Rockets", cost: 110, range: 210, cd: 0.70, dmg: 28, splash: 36, slow: 0, pspd: 740, kind: "rocket" },
-    { id: "flame",  name: "Flame",   cost: 160, range: 225, cd: 0.18, dmg: 9,  splash: 0,  slow: 0, pspd: 0, cone: 0.72, kind: "flame" }
+    { id: "arrow",  name: "Arrows",  cost: 0,   range: 210, cd: 0.55, dmg: 10, splash: 0,  slow: 0, pspd: 880, kind: "arrow" },
+    { id: "bullet", name: "Bullets", cost: 70,  range: 230, cd: 0.42, dmg: 14, splash: 0,  slow: 0, pspd: 980, kind: "bullet" },
+    { id: "rocket", name: "Rockets", cost: 110, range: 245, cd: 0.70, dmg: 28, splash: 36, slow: 0, pspd: 740, kind: "rocket" },
+    { id: "flame",  name: "Flame",   cost: 160, range: 265, cd: 0.18, dmg: 9,  splash: 0,  slow: 0, pspd: 0, cone: 0.72, kind: "flame" }
   ];
   const DAM_TIERS = [
     { id: "wood",  name: "Wood",  cost: 0,   leakMul: 1.00, hp: 100 },
     { id: "rock",  name: "Rock",  cost: 90,  leakMul: 0.85, hp: 140 },
     { id: "steel", name: "Steel", cost: 140, leakMul: 0.70, hp: 200 }
   ];
-  const CAMEOS = {
-    sink:     { src: "assets/cameo-sink.jpg",     line: "The Sink Special. Holds water. Barely.", sfx: "sink" },
-    l5:       { src: "assets/cameo-truck.jpg",    line: "Roads? We have a river.", sfx: "truck" },
-    l7:       { src: "assets/cameo-mars.jpg",     line: "Next stop: red planet dam.", sfx: "mars" },
-    l8:       { src: "assets/cameo-flame.jpg",    line: "This is fine. Also on fire.", sfx: "flame" },
-    tunnel:   { src: "assets/cameo-tunnel.jpg",   line: "Tunnel vision. Straight to the dam.", sfx: "tunnel" },
-    starlink: { src: "assets/cameo-starlink.jpg", line: "Starlink acquired. Lag: zero. Beavers: online.", sfx: "starlink" },
-    bot:      { src: "assets/cameo-bot.jpg",      line: "Bot on dam duty. Union: beavers.", sfx: "bot" },
-    doge:     { src: "assets/cameo-doge.jpg",     line: "Much dam. Very hold. Wow.", sfx: "doge" },
-    endgame:  { src: "assets/cameo-endgame.jpg",  line: "Everyone is here. The dam holds.", sfx: "finale" }
-  };
-
   function wv(interval, hp, spd, seq) {
     return { interval: interval, hpMul: hp, spdMul: spd, seq: seq };
   }
 
   const LEVELS = [
     { name: "Oasis Drip", wood: 215, dam: 100, waves: [
-      wv(1.15, 1.00, 1.00, "ssss"),
-      wv(1.05, 1.00, 1.00, "sssss"),
-      wv(0.95, 1.00, 1.00, "ssss")
+      wv(1.15, 1.00, 1.00, "ssss"), wv(1.05, 1.00, 1.00, "sssss"),
+      wv(1.00, 1.00, 1.00, "sssu"), wv(0.95, 1.00, 1.00, "sssss")
     ]},
     { name: "Driftwood", wood: 205, dam: 100, waves: [
-      wv(1.05, 1.00, 1.00, "sssss"),
-      wv(0.95, 1.00, 1.00, "ssssss"),
-      wv(0.88, 1.02, 1.00, "ssssss")
+      wv(1.05, 1.00, 1.00, "sssss"), wv(0.95, 1.00, 1.00, "ssssss"),
+      wv(0.92, 1.00, 1.00, "usssu"), wv(0.88, 1.02, 1.00, "ssssss")
     ]},
     { name: "Scout Line", wood: 195, dam: 100, waves: [
-      wv(0.95, 1.00, 1.00, "ssssss"),
-      wv(0.85, 1.00, 1.02, "sspssps"),
-      wv(0.75, 1.04, 1.04, "ppssspps")
+      wv(0.95, 1.00, 1.00, "ssssss"), wv(0.85, 1.00, 1.02, "sspssps"),
+      wv(0.75, 1.04, 1.04, "ppssspps"), wv(0.90, 1.00, 1.00, "ssssu")
     ]},
     { name: "Pack Night", wood: 185, dam: 100, waves: [
-      wv(0.92, 1.00, 1.00, "ssslsss"),
-      wv(0.78, 1.04, 1.02, "sslssls"),
-      wv(0.64, 1.08, 1.04, "slslsls")
+      wv(0.92, 1.00, 1.00, "ssslsss"), wv(0.78, 1.04, 1.02, "sslssls"),
+      wv(0.64, 1.08, 1.04, "slslsls"), wv(0.88, 1.00, 1.00, "ssssu")
     ]},
     { name: "Low Timber", wood: 175, dam: 100, waves: [
-      wv(0.88, 1.02, 1.02, "ssbsss"),
-      wv(0.72, 1.06, 1.04, "sbsbss"),
-      wv(0.58, 1.10, 1.06, "lsbsb")
+      wv(0.88, 1.02, 1.02, "ssbsss"), wv(0.72, 1.06, 1.04, "sbsbss"),
+      wv(0.58, 1.10, 1.06, "lsbsb"), wv(0.86, 1.00, 1.00, "ssssuu")
     ]},
     { name: "Thin Dam", wood: 165, dam: 100, waves: [
-      wv(0.90, 1.00, 1.00, "ssssssss"),
-      wv(0.70, 1.06, 1.04, "sblsbls"),
-      wv(0.56, 1.10, 1.06, "blssbls")
+      wv(0.90, 1.00, 1.00, "ssssssss"), wv(0.70, 1.06, 1.04, "sblsbls"),
+      wv(0.56, 1.10, 1.06, "blssbls"), wv(0.84, 1.00, 1.00, "ssssu"), wv(0.80, 1.00, 1.00, "ssssss")
     ]},
     { name: "Crab Walk", wood: 160, dam: 100, waves: [
-      wv(0.80, 1.04, 1.06, "sddsds"),
-      wv(0.62, 1.08, 1.10, "dsdsdsd"),
-      wv(0.48, 1.12, 1.14, "sddsdsd")
+      wv(0.80, 1.04, 1.06, "sddsds"), wv(0.62, 1.08, 1.10, "dsdsdsd"),
+      wv(0.48, 1.12, 1.14, "sddsdsd"), wv(0.82, 1.00, 1.00, "ssssu"), wv(0.78, 1.00, 1.00, "ssssss")
     ]},
     { name: "Fast Water", wood: 155, dam: 100, waves: [
-      wv(0.92, 1.02, 1.02, "sskkss"),
-      wv(0.74, 1.06, 1.04, "sksksks"),
-      wv(0.60, 1.08, 1.06, "kssksks")
+      wv(0.92, 1.02, 1.02, "sskkss"), wv(0.74, 1.06, 1.04, "sksksks"),
+      wv(0.60, 1.08, 1.06, "kssksks"), wv(0.84, 1.00, 1.00, "ssssu"), wv(0.80, 1.00, 1.00, "usssu")
     ]},
     { name: "Pocket Wood", wood: 150, dam: 100, waves: [
-      wv(0.74, 1.06, 1.04, "sskkss"),
-      wv(0.56, 1.10, 1.06, "sksksks"),
-      wv(0.44, 1.14, 1.08, "kksskkss")
+      wv(0.74, 1.06, 1.04, "sskkss"), wv(0.56, 1.10, 1.06, "sksksks"),
+      wv(0.44, 1.14, 1.08, "kksskkss"), wv(0.82, 1.00, 1.00, "ssssuu"), wv(0.78, 1.00, 1.00, "ssssss")
     ]},
     { name: "Night Rush", wood: 145, dam: 100, waves: [
-      wv(0.80, 1.04, 1.02, "sssksss"),
-      wv(0.64, 1.08, 1.04, "sksasks"),
-      wv(0.50, 1.12, 1.06, "saksaks")
+      wv(0.80, 1.04, 1.02, "sssksss"), wv(0.64, 1.08, 1.04, "sksasks"),
+      wv(0.50, 1.12, 1.06, "saksaks"), wv(0.82, 1.00, 1.00, "ssssu"), wv(0.76, 1.00, 1.00, "ssssss")
     ]},
     { name: "Hairline", wood: 155, dam: 100, waves: [
-      wv(0.88, 1.02, 1.02, "ssssssssss"),
-      wv(0.58, 1.08, 1.04, "ysysys"),
-      wv(0.46, 1.12, 1.06, "syaysy")
+      wv(0.88, 1.02, 1.02, "ssssssssss"), wv(0.58, 1.08, 1.04, "ysysys"),
+      wv(0.46, 1.12, 1.06, "syaysy"), wv(0.80, 1.00, 1.00, "ssssuu"), wv(0.76, 1.00, 1.00, "ssssss")
     ]},
     { name: "Last Stand", wood: 150, dam: 100, waves: [
-      wv(0.72, 1.04, 1.02, "ssfss"),
-      wv(0.56, 1.08, 1.04, "sfsfs"),
-      wv(0.44, 1.10, 1.06, "ssfsy")
+      wv(0.72, 1.04, 1.02, "ssfss"), wv(0.56, 1.08, 1.04, "sfsfs"),
+      wv(0.44, 1.10, 1.06, "ssfsy"), wv(0.80, 1.00, 1.00, "ssssu"), wv(0.76, 1.00, 1.00, "ssssss")
     ]},
     { name: "Spring Leak", wood: 145, dam: 100, waves: [
-      wv(0.64, 1.06, 1.04, "ssyyss"),
-      wv(0.50, 1.10, 1.06, "ysfys"),
-      wv(0.38, 1.12, 1.08, "syfysy")
+      wv(0.64, 1.06, 1.04, "ssyyss"), wv(0.50, 1.10, 1.06, "ysfys"),
+      wv(0.38, 1.12, 1.08, "syfysy"), wv(0.80, 1.00, 1.00, "ssssuu"),
+      wv(0.76, 1.00, 1.00, "ssssss"), wv(0.74, 1.00, 1.00, "usssu")
     ]},
     { name: "Twin Bend", wood: 140, dam: 100, waves: [
-      wv(0.60, 1.08, 1.06, "sseess"),
-      wv(0.46, 1.12, 1.08, "eseses"),
-      wv(0.34, 1.16, 1.10, "seesees")
+      wv(0.60, 1.08, 1.06, "sseess"), wv(0.46, 1.12, 1.08, "eseses"),
+      wv(0.34, 1.16, 1.10, "seesees"), wv(0.80, 1.00, 1.00, "ssssu"),
+      wv(0.76, 1.00, 1.00, "ssssss"), wv(0.74, 1.00, 1.00, "usssu")
     ]},
     { name: "Armor Night", wood: 135, dam: 100, waves: [
-      wv(0.66, 1.08, 1.04, "sseess"),
-      wv(0.50, 1.12, 1.06, "easaes"),
-      wv(0.38, 1.14, 1.08, "eeaass")
+      wv(0.66, 1.08, 1.04, "sseess"), wv(0.50, 1.12, 1.06, "easaes"),
+      wv(0.38, 1.14, 1.08, "eeaass"), wv(0.80, 1.00, 1.00, "ssssuu"),
+      wv(0.76, 1.00, 1.00, "ssssss"), wv(0.74, 1.00, 1.00, "usssu")
     ]},
     { name: "Timber Tax", wood: 145, dam: 100, waves: [
-      wv(0.64, 1.08, 1.04, "ssnnss"),
-      wv(0.50, 1.12, 1.06, "nsnsns"),
-      wv(0.38, 1.16, 1.08, "snnsnns")
+      wv(0.64, 1.08, 1.04, "ssnnss"), wv(0.50, 1.12, 1.06, "nsnsns"),
+      wv(0.38, 1.16, 1.08, "snnsnns"), wv(0.80, 1.00, 1.00, "ssssu"),
+      wv(0.76, 1.00, 1.00, "ssssss"), wv(0.74, 1.00, 1.00, "usssu")
     ]},
     { name: "Flood Gate", wood: 140, dam: 100, waves: [
-      wv(0.56, 1.10, 1.06, "nnyynn"),
-      wv(0.42, 1.14, 1.08, "nynyny"),
-      wv(0.32, 1.18, 1.10, "nnyanyn")
+      wv(0.56, 1.10, 1.06, "nnyynn"), wv(0.42, 1.14, 1.08, "nynyny"),
+      wv(0.32, 1.18, 1.10, "nnyanyn"), wv(0.80, 1.00, 1.00, "ssssuu"),
+      wv(0.76, 1.00, 1.00, "ssssss"), wv(0.74, 1.00, 1.00, "usssu")
     ]},
     { name: "Cone Drill", wood: 135, dam: 100, waves: [
-      wv(0.56, 1.10, 1.06, "ssnens"),
-      wv(0.42, 1.12, 1.08, "nenens"),
-      wv(0.32, 1.16, 1.10, "nneess")
+      wv(0.56, 1.10, 1.06, "ssnens"), wv(0.42, 1.12, 1.08, "nenens"),
+      wv(0.32, 1.16, 1.10, "nneess"), wv(0.80, 1.00, 1.00, "ssssu"),
+      wv(0.76, 1.00, 1.00, "ssssss"), wv(0.74, 1.00, 1.00, "usssu")
     ]},
     { name: "Cracked Wall", wood: 130, dam: 100, waves: [
-      wv(0.82, 1.00, 1.00, "sssssssssssssssss"),
-      wv(0.50, 1.10, 1.06, "nanans"),
-      wv(0.38, 1.14, 1.08, "annaans")
+      wv(0.82, 1.00, 1.00, "sssssssssssssssss"), wv(0.50, 1.10, 1.06, "nanans"),
+      wv(0.38, 1.14, 1.08, "annaans"), wv(0.80, 1.00, 1.00, "ssssuu"),
+      wv(0.76, 1.00, 1.00, "ssssss"), wv(0.74, 1.00, 1.00, "usssu")
     ]},
     { name: "Cataract Maw", wood: 135, dam: 100, waves: [
-      wv(0.80, 1.00, 1.00, "sssssssssssssssss"),
-      wv(0.50, 1.06, 1.04, "nanaen"),
-      wv(0.38, 1.10, 1.06, "aannaann"),
-      wv(0.70, 1.00, 0.82, "w")
+      wv(0.80, 1.00, 1.00, "sssssssssssssssss"), wv(0.50, 1.06, 1.04, "nanaen"),
+      wv(0.38, 1.10, 1.06, "aannaann"), wv(0.80, 1.00, 1.00, "ssssu"),
+      wv(0.76, 1.00, 1.00, "ssssss"), wv(0.70, 1.00, 0.82, "w")
     ]}
   ];
-  const PATH_N = [
-    [0.50, 0.07], [0.34, 0.18], [0.64, 0.32], [0.36, 0.46], [0.66, 0.58], [0.38, 0.70], [0.50, 0.76]
+  const LANE_N = [
+    [[0.24, 0.05], [0.16, 0.16], [0.20, 0.28], [0.28, 0.42], [0.38, 0.56], [0.46, 0.70], [0.50, 0.90]],
+    [[0.50, 0.04], [0.46, 0.16], [0.54, 0.28], [0.50, 0.42], [0.50, 0.56], [0.50, 0.70], [0.50, 0.90]],
+    [[0.76, 0.05], [0.84, 0.16], [0.80, 0.28], [0.72, 0.42], [0.62, 0.56], [0.54, 0.70], [0.50, 0.90]]
   ];
   const DAM_GAP = 8;
 
@@ -1072,6 +1030,8 @@
 
   let viewW = 360, viewH = 640, dpr = 1;
   let path = [], pathLen = 1, pathCum = [0];
+  let lanes = [];
+  let spawnLane = 0;
   let pads = [];
   let dam = { x: 0, y: 0, w: 0, h: 0 };
   let riverW = 46;
@@ -1086,14 +1046,6 @@
   let towerLv = 0;
   let damLv = 0;
   let selectedTower = 0;
-  let yellT = 0;
-  let yellUsed = false;
-  let laserArmed = false;
-  let hotLaser = false;
-  let laserHold = false;
-  let laserCd = 0;
-  let laserFireT = 0;
-  let laserTgt = null;
   let damHp = 100;
   let hpShown = 100;
   let damFlash = 0;
@@ -1233,7 +1185,7 @@
     levelsEl.classList.add("hidden");
     endcard.classList.add("hidden");
     pausedEl.classList.add("hidden");
-    cameoEl.classList.add("hidden");
+    if (cameoEl) cameoEl.classList.add("hidden");
     if (tipEl) tipEl.classList.add("hidden");
     if (histMenu) histMenu.classList.add("hidden");
     if (museumEl) museumEl.classList.add("hidden");
@@ -1324,12 +1276,6 @@
       id: "pests", name: "New Pests", at: 8,
       frames: [
         { src: "assets/history/gh10-pests.jpg", sub: "New Pests.", line: "New pests from the mouth." }
-      ]
-    },
-    {
-      id: "beam", name: "Bober Finds a Beam", at: 9,
-      frames: [
-        { src: "assets/history/gh10-beam.jpg", sub: "Assist.", line: "Bober finds a beam. Not a third post." }
       ]
     },
     {
@@ -1478,13 +1424,13 @@
 
   const MUSEUM = [
     { id: "arrow", tab: "towers", name: "Arrows", img: "assets/museum/arrow.jpg", at: 1,
-      blurb: "Tier 0. Both posts fire wood arrows. Range 185.", tease: "Two bows. One ladder." },
+      blurb: "Tier 0. Both posts fire wood arrows. Range 210.", tease: "Two bows. One ladder." },
     { id: "bullet", tab: "towers", name: "Bullets", img: "assets/museum/bullet.jpg", at: 2,
-      blurb: "Tier 1. 70 $BOBER. Range 200.", tease: "The wall learns to snap." },
+      blurb: "Tier 1. 70 $BOBER. Range 230.", tease: "The wall learns to snap." },
     { id: "rocket", tab: "towers", name: "Rockets", img: "assets/museum/rocket.jpg", at: 4,
-      blurb: "Tier 2. 110 $BOBER. Splash 36. Range 210.", tease: "Both muzzles boom together." },
+      blurb: "Tier 2. 110 $BOBER. Splash 36. Range 245.", tease: "Both muzzles boom together." },
     { id: "flame", tab: "towers", name: "Flame", img: "assets/museum/flame.jpg", at: 8,
-      blurb: "Tier 3. 160 $BOBER. Range 225. Cone DPS beats Rockets.", tease: "The stream burns." },
+      blurb: "Tier 3. 160 $BOBER. Range 265. Cone DPS beats Rockets.", tease: "The stream burns." },
     { id: "twin", tab: "towers", name: "Twin Tower", img: "assets/museum/twin.jpg", at: 1,
       blurb: "Two log posts on the dam. Same fire. Crew on top.", tease: "Buildings, not beaver-guns." },
     { id: "snout", tab: "foes", name: "Drift Snout", img: "assets/museum/snout.jpg", at: 1,
@@ -1522,11 +1468,9 @@
     { id: "stream", tab: "dam", name: "Big Stream", img: "assets/museum/stream.jpg", at: 1, mile: true,
       blurb: "Natural river. Hits the wall.", tease: "A road of water." },
     { id: "crew", tab: "dam", name: "Repair Crew Bober", img: "assets/museum/crew.jpg", at: 1, mile: true,
-      blurb: "Repair 24 $BOBER. +22 HP. Not a gun.", tease: "A hammer behind the wall." },
-    { id: "yell", tab: "dam", name: "Scout Yell", img: "assets/museum/yell.jpg", at: 6,
-      blurb: "Cost 45. Short buff both posts. Once per wave.", tease: "A shout from the wall." },
-    { id: "laser", tab: "dam", name: "Bober Laser", img: "assets/museum/laser.jpg", at: 8,
-      blurb: "Arm 80 $BOBER. Hold-to-carve. CD 2.0. Not a third tower. Does not replace gun upgrades.", tease: "A green line from the face." }
+      blurb: "Repair 24 $BOBER. +22 HP. Watcher on the apron. Not a gun.", tease: "A hammer behind the wall." },
+    { id: "dew", tab: "foes", name: "Dew Floater", img: "assets/museum/dew.jpg", at: 1,
+      blurb: "Soft float. Slow drip. Easy to ignore until it isn’t. HP 22. Leak 12.", tease: "A drop with ideas." }
   ];
   let musTab = "towers";
   let museumFrom = "splash";
@@ -1544,8 +1488,6 @@
     if (towerLv >= 1) save.seen.bullet = true;
     if (towerLv >= 2) save.seen.rocket = true;
     if (towerLv >= 3) save.seen.flame = true;
-    if (yellUnlocked()) save.seen.yell = true;
-    if (laserUnlocked()) save.seen.laser = true;
     if (damLv >= 1) save.seen.rock = true;
     if (damLv >= 2) save.seen.steel = true;
     const L = LEVELS[levelIndex];
@@ -1561,6 +1503,7 @@
       if (seq.indexOf("f") >= 0) save.seen.foam = true;
       if (seq.indexOf("e") >= 0) save.seen.eddy = true;
       if (seq.indexOf("n") >= 0) save.seen.monk = true;
+      if (seq.indexOf("u") >= 0) save.seen.dew = true;
       if (seq.indexOf("w") >= 0 || seq.indexOf("m") >= 0) save.seen.maw = true;
     }
     writeSave();
@@ -1570,8 +1513,6 @@
     if (save.seen && save.seen[card.id]) return true;
     if (card.id === "bullet") return towerLv >= 1;
     if (card.id === "flame") return towerLv >= 3 || (save.seen && save.seen.flame);
-    if (card.id === "yell") return (save.unlocked | 0) >= 6;
-    if (card.id === "laser") return towerLv >= 1 || (save.unlocked | 0) >= 9;
     if (card.id === "steel") return damLv >= 2 || (save.seen && save.seen.steel);
     if ((card.at || 1) <= 1) return true;
     return false;
@@ -1676,13 +1617,15 @@
 
   function dismissCameo() {
     if (cameoTimer) { clearTimeout(cameoTimer); cameoTimer = 0; }
-    cameoEl.classList.add("hidden");
+    if (cameoEl) cameoEl.classList.add("hidden");
     const cb = cameoDone;
     cameoDone = null;
     if (cb) cb();
   }
   function showCameo(key, after) {
-    const c = CAMEOS[key];
+    if (after) after();
+    return;
+    const c = null;
     if (!c) { after(); return; }
     save.cameos[key] = true;
     writeSave();
@@ -1710,49 +1653,65 @@
     canvas.height = Math.floor(viewH * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const progress = enemies.map(function (e) { return e.dist / pathLen; });
+    const progress = enemies.map(function (e) {
+      const plen = laneLen(e.lane);
+      return plen > 0 ? e.dist / plen : 0;
+    });
     dam.h = Math.max(70, Math.round(viewH * 0.16));
-    dam.w = Math.min(viewW * 0.88, viewW - 16);
+    dam.w = Math.min(viewW * 0.94, viewW - 8);
     dam.x = (viewW - dam.w) / 2;
     dam.y = viewH - dam.h - 6;
-    const frameL = 8, frameR = 8, frameT = Math.round(viewH * 0.08);
+    const frameL = Math.max(4, viewW * 0.02), frameR = frameL, frameT = Math.round(viewH * 0.06);
     const mouth = dam.y + 4;
-    path = PATH_N.map(function (p) {
-      return {
-        x: frameL + p[0] * (viewW - frameL - frameR),
-        y: frameT + p[1] * (mouth - frameT)
-      };
+    lanes = LANE_N.map(function (pts) {
+      const mapped = pts.map(function (p) {
+        return {
+          x: frameL + p[0] * (viewW - frameL - frameR),
+          y: frameT + p[1] * (mouth - frameT)
+        };
+      });
+      mapped[mapped.length - 1].y = mouth;
+      mapped[mapped.length - 1].x = viewW * 0.5;
+      const cum = [0];
+      let len = 0;
+      for (let i = 1; i < mapped.length; i++) {
+        len += Math.hypot(mapped[i].x - mapped[i - 1].x, mapped[i].y - mapped[i - 1].y);
+        cum.push(len);
+      }
+      return { path: mapped, cum: cum, len: Math.max(1, len) };
     });
-    path[path.length - 1].y = mouth;
-    pathCum = [0];
-    pathLen = 0;
-    for (let i = 1; i < path.length; i++) {
-      const dx = path[i].x - path[i - 1].x, dy = path[i].y - path[i - 1].y;
-      pathLen += Math.hypot(dx, dy);
-      pathCum.push(pathLen);
-    }
-    pathLen = Math.max(1, pathLen);
-    enemies.forEach(function (e, i) { e.dist = progress[i] * pathLen; });
+    path = lanes[1].path;
+    pathCum = lanes[1].cum;
+    pathLen = lanes[1].len;
+    enemies.forEach(function (e, i) { e.dist = progress[i] * laneLen(e.lane); });
 
-    riverW = Math.max(76, Math.min(viewW * 0.26, 118));
+    riverW = Math.max(52, Math.min(viewW * 0.18, 78));
     const padR = Math.max(26, Math.min(viewW, viewH) * 0.05);
     pads = [
-      { x: dam.x + dam.w * 0.38, y: dam.y + 6, r: padR, type: "left", rank: towerLv, locked: false },
-      { x: dam.x + dam.w * 0.62, y: dam.y + 6, r: padR, type: "right", rank: towerLv, locked: false }
+      { x: dam.x + dam.w * 0.30, y: dam.y + 6, r: padR, type: "left", rank: towerLv, locked: false },
+      { x: dam.x + dam.w * 0.70, y: dam.y + 6, r: padR, type: "right", rank: towerLv, locked: false }
     ];
     const bb = boberBounds();
     if (!bober.x) bober.x = (bb.left + bb.right) * 0.5;
     else bober.x = Math.max(bb.left, Math.min(bb.right, bober.x));
-    bober.y = dam.y + 18;
+    bober.y = dam.y + 22;
   }
 
+  function laneRec(lane) {
+    const i = Math.max(0, Math.min(lanes.length - 1, lane == null ? 1 : lane | 0));
+    return lanes[i] || lanes[1] || { path: path, cum: pathCum, len: pathLen };
+  }
+  function laneLen(lane) {
+    return laneRec(lane).len || pathLen || 1;
+  }
   function boberBounds() {
-    return { left: dam.x + 36, right: dam.x + dam.w - 36 };
+    const leftPost = pads[0] ? pads[0].x : dam.x + dam.w * 0.30;
+    return { left: dam.x + 10, right: Math.max(dam.x + 28, leftPost - 42) };
   }
   function resetBober() {
     const b = boberBounds();
     bober.x = (b.left + b.right) * 0.5;
-    bober.y = dam.y + 18;
+    bober.y = dam.y + 22;
     bober.tilt = 0;
     bober.peek = -0.16;
     bober.peekT = 1.6;
@@ -1797,9 +1756,9 @@
 
     let wantTilt = 0;
     let wantPeek = bober.peek;
-    bober.y = dam.y + 18;
+    bober.y = dam.y + 22;
     if (threat) {
-      const p = pointAt(threat.dist);
+      const p = pointAt(threat.dist, threat.lane);
       const wantX = Math.max(box.left, Math.min(box.right, p.x));
       const lerp = 1 - Math.exp(-dt * 6.4);
       let dx = (wantX - (bober.x || wantX)) * lerp;
@@ -1911,22 +1870,27 @@
     }
   }
 
-  function pointAt(dist) {
-    const d = Math.max(0, Math.min(pathLen, dist));
-    for (let i = 1; i < pathCum.length; i++) {
-      if (d <= pathCum[i]) {
-        const span = pathCum[i] - pathCum[i - 1] || 1;
-        const t = (d - pathCum[i - 1]) / span;
+  function pointAt(dist, lane) {
+    const L = laneRec(lane);
+    const pts = L.path || path;
+    const cum = L.cum || pathCum;
+    const plen = L.len || pathLen;
+    if (!pts || !pts.length) return { x: viewW * 0.5, y: 40 };
+    const d = Math.max(0, Math.min(plen, dist));
+    for (let i = 1; i < cum.length; i++) {
+      if (d <= cum[i]) {
+        const span = cum[i] - cum[i - 1] || 1;
+        const t = (d - cum[i - 1]) / span;
         return {
-          x: path[i - 1].x + (path[i].x - path[i - 1].x) * t,
-          y: path[i - 1].y + (path[i].y - path[i - 1].y) * t
+          x: pts[i - 1].x + (pts[i].x - pts[i - 1].x) * t,
+          y: pts[i - 1].y + (pts[i].y - pts[i - 1].y) * t
         };
       }
     }
-    return { x: path[path.length - 1].x, y: path[path.length - 1].y };
+    return { x: pts[pts.length - 1].x, y: pts[pts.length - 1].y };
   }
-  function tangentAt(dist) {
-    const a = pointAt(dist), b = pointAt(dist + 8);
+  function tangentAt(dist, lane) {
+    const a = pointAt(dist, lane), b = pointAt(dist + 8, lane);
     return Math.atan2(b.y - a.y, b.x - a.x);
   }
 
@@ -1934,7 +1898,7 @@
     if (!running || phase === "splash" || phase === "levels") return false;
     if (damMax > 0 && damHp / damMax < 0.4) return true;
     for (let i = 0; i < enemies.length; i++) {
-      if (enemies[i].dist >= pathLen * 0.8) return true;
+      if (enemies[i].dist >= laneLen(enemies[i].lane) * 0.8) return true;
     }
     return false;
   }
@@ -1999,39 +1963,16 @@
     if (gc) gc.textContent = ng ? fmtCost(ng.cost) : "MAX";
     if (dn) dn.textContent = "DAM " + damSkin();
     const nd = nextDam();
-    if (dc) dc.textContent = nd ? fmtCost(nd.cost) : "MAX";
+    if (btnDam) {
+      btnDam.classList.toggle("hidden", !nd);
+      btnDam.classList.toggle("on", false);
+      if (dc && nd) dc.textContent = fmtCost(nd.cost);
+    }
     if (btnGun) btnGun.classList.toggle("on", selectedTower >= 0);
-    if (btnDam) btnDam.classList.toggle("on", false);
     btnRepair.classList.toggle("need", running && damHp < damMax && wood < COST_REPAIR);
     if (shopHint) {
       shopHint.classList.remove("hidden");
-      shopHint.textContent = "Twin posts. Same fire. Laser assists, not a third post.";
-    }
-    const yellBtn = document.getElementById("btn-yell");
-    const laserBtn = document.getElementById("btn-laser");
-    const row = document.getElementById("bober-row");
-    if (row) row.classList.toggle("hidden", !running);
-    if (yellBtn) {
-      yellBtn.disabled = !yellUnlocked() || yellUsed || yellT > 0;
-      yellBtn.style.opacity = yellUnlocked() ? "1" : "0.45";
-    }
-    if (laserBtn) {
-      const ln = document.getElementById("laser-name");
-      const lc = document.getElementById("laser-cost");
-      if (!laserUnlocked()) {
-        if (ln) ln.textContent = "Bober Laser";
-        if (lc) lc.textContent = "L8–10 / Bullets";
-        laserBtn.disabled = true;
-      } else if (!laserArmed) {
-        if (ln) ln.textContent = hotLaser ? "Hot Laser" : "Arm Laser";
-        if (lc) lc.textContent = fmtCost(hotLaser ? COST_HOT : COST_LASER);
-        laserBtn.disabled = false;
-      } else {
-        if (ln) ln.textContent = hotLaser ? "Hot Laser" : "Laser";
-        if (lc) lc.textContent = laserCd > 0 ? laserCd.toFixed(1) + "s" : "HOLD";
-        laserBtn.disabled = false;
-        laserBtn.classList.toggle("on", laserHold);
-      }
+      shopHint.textContent = "Twin posts. Same fire. Harden the dam.";
     }
     btnPause.classList.toggle("on", paused);
     btnPause.textContent = paused ? "▶" : "⏸";
@@ -2058,14 +1999,7 @@
     wave = 0;
     towerLv = 0;
     selectedTower = 0;
-    yellT = 0;
-    yellUsed = false;
-    laserArmed = false;
-    hotLaser = levelIndex >= 14;
-    laserHold = false;
-    laserCd = 0;
-    laserFireT = 0;
-    laserTgt = null;
+    spawnLane = 0;
     enemies = [];
     towers = [];
     shots = [];
@@ -2153,7 +2087,6 @@
     if (phase === "wave" && (spawnQ.length || enemies.length)) return;
     wave += 1;
     waveLeaks = 0;
-    yellUsed = false;
     const w = WAVES[wave - 1];
     spawnQ = w.seq.split("");
     spawnT = 0.25;
@@ -2183,31 +2116,24 @@
     paused = false;
     bober.celebT = 0.6;
     pausedEl.classList.add("hidden");
-    if (!save.cameos) save.cameos = {};
     const earned = starsFromHp(Math.max(0, damHp), damMax);
     if (earned > (save.stars[levelIndex] || 0)) save.stars[levelIndex] = earned;
     if (levelIndex + 1 < LEVELS.length) save.unlocked = Math.max(save.unlocked, levelIndex + 2);
-    const beat = cameoForClear(levelIndex);
     writeSave();
     endTitle.textContent = "DAM HELD";
     endStars.textContent = starString(earned);
     const endHero = document.getElementById("end-hero");
-    if (endHero) endHero.src = "assets/clear.jpg?v=gh10";
-    endMsg.textContent = (damSkin() === "Wood" ? "Wood stands. Wave done." : "Dam held. River blinked.") + "\n" + starWhy(earned, Math.max(0, damHp), damMax, totalLeaks);
+    const stills = ["assets/clear.jpg?v=gh11", "assets/clear-b.jpg?v=gh11"];
+    if (endHero) endHero.src = stills[levelIndex % stills.length];
+    endMsg.textContent = "Dam held. River blinked.\n" + starWhy(earned, Math.max(0, damHp), damMax, totalLeaks);
     endMsg.textContent += "\nDam " + damSkin() + ".";
     if (levelIndex + 1 >= LEVELS.length) endMsg.textContent += "\nCampaign clear.";
     else endMsg.textContent += "\nNext level unlocked.";
     btnAgain.textContent = "LEVELS";
     document.getElementById("app").classList.add("booting");
-    if (beat) {
-      closeHistorySilent();
-      hideMenus();
-      showCameo(beat, revealEndcard);
-    } else {
-      SFX.tone(392, 0.15, "square", 0.05);
-      SFX.tone(523, 0.2, "square", 0.05, 784);
-      revealEndcard();
-    }
+    SFX.tone(392, 0.15, "square", 0.05);
+    SFX.tone(523, 0.2, "square", 0.05, 784);
+    revealEndcard();
   }
   function lose() {
     phase = "lose";
@@ -2234,8 +2160,11 @@
     const k = KINDS[kind];
     const n = kind === "foam" ? 3 : 1;
     for (let i = 0; i < n; i++) {
+      const lane = spawnLane % 3;
+      spawnLane += 1;
       enemies.push({
         kind: kind,
+        lane: lane,
         dist: -i * 12,
         hp: k.hp * hpMul,
         max: k.hp * hpMul,
@@ -2277,7 +2206,7 @@
   }
 
   function enemyStealth(e) {
-    return !!(e.stealth && e.dist < pathLen * 0.45);
+    return !!(e.stealth && e.dist < laneLen(e.lane) * 0.45);
   }
   function firstInRange(x, y, range) {
     let best = null, bestDist = 1e9, bestPct = 2;
@@ -2286,7 +2215,7 @@
       if (!e || e.hp <= 0 || e.ally) continue;
       if (e.kind === "bober" || e.kind === "dam") continue;
       if (enemyStealth(e)) continue;
-      const p = pointAt(e.dist);
+      const p = pointAt(e.dist, e.lane);
       if (Math.hypot(p.x - x, p.y - y) > range + e.r) continue;
       const pct = e.max > 0 ? e.hp / e.max : 1;
       if (e.dist < bestDist - 1 || (Math.abs(e.dist - bestDist) <= 1 && pct < bestPct)) {
@@ -2301,7 +2230,7 @@
   function hurt(e, raw, pierce) {
     const dmg = pierce ? raw : raw * (1 - e.armor);
     e.hp -= dmg;
-    const p = pointAt(e.dist);
+    const p = pointAt(e.dist, e.lane);
     fx.push({ kind: "chip", x: p.x, y: p.y, vx: (Math.random() - 0.5) * 40, vy: -30 - Math.random() * 30, t: 0.35, col: CREAM });
     if (e.hp <= 0) {
       wood += e.wood;
@@ -2386,45 +2315,6 @@
     markPlaySeen();
     hud();
   }
-  function laserOrigin() {
-    return { x: viewW * 0.5, y: dam.y };
-  }
-  function laserRange() { return 120; }
-  function laserDmg() { return hotLaser ? 12 : 8; }
-  function laserCool() { return hotLaser ? 1.6 : 2.0; }
-  function laserUnlocked() {
-    return towerLv >= 1 || (save.unlocked | 0) >= 9;
-  }
-  function yellUnlocked() {
-    return (save.unlocked | 0) >= 6;
-  }
-  function tickLaser(dt) {
-    if (!running || paused || phase !== "wave" || !laserArmed) {
-      laserTgt = null;
-      return;
-    }
-    if (!laserHold) {
-      if (laserFireT > 0.05) laserCd = Math.max(laserCd, laserCool());
-      laserFireT = 0;
-      laserTgt = null;
-      return;
-    }
-    if (laserCd > 0) { laserTgt = null; return; }
-    const o = laserOrigin();
-    laserTgt = firstInRange(o.x, o.y, laserRange());
-    if (!laserTgt) return;
-    const prev = laserFireT;
-    laserFireT += dt;
-    if (Math.floor(laserFireT / 0.18) > Math.floor(prev / 0.18)) {
-      hurt(laserTgt, laserDmg());
-      const p = pointAt(laserTgt.dist);
-      fx.push({ kind: "flame", x: p.x, y: p.y, t: 0.12, col: "#7ED957" });
-    }
-    if (laserFireT >= 1.0) {
-      laserCd = laserCool();
-      laserFireT = 0;
-    }
-  }
   function tapPad(padIndex) {
     if (!running || phase === "win" || phase === "lose") return;
     if (selectedTower === padIndex) upgradeGuns();
@@ -2470,10 +2360,7 @@
     tWorld += dt;
     if (shake > 0) shake = Math.max(0, shake - dt * 6);
     if (padPulseT > 0) padPulseT = Math.max(0, padPulseT - dt);
-    if (yellT > 0) yellT = Math.max(0, yellT - dt);
-    if (laserCd > 0) laserCd = Math.max(0, laserCd - dt);
     tickBober(dt);
-    tickLaser(dt);
 
     if (phase === "build" && wave > 0) {
       buildT -= dt;
@@ -2501,13 +2388,13 @@
         e.hp -= (e.dotDps || 0) * dt;
         if (e.hp <= 0) { hurt(e, 0); if (phase === "lose") return; continue; }
       }
-      const pNow = pointAt(e.dist);
+      const pNow = pointAt(e.dist, e.lane);
       for (let p = 0; p < puddles.length; p++) {
         const u = puddles[p];
         if (Math.hypot(pNow.x - u.x, pNow.y - u.y) <= u.r + e.r) e.slowT = Math.max(e.slowT, 0.35);
       }
       if (e.boss && !e.windMid) {
-        const ep = pointAt(e.dist);
+        const ep = pointAt(e.dist, e.lane);
         for (let t = 0; t < pads.length; t++) {
           if (Math.hypot(ep.x - pads[t].x, ep.y - pads[t].y) <= 175 + e.r) {
             e.windMid = true;
@@ -2525,7 +2412,7 @@
         if (e.spitT <= 0) {
           e.spitT = 1.8;
           hitDam(5);
-          const dp = pointAt(e.dist);
+          const dp = pointAt(e.dist, e.lane);
           fx.push({ kind: "flame", x: dp.x, y: dam.y, t: 0.2, col: "#8ab4ff" });
           if (phase === "lose") return;
         }
@@ -2535,14 +2422,14 @@
       if (e.kind !== "monk") {
         for (let m = 0; m < enemies.length; m++) {
           if (!enemies[m].aura) continue;
-          const mp = pointAt(enemies[m].dist);
+          const mp = pointAt(enemies[m].dist, enemies[m].lane);
           if (Math.hypot(pNow.x - mp.x, pNow.y - mp.y) < 90) aura = Math.max(aura, 1.12);
         }
       }
-      e.dist += e.spd * slow * aura * dt;
-      if (e.dist >= pathLen) {
+      e.dist += e.spd * slow * aura * dt * (e.kind === "dew" ? 0.85 : 1);
+      if (e.dist >= laneLen(e.lane)) {
         const leak = e.leak;
-        const p = pointAt(pathLen);
+        const p = pointAt(laneLen(e.lane), e.lane);
         for (let n = 0; n < 14; n++) {
           fx.push({
             kind: "water",
@@ -2586,7 +2473,7 @@
         want = Math.atan2(lane.y - pad.y, lane.x - pad.x);
       } else if (tgt) {
         const lead = tgt.spd * 0.07;
-        const p = pointAt(tgt.dist + lead);
+        const p = pointAt(tgt.dist + lead, tgt.lane);
         want = Math.atan2(p.y - pad.y, p.x - pad.x);
       }
       let dAng = want - tw.ang;
@@ -2595,13 +2482,13 @@
       tw.ang += dAng * Math.min(1, 1 - Math.exp(-dt * 8.5));
       if (tgt) {
         if (tw.cd <= 0) {
-          tw.cd = spec.cd / (yellT > 0 ? 1.15 : 1);
+          tw.cd = spec.cd;
           tw.recoil = 0.08;
           if (spec.cone) {
             tw.coneT = 0.12;
             for (let j = enemies.length - 1; j >= 0; j--) {
               const e = enemies[j];
-              const ep = pointAt(e.dist);
+              const ep = pointAt(e.dist, e.lane);
               const dist = Math.hypot(ep.x - pad.x, ep.y - pad.y);
               let dAng = Math.atan2(ep.y - pad.y, ep.x - pad.x) - tw.ang;
               while (dAng > Math.PI) dAng -= Math.PI * 2;
@@ -2613,7 +2500,7 @@
             }
             SFX.tone(200, 0.05, "sawtooth", 0.03, 90);
           } else {
-            const aim = pointAt(tgt.dist + tgt.spd * 0.07);
+            const aim = pointAt(tgt.dist + tgt.spd * 0.07, tgt.lane);
             shots.push({
               type: tw.type,
               x: pad.x + Math.cos(tw.ang) * 20,
@@ -2646,7 +2533,7 @@
     for (let i = shots.length - 1; i >= 0; i--) {
       const s = shots[i];
       if (s.target && s.target.hp > 0) {
-        const p = pointAt(s.target.dist);
+        const p = pointAt(s.target.dist, s.target.lane);
         s.tx = p.x; s.ty = p.y;
       }
       const dx = s.tx - s.x, dy = s.ty - s.y;
@@ -2659,7 +2546,7 @@
           puddles.push({ x: s.tx, y: s.ty, r: s.splash * 0.58, t: 1.05 });
           for (let j = enemies.length - 1; j >= 0; j--) {
             const e = enemies[j];
-            const p = pointAt(e.dist);
+            const p = pointAt(e.dist, e.lane);
             if (Math.hypot(p.x - s.tx, p.y - s.ty) <= s.splash + e.r) {
               e.slowT = Math.max(e.slowT, s.slow);
               if (s.dot) { e.dotT = Math.max(e.dotT || 0, 2.2); e.dotDps = s.dot; }
@@ -2670,7 +2557,7 @@
           fx.push({ kind: "muzzle", x: s.tx, y: s.ty, t: 0.12 });
           for (let j = enemies.length - 1; j >= 0; j--) {
             const e = enemies[j];
-            const p = pointAt(e.dist);
+            const p = pointAt(e.dist, e.lane);
             if (Math.hypot(p.x - s.tx, p.y - s.ty) <= e.r + 22) {
               hurt(e, s.dmg, true);
             }
@@ -2691,7 +2578,7 @@
         } else {
           for (let j = enemies.length - 1; j >= 0; j--) {
             const e = enemies[j];
-            const p = pointAt(e.dist);
+            const p = pointAt(e.dist, e.lane);
             if (Math.hypot(p.x - s.tx, p.y - s.ty) <= e.r + 10) {
               hurt(e, s.dmg);
               break;
@@ -2758,70 +2645,80 @@
     ctx.stroke();
   }
   function drawNaturalRiver() {
-    if (pathLen < 8) return;
-    const steps = 32;
-    const L = [], R = [];
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const p = pointAt(pathLen * t);
-      const ang = tangentAt(pathLen * t);
-      const nx = -Math.sin(ang), ny = Math.cos(ang);
-      const wob = Math.sin(t * 8.4) * 8 + Math.sin(t * 3.7 + 0.8) * 5;
-      const half = riverW * 0.5 + wob;
-      L.push({ x: p.x + nx * half, y: p.y + ny * half });
-      R.push({ x: p.x - nx * half, y: p.y - ny * half });
-    }
-    ctx.beginPath();
-    ctx.moveTo(L[0].x, L[0].y);
-    for (let i = 1; i < L.length; i++) ctx.lineTo(L[i].x, L[i].y);
-    for (let i = R.length - 1; i >= 0; i--) ctx.lineTo(R[i].x, R[i].y);
-    ctx.closePath();
-    ctx.fillStyle = "#2a2048";
-    ctx.fill();
-    ctx.fillStyle = "#6b5aab";
-    ctx.beginPath();
-    ctx.moveTo(L[0].x * 0.35 + path[0].x * 0.65, L[0].y);
-    const inset = riverW * 0.22;
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const p = pointAt(pathLen * t);
-      const ang = tangentAt(pathLen * t);
-      const nx = -Math.sin(ang), ny = Math.cos(ang);
-      ctx.lineTo(p.x + nx * inset, p.y + ny * inset);
-    }
-    for (let i = steps; i >= 0; i--) {
-      const t = i / steps;
-      const p = pointAt(pathLen * t);
-      const ang = tangentAt(pathLen * t);
-      const nx = -Math.sin(ang), ny = Math.cos(ang);
-      ctx.lineTo(p.x - nx * inset, p.y - ny * inset);
-    }
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = "#c8b8ee";
-    ctx.globalAlpha = 0.42;
-    for (let i = 3; i < steps; i += 4) {
-      const t = i / steps;
-      const p = pointAt(pathLen * t);
-      ctx.beginPath(); ctx.ellipse(p.x + Math.sin(i) * 6, p.y, 10, 4, 0.2, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = "#5a3e28";
-    for (let i = 2; i < steps - 2; i += 5) {
-      const t = i / steps;
-      const p = pointAt(pathLen * t);
-      const ang = tangentAt(pathLen * t);
-      const nx = -Math.sin(ang), ny = Math.cos(ang);
-      const side = i % 2 ? 1 : -1;
+    if (!lanes.length) return;
+    function drawLane(lane, widthMul) {
+      const rec = laneRec(lane);
+      const plen = rec.len;
+      if (plen < 8) return;
+      const steps = 28;
+      const L = [], R = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const p = pointAt(plen * t, lane);
+        const ang = tangentAt(plen * t, lane);
+        const nx = -Math.sin(ang), ny = Math.cos(ang);
+        const taper = t < 0.58 ? 0.62 + t * 0.4 : 1.05;
+        const wob = Math.sin(t * 7.2 + lane) * 6 + Math.sin(t * 3.1 + lane * 1.4) * 4;
+        const half = riverW * 0.5 * widthMul * taper + wob;
+        L.push({ x: p.x + nx * half, y: p.y + ny * half });
+        R.push({ x: p.x - nx * half, y: p.y - ny * half });
+      }
       ctx.beginPath();
-      ctx.ellipse(p.x + nx * side * (riverW * 0.48), p.y + ny * side * (riverW * 0.48), 7, 5, ang, 0, Math.PI * 2);
+      ctx.moveTo(L[0].x, L[0].y);
+      for (let i = 1; i < L.length; i++) ctx.lineTo(L[i].x, L[i].y);
+      for (let i = R.length - 1; i >= 0; i--) ctx.lineTo(R[i].x, R[i].y);
+      ctx.closePath();
+      ctx.fillStyle = "#2a1c42";
       ctx.fill();
+      ctx.fillStyle = "#6b5aab";
+      ctx.beginPath();
+      const inset = riverW * 0.18 * widthMul;
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const p = pointAt(plen * t, lane);
+        const ang = tangentAt(plen * t, lane);
+        const nx = -Math.sin(ang), ny = Math.cos(ang);
+        if (i === 0) ctx.moveTo(p.x + nx * inset, p.y + ny * inset);
+        else ctx.lineTo(p.x + nx * inset, p.y + ny * inset);
+      }
+      for (let i = steps; i >= 0; i--) {
+        const t = i / steps;
+        const p = pointAt(plen * t, lane);
+        const ang = tangentAt(plen * t, lane);
+        const nx = -Math.sin(ang), ny = Math.cos(ang);
+        ctx.lineTo(p.x - nx * inset, p.y - ny * inset);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#d4c6f4";
+      ctx.globalAlpha = 0.38;
+      for (let i = 4; i < steps; i += 5) {
+        const t = i / steps;
+        const p = pointAt(plen * t, lane);
+        ctx.beginPath(); ctx.ellipse(p.x + Math.sin(i + lane) * 5, p.y, 8, 3.5, 0.15, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#5a3e28";
+      for (let i = 3; i < steps - 3; i += 6) {
+        const t = i / steps;
+        if (t > 0.62) continue;
+        const p = pointAt(plen * t, lane);
+        const ang = tangentAt(plen * t, lane);
+        const nx = -Math.sin(ang), ny = Math.cos(ang);
+        const side = (i + lane) % 2 ? 1 : -1;
+        ctx.beginPath();
+        ctx.ellipse(p.x + nx * side * (riverW * 0.42 * widthMul + 6), p.y + ny * side * 6, 8, 5, ang, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
+    drawLane(0, 0.78);
+    drawLane(2, 0.78);
+    drawLane(1, 1.05);
   }
 
   function drawEnemy(e) {
-    const p = pointAt(e.dist);
-    const ang = tangentAt(e.dist);
+    const p = pointAt(e.dist, e.lane);
+    const ang = tangentAt(e.dist, e.lane);
     const bob = Math.sin(e.bob) * (e.kind === "crab" ? 1 : 2.6);
     const fast = gameSpeed === 2;
     const inkW = fast ? 4.8 : 3.2;
@@ -2853,7 +2750,15 @@
     }
     ctx.lineWidth = inkW;
     ctx.strokeStyle = INK;
-    if (e.kind === "rat" || e.kind === "snout" || e.kind === "dart") {
+    if (e.kind === "dew") {
+      ctx.fillStyle = "rgba(196, 220, 240, 0.78)";
+      ctx.beginPath(); ctx.ellipse(0, 2, 9, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      ctx.beginPath(); ctx.ellipse(-3, -2, 3.2, 4, -0.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = INK;
+      ctx.beginPath(); ctx.arc(-2, 0, 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3, 0, 1.2, 0, Math.PI * 2); ctx.fill();
+    } else if (e.kind === "rat" || e.kind === "snout" || e.kind === "dart") {
       ctx.fillStyle = "#8B6A3A";
       ctx.beginPath(); ctx.ellipse(0, 1, 11, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.strokeStyle = "rgba(244,230,195,0.35)";
@@ -3498,60 +3403,41 @@
         }
       }
     }
-    const fallX = path[0].x, fallY = Math.max(8, path[0].y - 36);
-    ctx.fillStyle = "#6a4a32";
-    ctx.beginPath();
-    ctx.moveTo(fallX - 88, fallY + 22);
-    ctx.lineTo(fallX - 62, fallY - 36);
-    ctx.lineTo(fallX - 18, fallY - 20);
-    ctx.lineTo(fallX - 8, fallY + 18);
-    ctx.closePath(); ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(fallX + 88, fallY + 22);
-    ctx.lineTo(fallX + 64, fallY - 40);
-    ctx.lineTo(fallX + 16, fallY - 18);
-    ctx.lineTo(fallX + 8, fallY + 18);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#8a6a48";
-    roundRect(ctx, fallX - 54, fallY - 34, 28, 38, 6); ctx.fill();
-    roundRect(ctx, fallX + 24, fallY - 38, 32, 42, 6); ctx.fill();
-    ctx.fillStyle = "#3a2a18";
-    for (let c = -2; c <= 2; c++) {
+    for (let li = 0; li < lanes.length; li++) {
+      const mouth = lanes[li].path[0];
+      const fallX = mouth.x, fallY = Math.max(6, mouth.y - 28);
+      ctx.fillStyle = li === 1 ? "#7a5a3a" : "#6a4a32";
       ctx.beginPath();
-      ctx.moveTo(fallX + c * 10 - 2, fallY + 10);
-      ctx.quadraticCurveTo(fallX + c * 10, fallY - 18, fallX + c * 10 + (c % 2) * 4, fallY - 28);
-      ctx.strokeStyle = "#4a3820";
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      ctx.moveTo(fallX - 36, fallY + 16);
+      ctx.lineTo(fallX - 28, fallY - 26);
+      ctx.lineTo(fallX + 28, fallY - 24);
+      ctx.lineTo(fallX + 36, fallY + 16);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#8a6a48";
+      roundRect(ctx, fallX - 18, fallY - 22, 14, 24, 5); ctx.fill();
+      roundRect(ctx, fallX + 4, fallY - 24, 16, 26, 5); ctx.fill();
       ctx.fillStyle = "#c4a060";
-      ctx.beginPath(); ctx.ellipse(fallX + c * 10 + (c % 2) * 4, fallY - 30, 3.4, 6, -0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(fallX - 10, fallY - 26, 3.2, 6, -0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(fallX + 12, fallY - 28, 3.2, 6, 0.25, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#e8eef8";
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      ctx.moveTo(fallX - 14, fallY - 10);
+      ctx.lineTo(fallX - 4, fallY - 14);
+      ctx.lineTo(fallX - 6, mouth.y + 8);
+      ctx.lineTo(fallX - 12, mouth.y + 8);
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(fallX + 2, fallY - 12);
+      ctx.lineTo(fallX + 14, fallY - 10);
+      ctx.lineTo(fallX + 12, mouth.y + 8);
+      ctx.lineTo(fallX + 4, mouth.y + 8);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#f4eefc";
+      ctx.globalAlpha = 0.5 + 0.15 * Math.sin(tWorld * 5 + li);
+      ctx.beginPath(); ctx.ellipse(fallX, mouth.y + 6, 22, 9, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
     }
-    ctx.fillStyle = "#e8eef8";
-    ctx.globalAlpha = 0.92;
-    ctx.beginPath();
-    ctx.moveTo(fallX - 34, fallY - 16);
-    ctx.lineTo(fallX - 8, fallY - 20);
-    ctx.lineTo(fallX - 12, path[0].y + 10);
-    ctx.lineTo(fallX - 26, path[0].y + 10);
-    ctx.closePath(); ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(fallX - 6, fallY - 22);
-    ctx.lineTo(fallX + 8, fallY - 18);
-    ctx.lineTo(fallX + 10, path[0].y + 12);
-    ctx.lineTo(fallX - 8, path[0].y + 12);
-    ctx.closePath(); ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(fallX + 10, fallY - 16);
-    ctx.lineTo(fallX + 32, fallY - 20);
-    ctx.lineTo(fallX + 24, path[0].y + 10);
-    ctx.lineTo(fallX + 8, path[0].y + 10);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#f4eefc";
-    ctx.globalAlpha = 0.55 + 0.2 * Math.sin(tWorld * 5);
-    ctx.beginPath(); ctx.ellipse(fallX, path[0].y + 8, 42, 14, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 0.35;
-    ctx.beginPath(); ctx.ellipse(fallX, path[0].y + 18, 52, 18, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 1;
     drawNaturalRiver();
     drawRiverFoam();
 
@@ -3648,16 +3534,6 @@
     }
 
     for (let i = 0; i < towers.length; i++) drawTower(towers[i]);
-    if (laserArmed && laserHold && laserTgt) {
-      const o = laserOrigin();
-      const p = pointAt(laserTgt.dist);
-      ctx.save();
-      ctx.strokeStyle = "#7ED957";
-      ctx.lineWidth = 3;
-      ctx.globalAlpha = 0.85;
-      ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(p.x, p.y); ctx.stroke();
-      ctx.restore();
-    }
     if (running && selectedTower >= 0 && pads[selectedTower]) {
       const spec = gunAt();
       const p = pads[selectedTower];
@@ -3821,10 +3697,7 @@
     const p = canvasXY(ev);
     const i = padAt(p.x, p.y);
     if (i >= 0) tapPad(i);
-    else if (laserArmed && phase === "wave") laserHold = true;
   });
-  canvas.addEventListener("pointerup", function () { laserHold = false; });
-  canvas.addEventListener("pointercancel", function () { laserHold = false; });
   canvas.addEventListener("pointermove", function (ev) {
     const p = canvasXY(ev);
     hoverPad = padAt(p.x, p.y);
@@ -3837,46 +3710,6 @@
   btnGun.addEventListener("click", function () { SFX.ensure(); upgradeGuns(); });
   btnDam.addEventListener("click", function () { SFX.ensure(); upgradeDam(); });
   btnRepair.addEventListener("click", function () { SFX.ensure(); repairDam(); });
-  (function () {
-    const yb = document.getElementById("btn-yell");
-    const lb = document.getElementById("btn-laser");
-    if (yb) yb.addEventListener("click", function () {
-      SFX.ensure();
-      if (!running || !yellUnlocked() || yellUsed || yellT > 0) return;
-      if (wood < COST_YELL) { cantAfford(); return; }
-      wood -= COST_YELL;
-      yellUsed = true;
-      yellT = 4;
-      banner = "SCOUT YELL";
-      bannerT = 1.6;
-      hud();
-    });
-    if (lb) {
-      lb.addEventListener("click", function () {
-        SFX.ensure();
-        if (!running || !laserUnlocked()) return;
-        if (!laserArmed) {
-          const cost = hotLaser ? COST_HOT : COST_LASER;
-          if (wood < cost) { cantAfford(); return; }
-          wood -= cost;
-          laserArmed = true;
-          banner = hotLaser ? "HOT LASER" : "LASER ARMED";
-          bannerT = 1.8;
-          hud();
-          return;
-        }
-      });
-      lb.addEventListener("pointerdown", function (ev) {
-        if (!laserArmed || !running) return;
-        ev.preventDefault();
-        laserHold = true;
-      });
-      lb.addEventListener("pointerup", function () { laserHold = false; });
-      lb.addEventListener("pointerleave", function () { laserHold = false; });
-    }
-  })();
-  cameoEl.addEventListener("click", function () { SFX.ensure(); dismissCameo(); });
-  cameoEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissCameo(); }, { passive: false });
   btnGo.addEventListener("click", function () { requestNextWave(); });
   if (histSkipBtn) {
     histSkipBtn.addEventListener("click", function (ev) {

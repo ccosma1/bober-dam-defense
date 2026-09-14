@@ -22,11 +22,10 @@ Run `START.bat` or open `index.html` in a browser.
 
 1. Tap **HOLD THE DAM**, then pick a level. Level 1 is unlocked; beat a level to open the next.
 2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause**, **1x / 2x**, **Mute**, and **Restart** always work.
-3. Two posts on the dam. Both auto-fire the **same** munition: Arrows → Bullets → Rockets → Flame. Upgrade guns once; both advance. Range 185 / 200 / 210 / 225.
-4. **Dam Wood → Rock → Steel** is a separate $BOBER buy (HP + leak resist). Rock 90, Steel 140. Both posts at Bullets also grants Rock; both at Rockets also grants Steel.
-5. **Repair Dam** (24 $BOBER) heals +22 HP. Dam only. Not a gun.
-6. Optional mascot help: **Scout Yell** (clear L5, 45 $BOBER, once/wave +15% fire rate 4s) and **Bober Laser** (clear L8 or both posts Bullets, 80 $BOBER, hold to carve, CD 2.0). Hot Laser from L15 (120). Laser assists; it is not a third post and does not replace gun upgrades.
-7. A level clears only when the dam still stands **and every foe is dead**. Remaining count is on the HUD. Stars: 3 if dam ≥70% after that clear, 2 if ≥40%, 1 for a clear. No star if foes remain.
+3. Two posts on the dam. Both auto-fire the **same** munition: Arrows → Bullets → Rockets → Flame. Upgrade guns once; both advance. Range 210 / 230 / 245 / 265.
+4. **Dam Wood → Rock → Steel** is a separate $BOBER buy (HP + leak resist). Rock 90, Steel 140. Both posts at Bullets also grants Rock; both at Rockets also grants Steel. Steel buy hides when MAX.
+5. **Repair Dam** (24 $BOBER) heals +22 HP. Dam only. Not a gun. Bober watches from the dam apron beside the posts.
+6. A level clears only when the dam still stands **and every foe is dead**. Remaining count is on the HUD. Stars: 3 if dam ≥70% after that clear, 2 if ≥40%, 1 for a clear. No star if foes remain.
 
 Pause, **1x / 2x**, mute, and restart sit in the top-right. 2× speeds the fight and is saved. Footer is Guns, Dam, Repair, then Yell / Laser.
 
@@ -70,7 +69,7 @@ Repo: https://github.com/ccosma1/bober-dam-defense
 - `assets/museum/` — foe portraits for Museum cards
 - `assets/sprites/bober-*.png` — Yeet Bober idle/fly/splat for the dam NPC and posts
 - `assets/icons/` — original dam-defense mark (not the Yeet slingshot)
-- `scripts/playtest.py` — headless GH-10 sim (range, cheaper ladder, win-all-dead, four strategies)
+- `scripts/playtest.py` — headless GH-11 sim (multi-lane, three strategies, win-all-dead)
 - `scripts/make_icon.py` — regenerates the mark
 
 ## Note

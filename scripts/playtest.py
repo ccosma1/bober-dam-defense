@@ -1,35 +1,30 @@
-"""Headless campaign balance for Bober Dam Defense (mirrors index.html)."""
+"""Headless campaign for Bober Dam Defense GH-6 (mirrors twin-turret layout)."""
 from __future__ import annotations
 
 import math
 
 KINDS = {
-    "r": {"hp": 24, "spd": 92, "wood": 6, "leak": 14, "r": 14, "armor": 0},
-    "c": {"hp": 96, "spd": 38, "wood": 12, "leak": 24, "r": 20, "armor": 0.4},
-    "o": {"hp": 44, "spd": 110, "wood": 9, "leak": 18, "r": 16, "armor": 0},
+    "r": {"hp": 22, "spd": 102, "wood": 6, "leak": 12, "r": 13, "armor": 0},
+    "c": {"hp": 92, "spd": 36, "wood": 12, "leak": 22, "r": 20, "armor": 0.35},
+    "o": {"hp": 28, "spd": 120, "wood": 7, "leak": 14, "r": 12, "armor": 0},
+    "b": {"hp": 48, "spd": 72, "wood": 8, "leak": 18, "r": 16, "armor": 0.08},
+    "f": {"hp": 40, "spd": 54, "wood": 9, "leak": 10, "r": 16, "armor": 0},
+    "m": {"hp": 380, "spd": 26, "wood": 40, "leak": 36, "r": 28, "armor": 0.22},
 }
-TOWERS = {
-    "stick": {"cost": 50, "range": 135, "cd": 0.52, "dmg": 12, "splash": 0, "slow": 0, "pspd": 820},
-    "sap": {"cost": 75, "range": 118, "cd": 0.85, "dmg": 9, "splash": 90, "slow": 1.9, "pspd": 640},
-    "truck": {"cost": 140, "range": 175, "cd": 0.78, "dmg": 55, "splash": 0, "slow": 0, "pspd": 900, "pierce": True},
-    "flame": {"cost": 120, "range": 138, "cd": 0.20, "dmg": 7, "splash": 0, "slow": 0, "pspd": 0, "cone": 0.70},
-}
-PATH_N = [
-    [-0.08, 0.13], [0.16, 0.14], [0.38, 0.17], [0.56, 0.25],
-    [0.66, 0.36], [0.58, 0.47], [0.40, 0.53], [0.24, 0.60],
-    [0.18, 0.70], [0.30, 0.80], [0.50, 0.84], [0.68, 0.78],
-    [0.72, 0.68], [0.76, 0.56],
+LEFT = [
+    {"range": 168, "cd": 0.50, "dmg": 14, "splash": 0, "slow": 0, "pspd": 920, "cost": 0},
+    {"range": 178, "cd": 0.42, "dmg": 22, "splash": 0, "slow": 0, "pspd": 980, "cost": 80},
+    {"range": 185, "cd": 0.68, "dmg": 34, "splash": 52, "slow": 0, "pspd": 740, "cost": 140},
+    {"range": 148, "cd": 0.18, "dmg": 8, "splash": 0, "slow": 0, "pspd": 0, "cost": 200, "cone": 0.78},
 ]
-PAD_N = [
-    [0.16, 0.08], [0.32, 0.78],
-    [0.55, 0.18], [0.86, 0.88],
+RIGHT = [
+    {"range": 150, "cd": 0.85, "dmg": 9, "splash": 90, "slow": 1.9, "pspd": 640, "cost": 0},
+    {"range": 160, "cd": 0.70, "dmg": 16, "splash": 42, "slow": 1.1, "pspd": 820, "cost": 90},
+    {"range": 155, "cd": 0.88, "dmg": 22, "splash": 108, "slow": 2.2, "pspd": 580, "cost": 150},
+    {"range": 158, "cd": 0.72, "dmg": 12, "splash": 80, "slow": 1.6, "pspd": 700, "cost": 210},
 ]
+PATH_N = [[0.50, 0.10], [0.50, 0.24], [0.50, 0.40], [0.50, 0.56], [0.50, 0.72]]
 W, H = 390.0, 640.0
-GREEDY = [(0, "stick"), (1, "stick"), (2, "sap"), (3, "sap")]
-TWO = [(0, "stick"), (1, "stick")]
-ONE_MAX = [(0, "stick")]
-STICK_SAP = [(0, "stick"), (1, "sap")]
-SAP_ONLY = [(0, "sap"), (1, "sap"), (2, "sap"), (3, "sap")]
 
 
 def wv(interval, hp, spd, seq):
@@ -37,154 +32,27 @@ def wv(interval, hp, spd, seq):
 
 
 LEVELS = [
-    {"name": "Trickle", "wood": 160, "dam": 100, "waves": [
-        wv(1.10, 1.00, 1.00, "rrrrrr"),
-        wv(1.00, 1.00, 1.00, "rrrrrrr"),
-        wv(0.92, 1.00, 1.00, "rrrrrrrr"),
+    {"name": "Oasis Drip", "wood": 160, "dam": 100, "waves": [
+        wv(1.10, 1.00, 1.00, "rrrrrr"), wv(1.00, 1.00, 1.00, "rrrrrrr"), wv(0.92, 1.00, 1.00, "rrrrrrrr")
     ]},
     {"name": "Driftwood", "wood": 150, "dam": 100, "waves": [
-        wv(0.95, 1.00, 1.00, "rrrrrrr"),
-        wv(0.88, 1.02, 1.00, "rrcrrrr"),
-        wv(0.80, 1.06, 1.02, "rrcrrcrr"),
+        wv(0.95, 1.00, 1.00, "rrrrrrr"), wv(0.88, 1.02, 1.00, "rrcrrrr"), wv(0.80, 1.06, 1.02, "rrcrrcrr")
     ]},
     {"name": "Scout Line", "wood": 140, "dam": 100, "waves": [
-        wv(0.88, 1.15, 1.00, "rrrrrrrrr"),
-        wv(0.78, 1.20, 1.02, "rrcrrcrrr"),
-        wv(0.70, 1.24, 1.04, "rrocrrocr"),
-        wv(0.64, 1.29, 1.06, "rrocrrocrrr"),
-    ]},
-    {"name": "Pack Night", "wood": 130, "dam": 100, "waves": [
-        wv(0.90, 1.08, 1.06, "rrcrrcrr"),
-        wv(0.68, 1.22, 1.10, "rrocrrcocr"),
-        wv(0.50, 1.38, 1.16, "rrocrrcocrrocr"),
-        wv(0.36, 1.48, 1.20, "rrococrrococrro"),
-        wv(0.24, 1.68, 1.28, "rrococrrococrrooccoor"),
-    ]},
-    {"name": "Low Timber", "wood": 130, "dam": 100, "waves": [
-        wv(0.78, 1.16, 1.10, "rrcrrcrr"),
-        wv(0.54, 1.32, 1.16, "rrocrrocrrc"),
-        wv(0.36, 1.46, 1.20, "rrocrrcocrro"),
-        wv(0.24, 1.68, 1.28, "rrococrrococrrooc"),
-    ]},
-    {"name": "Thin Dam", "wood": 100, "dam": 75, "waves": [
-        wv(0.78, 1.18, 1.10, "rrcrrcrr"),
-        wv(0.54, 1.34, 1.16, "rrocrrocrr"),
-        wv(0.38, 1.48, 1.20, "rrocrrcocrro"),
-        wv(0.26, 1.64, 1.26, "rrococrrococrro"),
-        wv(0.20, 1.82, 1.32, "rrococrrococrroocco"),
-    ]},
-    {"name": "Crab Walk", "wood": 100, "dam": 100, "waves": [
-        wv(0.78, 1.22, 1.02, "rccrrccr"),
-        wv(0.58, 1.40, 1.08, "rccrccrccr"),
-        wv(0.42, 1.52, 1.12, "crroccrccro"),
-        wv(0.30, 1.66, 1.16, "rccocrccroc"),
-        wv(0.22, 1.82, 1.20, "ccrococrccrrocc"),
-    ]},
-    {"name": "Fast Water", "wood": 95, "dam": 100, "waves": [
-        wv(0.58, 1.35, 1.26, "rrrrrrrrr"),
-        wv(0.44, 1.53, 1.34, "rroorrorro"),
-        wv(0.32, 1.75, 1.42, "rrocrroorrro"),
-        wv(0.22, 1.98, 1.50, "rroocrroorrroo"),
-        wv(0.14, 2.36, 1.62, "rrooocrroorrroorrooooo"),
-    ]},
-    {"name": "Pocket Wood", "wood": 80, "dam": 100, "waves": [
-        wv(0.72, 1.42, 1.12, "rrcrrcrr"),
-        wv(0.52, 1.63, 1.18, "rrocrrocrr"),
-        wv(0.36, 1.86, 1.24, "rrocrrcocrrocr"),
-        wv(0.24, 2.12, 1.32, "rrococrrococrro"),
-        wv(0.16, 2.42, 1.40, "rrococrrococrrooccoor"),
-    ]},
-    {"name": "Night Rush", "wood": 100, "dam": 100, "waves": [
-        wv(0.60, 1.51, 1.20, "rrcrrcocr"),
-        wv(0.44, 1.72, 1.28, "rrocrrcocrro"),
-        wv(0.30, 1.96, 1.36, "rrococrrococrro"),
-        wv(0.22, 2.22, 1.44, "rrococrrooccoorr"),
-        wv(0.16, 2.50, 1.52, "rrococrrococrrooccoorr"),
-        wv(0.12, 2.78, 1.60, "rrococrrococrrooccoorrccrrooc"),
-    ]},
-    {"name": "Hairline", "wood": 100, "dam": 70, "waves": [
-        wv(0.58, 1.56, 1.22, "rrcrrcocr"),
-        wv(0.42, 1.77, 1.30, "rrocrrcocrro"),
-        wv(0.28, 2.03, 1.38, "rrococrrococrro"),
-        wv(0.20, 2.31, 1.46, "rrococrrooccoorr"),
-        wv(0.14, 2.62, 1.54, "rrococrrococrrooccoorr"),
-        wv(0.11, 2.93, 1.64, "rrococrrococrrooccoorrccrroocco"),
-    ]},
-    {"name": "Last Stand", "wood": 100, "dam": 80, "waves": [
-        wv(0.54, 1.60, 1.24, "rrcrrcocr"),
-        wv(0.40, 1.82, 1.32, "rrocrrcocrro"),
-        wv(0.28, 2.05, 1.40, "rrococrrococrro"),
-        wv(0.20, 2.31, 1.48, "rrococrrooccoorr"),
-        wv(0.15, 2.60, 1.56, "rrococrrococrrooccoorr"),
-        wv(0.12, 2.88, 1.64, "rrococrrococrrooccoorrccrro"),
-        wv(0.10, 3.19, 1.72, "rrococrrococrrooccoorrccrrooccoor"),
-    ]},
-    {"name": "Spring Leak", "wood": 110, "dam": 100, "waves": [
-        wv(0.50, 1.70, 1.18, "rrrrrrrrr"),
-        wv(0.38, 1.90, 1.22, "rrrrcrrrrr"),
-        wv(0.28, 2.12, 1.26, "rrrcrrrcrrrr"),
-        wv(0.20, 2.36, 1.30, "rrrrcrrrrcrrrrr"),
-    ]},
-    {"name": "Twin Bend", "wood": 100, "dam": 100, "waves": [
-        wv(0.52, 1.75, 1.38, "rroorroor"),
-        wv(0.38, 1.95, 1.48, "roorroorroo"),
-        wv(0.26, 2.18, 1.56, "rrooorrrooorro"),
-        wv(0.18, 2.42, 1.64, "oorrooorrooorroo"),
-    ]},
-    {"name": "Armor Night", "wood": 110, "dam": 100, "waves": [
-        wv(0.62, 1.80, 1.08, "rccrccrcc"),
-        wv(0.48, 2.00, 1.12, "ccrccrccrc"),
-        wv(0.36, 2.22, 1.16, "crcccrcccrc"),
-        wv(0.26, 2.46, 1.20, "cccrcccrcccrcc"),
-        wv(0.20, 2.70, 1.24, "ccccrccccrcccc"),
-    ]},
-    {"name": "Timber Tax", "wood": 70, "dam": 100, "waves": [
-        wv(0.82, 1.55, 1.12, "rrrrrr"),
-        wv(0.55, 1.80, 1.20, "rrcrrcrr"),
-        wv(0.36, 2.08, 1.26, "rrocrrocrr"),
-        wv(0.24, 2.36, 1.32, "rrococrrococrro"),
-    ]},
-    {"name": "Flood Gate", "wood": 100, "dam": 90, "waves": [
-        wv(0.55, 1.90, 1.22, "rrcrrcocr"),
-        wv(0.40, 2.12, 1.28, "rrocrrcocrro"),
-        wv(0.30, 2.34, 1.34, "rrococrrococr"),
-        wv(0.22, 2.58, 1.40, "rrococrrooccoorr"),
-        wv(0.16, 2.84, 1.46, "rrococrrococrroocco"),
-    ]},
-    {"name": "Cone Drill", "wood": 105, "dam": 100, "waves": [
-        wv(0.42, 1.88, 1.30, "rrrrrrrrrrr"),
-        wv(0.28, 2.10, 1.36, "rrroorrrroorr"),
-        wv(0.18, 2.34, 1.42, "rrrrrroorrrrrrro"),
-        wv(0.12, 2.60, 1.48, "rrrooorrrrooorrrrooo"),
-        wv(0.09, 2.88, 1.54, "rrrrrrrooorrrrrrrooorrrr"),
-    ]},
-    {"name": "Cracked Wall", "wood": 100, "dam": 60, "waves": [
-        wv(0.50, 2.00, 1.28, "rrcrrcocr"),
-        wv(0.36, 2.22, 1.34, "rrocrrcocrro"),
-        wv(0.26, 2.48, 1.40, "rrococrrococrro"),
-        wv(0.18, 2.74, 1.46, "rrococrrooccoorr"),
-        wv(0.13, 3.02, 1.52, "rrococrrococrrooccoorr"),
-    ]},
-    {"name": "Red Planet Dam", "wood": 110, "dam": 80, "waves": [
-        wv(0.48, 2.10, 1.30, "rrcrrcocr"),
-        wv(0.34, 2.34, 1.36, "rrocrrcocrro"),
-        wv(0.24, 2.60, 1.42, "rrococrrococrro"),
-        wv(0.18, 2.88, 1.48, "ccrrooccoorrccrro"),
-        wv(0.13, 3.16, 1.54, "rrococrrococrrooccoorr"),
-        wv(0.10, 3.46, 1.60, "rrococrrococrrooccoorrccrro"),
-        wv(0.08, 3.78, 1.68, "rrococrrococrrooccoorrccrrooccoor"),
+        wv(0.88, 1.15, 1.00, "rrrrrrrrr"), wv(0.78, 1.20, 1.02, "rrcrrcrrr"),
+        wv(0.70, 1.24, 1.04, "rrocrrocr"), wv(0.64, 1.29, 1.06, "rrocrrocrrr")
     ]},
 ]
 
 
 def build_path():
-    pts = [(x * W, y * H) for x, y in PATH_N]
+    pts = [(8 + p[0] * (W - 16), 50 + p[1] * (H * 0.62)) for p in PATH_N]
     cum = [0.0]
-    total = 0.0
+    plen = 0.0
     for i in range(1, len(pts)):
-        total += math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])
-        cum.append(total)
-    return pts, cum, total
+        plen += math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])
+        cum.append(plen)
+    return pts, cum, max(1.0, plen)
 
 
 def point_at(pts, cum, plen, dist):
@@ -193,236 +61,132 @@ def point_at(pts, cum, plen, dist):
         if d <= cum[i]:
             span = cum[i] - cum[i - 1] or 1.0
             t = (d - cum[i - 1]) / span
-            return (
-                pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * t,
-                pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t,
-            )
+            return pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * t, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t
     return pts[-1]
 
 
-def nearest_path(px, py, pts):
-    best, nx, ny = 1e9, 0.0, -1.0
-    for j in range(len(pts) - 1):
-        ax, ay = pts[j]
-        bx, by = pts[j + 1]
-        vx, vy = bx - ax, by - ay
-        l2 = vx * vx + vy * vy or 1.0
-        t = max(0.0, min(1.0, ((px - ax) * vx + (py - ay) * vy) / l2))
-        sx, sy = ax + t * vx, ay + t * vy
-        d = math.hypot(px - sx, py - sy)
-        if d < best:
-            best = d
-            rx, ry = -vy, vx
-            nl = math.hypot(rx, ry) or 1.0
-            rx, ry = rx / nl, ry / nl
-            if (px - sx) * rx + (py - sy) * ry < 0:
-                rx, ry = -rx, -ry
-            nx, ny = rx, ry
-    return best, nx, ny
-
-
-def bank_pads(pts):
-    river_w = max(40.0, min(W, H) * 0.11)
-    min_d = river_w / 2 + 16 + 8
-    out = []
-    for nx, ny in PAD_N:
-        x, y = nx * W, ny * H
-        d, bx, by = nearest_path(x, y, pts)
-        if d < min_d:
-            push = min_d - d + 1
-            x += bx * push
-            y += by * push
-            x = max(28.0, min(W - 28.0, x))
-            y = max(28.0, min(H - 28.0, y))
-        out.append((x, y))
-    return out
-
-
-def simulate(level, plan, repair_below=None, repair_cost=30, repair_hp=24, hp_scale=1.0, rat_wood=None):
+def simulate(level, left=0, right=0, upgrade=True):
     pts, cum, plen = build_path()
-    pads = bank_pads(pts)
+    pads = [(W * 0.22, H * 0.72), (W * 0.78, H * 0.72)]
     wood = level["wood"]
     dam_max = level["dam"]
     dam = dam_max
-    towers = []
-    buy_i = 0
+    ll, rr = left, right
     dt = 1 / 30
     leaks = 0
-    kills = 0
-    repairs = 0
+    towers = [{"pad": 0, "cd": 0.0}, {"pad": 1, "cd": 0.0}]
 
-    def try_buy():
-        nonlocal wood, buy_i
-        while buy_i < len(plan):
-            pad, typ = plan[buy_i]
-            cost = TOWERS[typ]["cost"]
-            if any(t["pad"] == pad for t in towers):
-                buy_i += 1
+    def spec(side):
+        line = LEFT if side == 0 else RIGHT
+        lv = ll if side == 0 else rr
+        return line[max(0, min(len(line) - 1, lv))]
+
+    def try_up():
+        nonlocal wood, ll, rr
+        if not upgrade:
+            return
+        for side in (0, 1):
+            line = LEFT if side == 0 else RIGHT
+            lv = ll if side == 0 else rr
+            if lv >= len(line) - 1:
                 continue
-            if wood < cost:
-                return
-            wood -= cost
-            towers.append({"pad": pad, "type": typ, "cd": 0.0})
-            buy_i += 1
+            cost = line[lv + 1]["cost"]
+            if wood >= cost:
+                wood -= cost
+                if side == 0:
+                    ll += 1
+                else:
+                    rr += 1
 
-    try_buy()
+    try_up()
     for wi, wave in enumerate(level["waves"], 1):
         q = list(wave["seq"])
         spawn_t = 0.25
         enemies = []
         shots = []
-        puddles = []
         while q or enemies or shots:
             spawn_t -= dt
             if spawn_t <= 0 and q:
                 ch = q.pop(0)
-                k = KINDS[ch]
+                k = KINDS.get(ch, KINDS["r"])
                 enemies.append({
-                    "hp": k["hp"] * wave["hpMul"] * hp_scale,
-                    "spd": k["spd"] * wave["spdMul"],
-                    "wood": rat_wood if (ch == "r" and rat_wood is not None) else k["wood"],
-                    "leak": k["leak"],
-                    "r": k["r"],
-                    "armor": k["armor"],
-                    "dist": 0.0,
-                    "slow": 0.0,
+                    "hp": k["hp"] * wave["hpMul"], "spd": k["spd"] * wave["spdMul"],
+                    "wood": k["wood"], "leak": k["leak"], "r": k["r"], "armor": k["armor"],
+                    "dist": 0.0, "slow": 0.0,
                 })
                 spawn_t = wave["interval"]
-            for u in list(puddles):
-                u["t"] -= dt
-            puddles = [u for u in puddles if u["t"] > 0]
             for e in enemies:
                 if e["slow"] > 0:
                     e["slow"] -= dt
-                x, y = point_at(pts, cum, plen, e["dist"])
-                for u in puddles:
-                    if math.hypot(x - u["x"], y - u["y"]) <= u["r"] + e["r"]:
-                        e["slow"] = max(e["slow"], 0.35)
                 e["dist"] += e["spd"] * (0.42 if e["slow"] > 0 else 1.0) * dt
             still = []
             for e in enemies:
                 if e["dist"] >= plen:
                     dam -= e["leak"]
                     leaks += 1
-                    if repair_below is not None and dam < repair_below and wood >= repair_cost and dam > 0:
-                        wood -= repair_cost
-                        dam = min(dam_max, dam + repair_hp)
-                        repairs += 1
                     if dam <= 0:
-                        return {"win": False, "wave": wi, "dam": 0, "dam_max": dam_max, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers), "repairs": repairs}
+                        return {"win": False, "wave": wi, "dam": 0, "dam_max": dam_max, "leaks": leaks, "ll": ll, "rr": rr}
                 else:
                     still.append(e)
             enemies = still
-            for tw in towers:
-                spec = TOWERS[tw["type"]]
+            for i, tw in enumerate(towers):
+                s = spec(i)
                 tw["cd"] -= dt
-                px, py = pads[tw["pad"]]
+                px, py = pads[i]
                 tgt = None
                 best = -1
                 for e in enemies:
                     x, y = point_at(pts, cum, plen, e["dist"])
-                    if math.hypot(x - px, y - py) <= spec["range"] + e["r"] and e["dist"] > best:
+                    if math.hypot(x - px, y - py) <= s["range"] + e["r"] and e["dist"] > best:
                         tgt, best = e, e["dist"]
                 if tgt is not None and tw["cd"] <= 0:
-                    tw["cd"] = spec["cd"]
-                    tx, ty = point_at(pts, cum, plen, tgt["dist"] + tgt["spd"] * 0.07)
-                    shots.append({
-                        "type": tw["type"], "x": px, "y": py, "tx": tx, "ty": ty,
-                        "target": tgt, "pierce": spec.get("pierce", False),
-                        **{k: spec[k] for k in ("pspd", "dmg", "splash", "slow")},
-                    })
-            live_shots = []
-            for s in shots:
-                if s["target"] in enemies:
-                    s["tx"], s["ty"] = point_at(pts, cum, plen, s["target"]["dist"])
-                dx, dy = s["tx"] - s["x"], s["ty"] - s["y"]
+                    tw["cd"] = s["cd"]
+                    tx, ty = point_at(pts, cum, plen, tgt["dist"])
+                    shots.append({"x": px, "y": py, "tx": tx, "ty": ty, "target": tgt, "spd": max(1, s["pspd"]), "dmg": s["dmg"], "splash": s["splash"], "slow": s["slow"]})
+            live = []
+            for sh in shots:
+                if sh["target"] in enemies:
+                    sh["tx"], sh["ty"] = point_at(pts, cum, plen, sh["target"]["dist"])
+                dx, dy = sh["tx"] - sh["x"], sh["ty"] - sh["y"]
                 dist = math.hypot(dx, dy) or 1.0
-                step = s["pspd"] * dt
+                step = sh["spd"] * dt
                 if step >= dist:
-                    if s["splash"] > 0:
-                        puddles.append({"x": s["tx"], "y": s["ty"], "r": s["splash"] * 0.58, "t": 1.05})
+                    if sh["splash"] > 0:
                         for e in list(enemies):
                             x, y = point_at(pts, cum, plen, e["dist"])
-                            if math.hypot(x - s["tx"], y - s["ty"]) <= s["splash"] + e["r"]:
-                                e["slow"] = max(e["slow"], s["slow"])
-                                e["hp"] -= s["dmg"] * (1 - e["armor"])
-                    elif s.get("pierce"):
-                        for e in list(enemies):
-                            x, y = point_at(pts, cum, plen, e["dist"])
-                            if math.hypot(x - s["tx"], y - s["ty"]) <= e["r"] + 22:
-                                e["hp"] -= s["dmg"]
-                    elif s["target"] in enemies:
-                        s["target"]["hp"] -= s["dmg"] * (1 - s["target"]["armor"])
+                            if math.hypot(x - sh["tx"], y - sh["ty"]) <= sh["splash"] + e["r"]:
+                                e["slow"] = max(e["slow"], sh["slow"])
+                                e["hp"] -= sh["dmg"] * (1 - e["armor"])
+                    elif sh["target"] in enemies:
+                        sh["target"]["hp"] -= sh["dmg"] * (1 - sh["target"]["armor"])
                     nxt = []
                     for e in enemies:
                         if e["hp"] <= 0:
                             wood += e["wood"]
-                            kills += 1
+                            try_up()
                         else:
                             nxt.append(e)
                     enemies = nxt
-                    try_buy()
                 else:
-                    s["x"] += dx / dist * step
-                    s["y"] += dy / dist * step
-                    live_shots.append(s)
-            shots = live_shots
-    return {"win": True, "wave": len(level["waves"]), "dam": dam, "dam_max": dam_max, "wood": wood, "leaks": leaks, "kills": kills, "towers": len(towers), "repairs": repairs}
-
-
-def pct(r):
-    return 0 if r["dam_max"] <= 0 else r["dam"] / r["dam_max"]
+                    sh["x"] += dx / dist * step
+                    sh["y"] += dy / dist * step
+                    live.append(sh)
+            shots = live
+    return {"win": True, "wave": len(level["waves"]), "dam": dam, "dam_max": dam_max, "leaks": leaks, "ll": ll, "rr": rr}
 
 
 def main():
-    print("Lv  name          twoSticks              greedy                 greedy+repair")
-    rows = []
+    print("Lv  name          twin+up                 sap-lead")
     for i, lv in enumerate(LEVELS):
-        hp_scale = 1.08 if 9 <= i <= 11 else 1.0
-        rat_wood = 7 if 2 <= i <= 4 else None
-        two = simulate(lv, TWO, hp_scale=hp_scale, rat_wood=rat_wood)
-        g = simulate(lv, GREEDY, hp_scale=hp_scale, rat_wood=rat_wood)
-        r = simulate(lv, GREEDY, repair_below=35, hp_scale=hp_scale, rat_wood=rat_wood)
-        rows.append((i, lv, two, g, r))
+        a = simulate(lv, 0, 0, True)
+        b = simulate(lv, 0, 3, False)
+
         def fmt(x):
             if not x["win"]:
                 return "LOSE@w%s" % x["wave"]
-            return "win %s/%s leak%s" % (int(x["dam"]), x["dam_max"], x["leaks"])
-        print("%2d %-12s  %-21s  %-21s  %s" % (i + 1, lv["name"], fmt(two), fmt(g), fmt(r)))
-
-    # L1 is easy for two unupgraded sticks
-    assert rows[0][2]["win"] and pct(rows[0][2]) >= 0.7, ("Trickle", rows[0][2])
-
-    # 1-3: unupgraded Stick+Sap line should hold
-    for i in range(3):
-        g = rows[i][3]
-        assert g["win"], (LEVELS[i]["name"], "early greedy should hold", g)
-    # L3 two sticks should leak (not a free 3-star)
-    two3 = rows[2][2]
-    assert two3["win"], ("Scout Line two sticks should hold", two3)
-    assert pct(two3) < 1.0 or two3["leaks"] > 0, ("Scout Line", "two sticks should chip", two3)
-
-    assert len(LEVELS) == 20, len(LEVELS)
-    # 10-12 unupgraded greedy must not steamroll
-    late = [rows[i][3] for i in range(9, 12)]
-    for g in late:
-        assert pct(g) < 0.85, ("late full HP", g)
-    assert any(not g["win"] for g in late), "10-12 should be able to burst greedy"
-    # 18-20 even harder without evolves
-    endgame = [rows[i][3] for i in range(17, 20)]
-    assert any(not g["win"] for g in endgame), "18-20 should burst unupgraded greedy"
-
-    print("Lv  name          stick+sap              sap-only")
-    for i, lv in enumerate(LEVELS):
-        hp_scale = 1.08 if 9 <= i <= 11 else 1.0
-        rat_wood = 7 if 2 <= i <= 4 else None
-        mix = simulate(lv, STICK_SAP, hp_scale=hp_scale, rat_wood=rat_wood)
-        sap = simulate(lv, SAP_ONLY, hp_scale=hp_scale, rat_wood=rat_wood)
-        def fmt2(x):
-            if not x["win"]:
-                return "LOSE@w%s" % x["wave"]
-            return "win %s/%s leak%s" % (int(x["dam"]), x["dam_max"], x["leaks"])
-        print("%2d %-12s  %-21s  %s" % (i + 1, lv["name"], fmt2(mix), fmt2(sap)))
+            return "win %s/%s leak%s L%s/R%s" % (int(x["dam"]), x["dam_max"], x["leaks"], x["ll"], x["rr"])
+        print("%2d %-12s  %-22s  %s" % (i + 1, lv["name"], fmt(a), fmt(b)))
+    assert simulate(LEVELS[0], 0, 0, True)["win"]
     print("OK")
 
 

@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#3A2A6A" />
-  <meta name="description" content="Bober Dam Defense — fan game by a holder. Hold the wooden dam. Place towers. Stop the leak." />
+  <meta name="description" content="Bober Dam Defense — fan game by a holder. Defend the dam. Twin turrets. Waterfall to wood." />
   <title>Bober Dam Defense</title>
   <link rel="icon" href="assets/icons/bober-dam.ico" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
@@ -194,16 +194,28 @@
     }
     .overlay.hidden { display: none; }
     #splash {
-      justify-content: flex-end;
+      justify-content: space-between;
       padding: 0;
       background: none;
     }
-    #splash img.hero { object-position: center 18%; }
+    #splash img.hero { object-position: center 35%; }
+    #splash .cta-top {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      padding: 10px 12px 8px;
+      background: #1A1028ee;
+    }
+    #splash .cta-top h1 {
+      margin: 0;
+      font-size: clamp(20px, 5.6vw, 28px);
+      line-height: 1;
+    }
     #splash .cta-band {
       position: relative;
       z-index: 1;
       width: 100%;
-      padding: 14px 16px max(20px, env(safe-area-inset-bottom));
+      padding: 10px 14px max(14px, env(safe-area-inset-bottom));
       background: #1A1028;
       display: flex;
       flex-direction: column;
@@ -211,14 +223,19 @@
       text-align: center;
     }
     #splash .cta-band h1 {
-      margin: 0 0 6px;
+      margin: 0 0 4px;
+      font-size: clamp(22px, 6.5vw, 34px);
       text-shadow: 0 3px 0 #0a0614;
     }
     #splash .cta-band .tagline {
       margin-bottom: 4px;
       max-width: none;
       padding: 0 8px;
-      font-size: 15px;
+      font-size: 18px;
+    }
+    #splash .cta-band .how {
+      margin: 0 0 4px;
+      font-size: 13px;
     }
     #splash .cta-band .fan { margin-bottom: 12px; }
     #paused { justify-content: center; background: #1a1028e6; }
@@ -661,7 +678,7 @@
       <div class="chips">
         <div class="chip wood" id="chip-wood">$BOBER 100</div>
         <div class="chip" id="chip-wave">Wave 0/5</div>
-        <div class="chip" id="chip-hp">Dam 100</div>
+        <div class="chip" id="chip-hp">DAM Wood 100</div>
       </div>
       <div class="btns">
         <button class="icon-btn" id="btn-pause" type="button" aria-label="Pause">⏸</button>
@@ -673,10 +690,13 @@
     <div id="stage">
       <canvas id="game"></canvas>
       <div id="splash" class="overlay">
-        <img class="hero" src="assets/splash.jpg?v=gh5" alt="" />
+        <img class="hero" src="assets/splash.jpg?v=gh6" alt="" />
+        <div class="cta-top">
+          <h1>BOBER DAM DEFENSE</h1>
+        </div>
         <div class="cta-band">
-          <h1>BOBER DAM<br>DEFENSE</h1>
-          <p class="tagline">Hold the dam. Place towers. Stop the leak.</p>
+          <p class="tagline">Defend the dam.</p>
+          <p class="how">Waterfall to wood. Don’t break.</p>
           <p class="fan">Fan game by a holder.</p>
           <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
           <div class="ghost-row">
@@ -687,7 +707,7 @@
         </div>
       </div>
       <div id="levels" class="overlay hidden">
-        <img class="hero" src="assets/splash.jpg?v=gh5" alt="" />
+        <img class="hero" src="assets/splash.jpg?v=gh6" alt="" />
         <h2>LEVELS</h2>
         <p class="tagline">Fan game by a holder.</p>
         <div id="level-grid"></div>
@@ -698,7 +718,7 @@
         <button class="play ghost" id="btn-reset-levels" type="button">Reset progress</button>
       </div>
       <div id="endcard" class="overlay hidden">
-        <img class="hero" src="assets/splash.jpg?v=gh5" alt="" />
+        <img class="hero" src="assets/splash.jpg?v=gh6" alt="" />
         <h2 id="end-title">DAM HELD</h2>
         <div id="end-stars" class="end-stars"></div>
         <p class="end-msg" id="end-msg"></p>
@@ -714,7 +734,7 @@
       </div>
       <div id="tip" class="overlay hidden" role="dialog" aria-label="How to play">
         <div class="tip-card">
-          <p class="tip-line">Stick = damage · Sap = slow · then Start Wave</p>
+          <p class="tip-line">Hold the dam. Twin turrets. Upgrade together — wood becomes rock becomes steel.</p>
           <p class="cameo-skip">tap to continue</p>
         </div>
       </div>
@@ -771,20 +791,18 @@
     <footer id="shop">
       <button id="btn-go" type="button">START WAVE</button>
       <button class="card on" id="btn-stick" type="button">
-        <img class="ico" src="assets/sprites/bober-idle.png" alt="" />
-        <span class="name">Stick Thrower</span>
-        <span class="cost">50 $BOBER</span>
+        <span class="name" id="left-name">Stick Bow</span>
+        <span class="cost" id="left-cost">80 $BOBER</span>
       </button>
       <button class="card" id="btn-sap" type="button">
-        <img class="ico" src="assets/sprites/bober-idle.png" alt="" />
-        <span class="name">Sap Sprayer</span>
-        <span class="cost">75 $BOBER</span>
+        <span class="name" id="right-name">Sap Glob</span>
+        <span class="cost" id="right-cost">90 $BOBER</span>
       </button>
       <button class="card repair" id="btn-repair" type="button">
         <span class="name">Repair Dam</span>
         <span class="cost">30 $BOBER</span>
       </button>
-      <div id="shop-hint" class="hidden">Tap your tower to upgrade / evolve</div>
+      <div id="shop-hint">Upgrade both lines to tier up.</div>
     </footer>
     <p class="hub-link" id="also-play"><a href="https://ccosma1.github.io/green-home-games/">More games · Green Home Games</a></p>
   </div>
@@ -799,34 +817,36 @@
   const INK = "#1A1028";
   const WOOD = "#5C3A1A";
 
-  const COST_STICK = 50;
-  const COST_SAP = 75;
   const COST_REPAIR = 30;
   function fmtCost(n) { return n + " $BOBER"; }
-  const COST_UP_STICK = 120;
-  const COST_UP_SAP = 110;
-  const COST_EVOLVE_TRUCK = 140;
-  const COST_EVOLVE_FLAME = 120;
   const REPAIR_HP = 24;
-  const BUILD_FIRST = 0;
   const BUILD_NEXT = 15;
-  const MAX_RANK = 2;
-  const SAVE_KEY = "bober-dam-campaign-v1";
+  const SAVE_KEY = "bober-dam-campaign-v2";
   const HIST_SEEN_KEY = "bober-dam-history-seen";
   const SPEED_KEY = "bober-dam-speed";
 
   const KINDS = {
-    rat:   { hp: 24, spd: 92, wood: 6,  leak: 14, r: 14, armor: 0 },
-    crab:  { hp: 96, spd: 38, wood: 12, leak: 24, r: 20, armor: 0.4 },
-    otter: { hp: 44, spd: 110, wood: 9, leak: 18, r: 16, armor: 0 }
+    snout: { hp: 22, spd: 102, wood: 6,  leak: 12, r: 13, armor: 0 },
+    rider: { hp: 92, spd: 36,  wood: 12, leak: 22, r: 20, armor: 0.35 },
+    biter: { hp: 48, spd: 72,  wood: 8,  leak: 18, r: 16, armor: 0.08 },
+    dart:  { hp: 28, spd: 120, wood: 7,  leak: 14, r: 12, armor: 0 },
+    foam:  { hp: 40, spd: 54,  wood: 9,  leak: 10, r: 16, armor: 0, buff: 1.18 },
+    maw:   { hp: 380, spd: 26, wood: 40, leak: 36, r: 28, armor: 0.22 }
   };
+  const KIND_CH = { s: "snout", r: "snout", l: "rider", c: "rider", b: "biter", d: "dart", o: "dart", f: "foam", m: "maw" };
 
-  const TOWERS = {
-    stick: { cost: COST_STICK, range: 135, cd: 0.52, dmg: 12, splash: 0, slow: 0, pspd: 820, upCost: COST_UP_STICK },
-    sap:   { cost: COST_SAP,   range: 118, cd: 0.85, dmg: 9,  splash: 90,  slow: 1.9, pspd: 640, upCost: COST_UP_SAP },
-    truck: { cost: COST_EVOLVE_TRUCK, range: 175, cd: 0.78, dmg: 55, splash: 0, slow: 0, pspd: 900, upCost: 0, pierce: true, max: 1 },
-    flame: { cost: COST_EVOLVE_FLAME, range: 138, cd: 0.20, dmg: 7,  splash: 0, slow: 0, pspd: 0,   upCost: 0, cone: 0.70, max: 1 }
-  };
+  const LEFT = [
+    { id: "bow",    name: "Stick Bow",    cost: 0,   range: 168, cd: 0.50, dmg: 14, splash: 0,  slow: 0,   pspd: 920, kind: "arrow" },
+    { id: "reed",   name: "Reed Bolt",    cost: 80,  range: 178, cd: 0.42, dmg: 22, splash: 0,  slow: 0,   pspd: 980, kind: "bolt" },
+    { id: "rocket", name: "Rocket Reed",  cost: 140, range: 185, cd: 0.68, dmg: 34, splash: 52, slow: 0,   pspd: 740, kind: "rocket" },
+    { id: "fan",    name: "Flame Fan",    cost: 200, range: 148, cd: 0.18, dmg: 8,  splash: 0,  slow: 0,   pspd: 0,   cone: 0.78, kind: "fan" }
+  ];
+  const RIGHT = [
+    { id: "glob",   name: "Sap Glob",     cost: 0,   range: 150, cd: 0.85, dmg: 9,  splash: 90,  slow: 1.9, pspd: 640, kind: "glob" },
+    { id: "sbolt",  name: "Sap Bolt",     cost: 90,  range: 160, cd: 0.70, dmg: 16, splash: 42,  slow: 1.1, pspd: 820, kind: "sbolt" },
+    { id: "bomb",   name: "Sticky Bomb",  cost: 150, range: 155, cd: 0.88, dmg: 22, splash: 108, slow: 2.2, pspd: 580, kind: "bomb" },
+    { id: "ignite", name: "Ignited Sap",  cost: 210, range: 158, cd: 0.72, dmg: 12, splash: 80,  slow: 1.6, pspd: 700, kind: "ignite", dot: 6 }
+  ];
   const CAMEOS = {
     sink:     { src: "assets/cameo-sink.jpg",     line: "The Sink Special. Holds water. Barely.", sfx: "sink" },
     l5:       { src: "assets/cameo-truck.jpg",    line: "Roads? We have a river.", sfx: "truck" },
@@ -844,7 +864,7 @@
   }
 
   const LEVELS = [
-    { name: "Trickle", wood: 160, dam: 100, waves: [
+    { name: "Oasis Drip", wood: 160, dam: 100, waves: [
       wv(1.10, 1.00, 1.00, "rrrrrr"),
       wv(1.00, 1.00, 1.00, "rrrrrrr"),
       wv(0.92, 1.00, 1.00, "rrrrrrrr")
@@ -972,30 +992,22 @@
       wv(0.18, 2.74, 1.46, "rrococrrooccoorr"),
       wv(0.13, 3.02, 1.52, "rrococrrococrrooccoorr")
     ]},
-    { name: "Red Planet Dam", wood: 110, dam: 80, waves: [
+    { name: "Cataract Maw", wood: 110, dam: 80, waves: [
       wv(0.48, 2.10, 1.30, "rrcrrcocr"),
       wv(0.34, 2.34, 1.36, "rrocrrcocrro"),
       wv(0.24, 2.60, 1.42, "rrococrrococrro"),
       wv(0.18, 2.88, 1.48, "ccrrooccoorrccrro"),
       wv(0.13, 3.16, 1.54, "rrococrrococrrooccoorr"),
       wv(0.10, 3.46, 1.60, "rrococrrococrrooccoorrccrro"),
-      wv(0.08, 3.78, 1.68, "rrococrrococrrooccoorrccrrooccoor")
+      wv(0.08, 3.78, 1.68, "rrococrrococrrooccoorrf"),
+      wv(0.16, 2.40, 1.10, "m")
     ]}
   ];
 
   const PATH_N = [
-    [-0.08, 0.13], [0.16, 0.14], [0.38, 0.17], [0.56, 0.25],
-    [0.66, 0.36], [0.58, 0.47], [0.40, 0.53], [0.24, 0.60],
-    [0.18, 0.70], [0.30, 0.80], [0.50, 0.84], [0.68, 0.78],
-    [0.72, 0.68], [0.76, 0.56]
+    [0.50, 0.10], [0.50, 0.24], [0.50, 0.40], [0.50, 0.56], [0.50, 0.72]
   ];
-  const PAD_SEEDS = [
-    { frac: 0.14, above: true },
-    { frac: 0.42, above: false },
-    { frac: 0.58, above: true },
-    { frac: 0.86, above: false }
-  ];
-  const DAM_GAP = 40;
+  const DAM_GAP = 8;
 
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
@@ -1076,6 +1088,8 @@
   let WAVES = LEVELS[0].waves;
   let damMax = 100;
   let wood = 100;
+  let leftLv = 0;
+  let rightLv = 0;
   let damHp = 100;
   let hpShown = 100;
   let damFlash = 0;
@@ -1149,7 +1163,7 @@
   setSpeedLabel();
 
   function defaultSave() {
-    return { unlocked: 1, stars: Array(LEVELS.length).fill(0), cameos: {}, unlockTruck: false, unlockFlame: false, historySeen: false, seen: {} };
+    return { unlocked: 1, stars: Array(LEVELS.length).fill(0), cameos: {}, historySeen: false, seen: {} };
   }
   function loadSave() {
     try {
@@ -1165,8 +1179,6 @@
           if ((s.stars[11] || 0) > 0) s.unlocked = Math.max(s.unlocked, 13);
           s.unlocked = Math.max(1, Math.min(LEVELS.length, s.unlocked | 0));
           s.cameos = s.cameos || {};
-          s.unlockTruck = !!s.unlockTruck;
-          s.unlockFlame = !!s.unlockFlame;
           s.historySeen = !!s.historySeen || localStorage.getItem(HIST_SEEN_KEY) === "1";
           s.seen = s.seen || {};
           if ("playerName" in s) delete s.playerName;
@@ -1263,7 +1275,6 @@
     levelIndex = i;
     WAVES = LEVELS[i].waves;
     damMax = LEVELS[i].dam;
-    if (selected !== "stick" && selected !== "sap") selected = "stick";
     resetRun();
   }
 
@@ -1282,43 +1293,51 @@
   }
   const HIST_REELS = [
     {
-      id: "origin", name: "A Short History", at: 1, always: true,
+      id: "origin", name: "After the Yeet", at: 1, always: true,
       frames: [
-        { src: "assets/history/h0.jpg", sub: "A fan tale.", line: "Once, a river." },
-        { src: "assets/history/h1.jpg", sub: "The bank.", line: "He found a shore worth keeping." },
-        { src: "assets/history/h2.jpg", sub: "Timber.", line: "Log on log. Night on night." },
-        { src: "assets/history/h3.jpg", sub: "Yeet.", line: "A few sticks, thrown for luck." },
-        { src: "assets/history/h4.jpg", sub: "The leak.", line: "Then the water learned teeth.", chorus: true },
-        { src: "assets/history/h5.jpg", sub: "Mars.", line: "A shiny truck. The dam did not ask." },
-        { src: "assets/history/h6.jpg", sub: "The pack.", line: "Otters with maps. Crabs with armor." },
-        { src: "assets/history/h7.jpg", sub: "The watch.", line: "He stayed. He placed towers." },
-        { src: "assets/history/h8.jpg", sub: "Home.", line: "Home is timber. Home is the night.", chorus: true },
-        { src: "assets/history/h9.jpg", sub: "Cracks.", line: "Sap answers. Sticks answer." },
-        { src: "assets/history/h10.jpg", sub: "Still.", line: "The night keeps coming. So does he.", chorus: true },
-        { src: "assets/history/h11.jpg", sub: "The dam.", line: "Still standing.", chorus: true }
+        { src: "assets/history/h3.jpg", sub: "After the Yeet.", line: "Throws made legends. Wood made a wall." }
       ]
     },
     {
-      id: "pack", name: "Pack Night", at: 4,
+      id: "oasis", name: "Oasis Opens", at: 1, always: true,
       frames: [
-        { src: "assets/history/h4.jpg", sub: "L4.", line: "The river brought a crowd." },
-        { src: "assets/cameo-truck.jpg", sub: "Cybertruck.", line: "Roads? We have a river." },
-        { src: "assets/history/h6.jpg", sub: "Armor.", line: "Crabs on the current. Hold the pads." }
+        { src: "assets/splash.jpg?v=gh6", sub: "Oasis Opens.", line: "Pretty water. Ugly intentions." }
       ]
     },
     {
-      id: "flame", name: "Flame on the timber", at: 8,
+      id: "stream", name: "Stream Down", at: 2,
       frames: [
-        { src: "assets/cameo-flame.jpg", sub: "L8.", line: "This is fine. Also on fire." },
-        { src: "assets/history/h9.jpg", sub: "Sap.", line: "Slow the pack. Then burn the line." }
+        { src: "assets/history/h4.jpg", sub: "Stream Down.", line: "All paths lead to the dam." }
       ]
     },
     {
-      id: "red", name: "Red Planet Dam", at: 20,
+      id: "twin", name: "Twin Posts", at: 3,
       frames: [
-        { src: "assets/cameo-mars.jpg", sub: "L20.", line: "Next stop: red planet dam." },
-        { src: "assets/cameo-endgame.jpg", sub: "Clear.", line: "Everyone is here. The dam holds." },
-        { src: "assets/history/h11.jpg", sub: "Night done.", line: "Still standing." }
+        { src: "assets/history/h2.jpg", sub: "Twin Posts.", line: "Left turret. Right turret. No third." }
+      ]
+    },
+    {
+      id: "harden", name: "Wood → Rock → Steel", at: 6,
+      frames: [
+        { src: "assets/history/h9.jpg", sub: "Wood → Rock → Steel.", line: "When both posts level, the dam hardens." }
+      ]
+    },
+    {
+      id: "arrow", name: "Arrow → Flame", at: 8,
+      frames: [
+        { src: "assets/cameo-flame.jpg", sub: "Arrow → Flame.", line: "Sticks learn to scream." }
+      ]
+    },
+    {
+      id: "holds", name: "Dam Holds", at: 12,
+      frames: [
+        { src: "assets/history/h11.jpg", sub: "Dam Holds.", line: "River blinks first.", chorus: true }
+      ]
+    },
+    {
+      id: "lodge", name: "Toward Lodge", at: 20,
+      frames: [
+        { src: "assets/history/h10.jpg", sub: "Toward Lodge.", line: "Winter’s next; this wood must stand." }
       ]
     }
   ];
@@ -1345,8 +1364,7 @@
   function reelUnlocked(r) {
     if (!r) return false;
     if (r.always) return true;
-    if (r.id === "pack" && save.unlockTruck) return true;
-    if (r.id === "flame" && save.unlockFlame) return true;
+    if (r.id === "lodge" && (save.stars[19] || 0) > 0) return true;
     if (r.id === "red" && (save.stars[19] || 0) > 0) return true;
     return (save.unlocked | 0) >= (r.at || 1);
   }
@@ -1467,30 +1485,48 @@
   }
 
   const MUSEUM = [
-    { id: "stick", tab: "towers", name: "Stick Thrower", img: "assets/sprites/bober-idle.png", at: 1,
-      blurb: "50 $BOBER. Cheap single-target. Upgrade twice, then evolve.", tease: "A beaver with a stick." },
-    { id: "sap", tab: "towers", name: "Sap Sprayer", img: "assets/sprites/bober-idle.png", at: 1,
-      blurb: "75 $BOBER. Splash sap that slows a pack.", tease: "Something sticky on the bank." },
-    { id: "truck", tab: "towers", name: "Cybertruck", img: "assets/cameo-truck.jpg", at: 4,
-      blurb: "140 $BOBER. Pierce armor. Max 1. Evolve Stick twice.", tease: "Roads? The river has ideas." },
-    { id: "flame", tab: "towers", name: "Flame Beaver", img: "assets/cameo-flame.jpg", at: 8,
-      blurb: "120 $BOBER. Short cone. Max 1. Evolve Sap twice.", tease: "Heat on the timber." },
-    { id: "rat", tab: "foes", name: "Twig Rat", img: "assets/museum/rat.jpg", at: 1,
-      blurb: "Fast. Fragile. The first leak.", tease: "Something small on the current." },
-    { id: "crab", tab: "foes", name: "Log Crab", img: "assets/museum/crab.jpg", at: 2,
-      blurb: "Slow. Armored. Spend sap.", tease: "A log with claws." },
-    { id: "otter", tab: "foes", name: "Otter Scout", img: "assets/museum/otter.jpg", at: 3,
-      blurb: "Fast scout. Hits the dam if pads sleep.", tease: "Maps on the water." },
-    { id: "trickle", tab: "dam", name: "Trickle", img: "assets/splash.jpg", at: 1, mile: true,
-      blurb: "The first night. Two pads. Hold the wood.", tease: "A dam waiting." },
-    { id: "pack", tab: "dam", name: "Pack Night", img: "assets/history/h4.jpg", at: 4, mile: true,
-      blurb: "The river brings a crowd. Truck waits after.", tease: "The current thickens." },
-    { id: "thin", tab: "dam", name: "Thin Dam", img: "assets/history/h9.jpg", at: 6, mile: true,
-      blurb: "Less HP. Same river. Repair if you must.", tease: "Hairline cracks." },
-    { id: "night", tab: "dam", name: "Night Rush", img: "assets/history/h8.jpg", at: 10, mile: true,
-      blurb: "The long dark. Pads matter.", tease: "The night gets louder." },
-    { id: "red", tab: "dam", name: "Red Planet Dam", img: "assets/cameo-endgame.jpg", at: 20, mile: true,
-      blurb: "Campaign clear. Stars from HP left.", tease: "A red shore still waits." }
+    { id: "bow", tab: "towers", name: "Stick Bow", img: "assets/sprites/bober-idle.png", at: 1,
+      blurb: "Left line 0. Wood arrows. Single-target punch.", tease: "A stick on the left post." },
+    { id: "reed", tab: "towers", name: "Reed Bolt", img: "assets/sprites/bober-idle.png", at: 2,
+      blurb: "Left 1. Bolts. Faster punch.", tease: "The left post learns to snap." },
+    { id: "rocket", tab: "towers", name: "Rocket Reed", img: "assets/cameo-truck.jpg", at: 4,
+      blurb: "Left 2. Small AoE. 140 $BOBER.", tease: "Reeds that boom." },
+    { id: "fan", tab: "towers", name: "Flame Fan", img: "assets/cameo-flame.jpg", at: 8,
+      blurb: "Left 3. Cone fire. 200 $BOBER.", tease: "Sticks learn to scream." },
+    { id: "glob", tab: "towers", name: "Sap Glob", img: "assets/sprites/bober-idle.png", at: 1,
+      blurb: "Right line 0. Splash slow.", tease: "Something sticky on the right post." },
+    { id: "sbolt", tab: "towers", name: "Sap Bolt", img: "assets/sprites/bober-idle.png", at: 2,
+      blurb: "Right 1. Heavy sap + short slow. Projectile, not a third turret.", tease: "Sap that flies." },
+    { id: "bomb", tab: "towers", name: "Sticky Bomb", img: "assets/sprites/bober-idle.png", at: 4,
+      blurb: "Right 2. Splash bomb. 150 $BOBER.", tease: "A glob with opinions." },
+    { id: "ignite", tab: "towers", name: "Ignited Sap", img: "assets/cameo-flame.jpg", at: 8,
+      blurb: "Right 3. DoT + slow. 210 $BOBER.", tease: "Sap that burns." },
+    { id: "snout", tab: "foes", name: "Drift Snout", img: "assets/museum/rat.jpg", at: 1,
+      blurb: "Fast. Spawns at the oasis. Wants wood.", tease: "Something small in the foam." },
+    { id: "rider", tab: "foes", name: "Log Rider", img: "assets/museum/crab.jpg", at: 2,
+      blurb: "Tank. Rides a log down the stream.", tease: "A log with legs." },
+    { id: "biter", tab: "foes", name: "Oasis Biter", img: "assets/museum/otter.jpg", at: 4,
+      blurb: "Melee. Chews the dam if posts sleep.", tease: "Teeth from the oasis." },
+    { id: "dart", tab: "foes", name: "Current Dart", img: "assets/museum/otter.jpg", at: 5,
+      blurb: "Ranged-fast. Rides the current.", tease: "A streak in the stream." },
+    { id: "foam", tab: "foes", name: "Foam Choir", img: "assets/museum/rat.jpg", at: 8,
+      blurb: "Support. Speeds the pack.", tease: "Singing foam." },
+    { id: "maw", tab: "foes", name: "Cataract Maw", img: "assets/museum/crab.jpg", at: 20,
+      blurb: "Finale boss. The waterfall has a mouth.", tease: "Something huge behind the fall." },
+    { id: "wood", tab: "dam", name: "Dam Wood", img: "assets/splash.jpg?v=gh6", at: 1, mile: true,
+      blurb: "Base dam. Both posts at 0–1. Upgrade both to harden.", tease: "Timber across the mouth." },
+    { id: "rock", tab: "dam", name: "Dam Rock", img: "assets/history/h9.jpg", at: 4, mile: true,
+      blurb: "Both lines at 2. Stone face.", tease: "The wood wants to be stone." },
+    { id: "steel", tab: "dam", name: "Dam Steel", img: "assets/history/h11.jpg", at: 8, mile: true,
+      blurb: "Both lines at 3. Steel brace.", tease: "Metal in the night." },
+    { id: "twin", tab: "dam", name: "Twin Turret", img: "assets/sprites/bober-idle.png", at: 1, mile: true,
+      blurb: "Exactly two posts. Left punch. Right sap. No third.", tease: "Two seats. One beaver." },
+    { id: "oasis", tab: "dam", name: "Waterfall Oasis", img: "assets/splash.jpg?v=gh6", at: 1, mile: true,
+      blurb: "Spawn is only the oasis. Pretty water. Ugly intentions.", tease: "The fall has a mouth." },
+    { id: "stream", tab: "dam", name: "Big Stream", img: "assets/splash.jpg?v=gh6", at: 1, mile: true,
+      blurb: "Centerline only. All paths lead to the dam.", tease: "A road of water." },
+    { id: "crew", tab: "dam", name: "Repair Crew Bober", img: "assets/sprites/bober-idle.png", at: 1, mile: true,
+      blurb: "Repair Dam spends $BOBER. Not a third turret.", tease: "A hammer behind the wall." }
   ];
   let musTab = "towers";
   let museumFrom = "splash";
@@ -1498,29 +1534,38 @@
 
   function markPlaySeen() {
     if (!save.seen) save.seen = {};
-    save.seen.stick = true;
-    save.seen.sap = true;
-    save.seen.rat = true;
-    save.seen.trickle = true;
+    save.seen.bow = true;
+    save.seen.glob = true;
+    save.seen.snout = true;
+    save.seen.wood = true;
+    save.seen.twin = true;
+    save.seen.oasis = true;
+    save.seen.stream = true;
+    save.seen.crew = true;
+    if (leftLv >= 1) save.seen.reed = true;
+    if (leftLv >= 2) save.seen.rocket = true;
+    if (leftLv >= 3) save.seen.fan = true;
+    if (rightLv >= 1) save.seen.sbolt = true;
+    if (rightLv >= 2) save.seen.bomb = true;
+    if (rightLv >= 3) save.seen.ignite = true;
+    if (damTier() >= 2) save.seen.rock = true;
+    if (damTier() >= 3) save.seen.steel = true;
     const L = LEVELS[levelIndex];
     if (L && L.waves) {
       const seq = L.waves.map(function (w) { return w.seq; }).join("");
-      if (seq.indexOf("c") >= 0) save.seen.crab = true;
-      if (seq.indexOf("o") >= 0) save.seen.otter = true;
+      if (seq.indexOf("c") >= 0 || seq.indexOf("l") >= 0) save.seen.rider = true;
+      if (seq.indexOf("o") >= 0 || seq.indexOf("d") >= 0) save.seen.dart = true;
+      if (seq.indexOf("b") >= 0) save.seen.biter = true;
+      if (seq.indexOf("f") >= 0) save.seen.foam = true;
+      if (seq.indexOf("m") >= 0) save.seen.maw = true;
     }
-    if (levelIndex + 1 >= 4 || save.unlockTruck) save.seen.truck = true;
-    if (levelIndex + 1 >= 8 || save.unlockFlame) save.seen.flame = true;
-    if (levelIndex + 1 >= 4) save.seen.pack = true;
-    if (levelIndex + 1 >= 6) save.seen.thin = true;
-    if (levelIndex + 1 >= 10) save.seen.night = true;
-    if (levelIndex + 1 >= 20) save.seen.red = true;
     writeSave();
   }
   function museumUnlocked(card) {
     if (!card) return false;
     if (save.seen && save.seen[card.id]) return true;
-    if (card.id === "truck") return !!save.unlockTruck;
-    if (card.id === "flame") return !!save.unlockFlame;
+    if (card.id === "fan") return leftLv >= 3 || (save.seen && save.seen.fan);
+    if (card.id === "ignite") return rightLv >= 3 || (save.seen && save.seen.ignite);
     if ((card.at || 1) <= 1) return true;
     return false;
   }
@@ -1659,13 +1704,19 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const progress = enemies.map(function (e) { return e.dist / pathLen; });
-    const frameL = 4, frameT = 8, frameR = 12, frameB = Math.max(40, Math.round(viewH * 0.07));
+    dam.h = Math.max(70, Math.round(viewH * 0.16));
+    dam.w = Math.min(viewW * 0.88, viewW - 16);
+    dam.x = (viewW - dam.w) / 2;
+    dam.y = viewH - dam.h - 6;
+    const frameL = 8, frameR = 8, frameT = Math.round(viewH * 0.08);
+    const mouth = dam.y + 4;
     path = PATH_N.map(function (p) {
       return {
         x: frameL + p[0] * (viewW - frameL - frameR),
-        y: frameT + p[1] * (viewH - frameT - frameB)
+        y: frameT + p[1] * (mouth - frameT)
       };
     });
+    path[path.length - 1].y = mouth;
     pathCum = [0];
     pathLen = 0;
     for (let i = 1; i < path.length; i++) {
@@ -1676,61 +1727,26 @@
     pathLen = Math.max(1, pathLen);
     enemies.forEach(function (e, i) { e.dist = progress[i] * pathLen; });
 
-    riverW = Math.max(40, Math.min(viewW, viewH) * 0.11);
-    const last = path[path.length - 1];
-    dam.w = Math.min(viewW * 0.34, 150);
-    dam.h = viewH * 0.64;
-    dam.x = viewW - dam.w - 6;
-    dam.y = Math.max(8, last.y - dam.h * 0.42);
-    const minClear = riverW / 2 + 56;
-    const open = padOpenSet();
-    pads = PAD_SEEDS.map(function (seed, i) {
-      const t = towers.find(function (tw) { return tw.pad === i; });
-      const placed = placePadOnBank(seed, minClear);
-      return {
-        x: placed.x, y: placed.y, r: Math.max(16, Math.min(viewW, viewH) * 0.034),
-        type: t ? t.type : null, rank: t ? t.rank : 0,
-        bankNx: placed.nx, bankNy: placed.ny,
-        locked: !open[i]
-      };
-    });
-    separatePads(pads, Math.max(180, 0.28 * Math.min(viewW, viewH)), minClear);
-    pads.forEach(function (p, i) { p.locked = !open[i]; });
+    riverW = Math.max(48, Math.min(viewW * 0.28, 120));
+    const padR = Math.max(22, Math.min(viewW, viewH) * 0.045);
+    const padY = dam.y - padR - 10;
+    pads = [
+      { x: viewW * 0.22, y: padY, r: padR, type: "left", rank: leftLv, locked: false },
+      { x: viewW * 0.78, y: padY, r: padR, type: "right", rank: rightLv, locked: false }
+    ];
     const bb = boberBounds();
-    if (!bober.y) bober.y = (bb.top + bb.bot) * 0.5;
-    else bober.y = Math.max(bb.top, Math.min(bb.bot, bober.y));
-  }
-
-  function padsForLevel(idx) {
-    if (idx < 0) return 2;
-    if (idx <= 3) return 2;
-    if (idx <= 7) return 3;
-    return 4;
-  }
-  function padOpenSet() {
-    const n = padsForLevel(levelIndex);
-    const ranked = PAD_SEEDS.map(function (s, i) { return i; })
-      .sort(function (a, b) { return PAD_SEEDS[b].frac - PAD_SEEDS[a].frac; });
-    const open = {};
-    for (let k = 0; k < n; k++) open[ranked[k]] = true;
-    return open;
-  }
-  function newPadIndex() {
-    const n = padsForLevel(levelIndex);
-    if (n <= padsForLevel(levelIndex - 1)) return -1;
-    const ranked = PAD_SEEDS.map(function (s, i) { return i; })
-      .sort(function (a, b) { return PAD_SEEDS[b].frac - PAD_SEEDS[a].frac; });
-    return ranked[n - 1];
+    if (!bober.x) bober.x = (bb.left + bb.right) * 0.5;
+    else bober.x = Math.max(bb.left, Math.min(bb.right, bober.x));
+    bober.y = dam.y + 18;
   }
 
   function boberBounds() {
-    const top = dam.y + 64;
-    const bot = dam.y + Math.max(88, dam.h) - 70;
-    return { top: top, bot: Math.max(top + 10, bot) };
+    return { left: dam.x + 36, right: dam.x + dam.w - 36 };
   }
   function resetBober() {
     const b = boberBounds();
-    bober.y = (b.top + b.bot) * 0.5;
+    bober.x = (b.left + b.right) * 0.5;
+    bober.y = dam.y + 18;
     bober.tilt = 0;
     bober.peek = -0.16;
     bober.peekT = 1.6;
@@ -1775,16 +1791,17 @@
 
     let wantTilt = 0;
     let wantPeek = bober.peek;
+    bober.y = dam.y + 18;
     if (threat) {
       const p = pointAt(threat.dist);
-      const wantY = Math.max(box.top, Math.min(box.bot, p.y));
+      const wantX = Math.max(box.left, Math.min(box.right, p.x));
       const lerp = 1 - Math.exp(-dt * 6.4);
-      let dy = (wantY - bober.y) * lerp;
+      let dx = (wantX - (bober.x || wantX)) * lerp;
       const cap = 220 * dt;
-      if (dy > cap) dy = cap;
-      if (dy < -cap) dy = -cap;
-      bober.y = Math.max(box.top, Math.min(box.bot, bober.y + dy));
-      wantTilt = Math.max(-0.72, Math.min(0.72, (p.y - bober.y) / 34));
+      if (dx > cap) dx = cap;
+      if (dx < -cap) dx = -cap;
+      bober.x = Math.max(box.left, Math.min(box.right, (bober.x || wantX) + dx));
+      wantTilt = Math.max(-0.5, Math.min(0.5, ((bober.x || 0) - viewW * 0.5) / 80));
       wantPeek = -0.55;
     } else {
       bober.peekT -= dt;
@@ -1792,7 +1809,7 @@
         bober.peekT = 2.3 + Math.random() * 2.8;
         wantPeek = Math.random() < 0.78 ? -0.3 : 0.12;
       }
-      wantTilt = bober.peek * 0.35;
+      wantTilt = bober.peek * 0.2;
     }
     bober.peek += (wantPeek - bober.peek) * Math.min(1, dt * 4.4);
     bober.tilt += (wantTilt - bober.tilt) * Math.min(1, dt * 7);
@@ -1916,19 +1933,48 @@
     return false;
   }
 
+  function damTier() {
+    return Math.min(leftLv | 0, rightLv | 0);
+  }
+  function damSkin() {
+    const t = damTier();
+    if (t >= 3) return "Steel";
+    if (t >= 2) return "Rock";
+    return "Wood";
+  }
+  function lineAt(side) {
+    const line = side === 0 ? LEFT : RIGHT;
+    const lv = Math.max(0, Math.min(line.length - 1, side === 0 ? leftLv : rightLv));
+    return line[lv];
+  }
+  function nextLine(side) {
+    const line = side === 0 ? LEFT : RIGHT;
+    const lv = side === 0 ? leftLv : rightLv;
+    if (lv >= line.length - 1) return null;
+    return line[lv + 1];
+  }
   function hud() {
     chipWood.textContent = "$BOBER " + wood;
     const waveShown = phase === "build" ? Math.min(WAVES.length, wave + 1) : Math.max(1, wave);
     chipWave.textContent = "L" + (levelIndex + 1) + " · " + waveShown + "/" + WAVES.length;
-    chipHp.textContent = "Dam " + Math.max(0, Math.ceil(damHp));
+    chipHp.textContent = "DAM " + damSkin() + " " + Math.max(0, Math.ceil(damHp));
     chipHp.classList.toggle("danger", running && damDanger());
-    btnStick.classList.toggle("on", selected === "stick");
-    btnSap.classList.toggle("on", selected === "sap");
+    const ln = document.getElementById("left-name");
+    const lc = document.getElementById("left-cost");
+    const rn = document.getElementById("right-name");
+    const rc = document.getElementById("right-cost");
+    if (ln) ln.textContent = lineAt(0).name;
+    if (rn) rn.textContent = lineAt(1).name;
+    const nL = nextLine(0), nR = nextLine(1);
+    if (lc) lc.textContent = nL ? fmtCost(nL.cost) : "MAX";
+    if (rc) rc.textContent = nR ? fmtCost(nR.cost) : "MAX";
+    btnStick.classList.toggle("on", true);
+    btnSap.classList.toggle("on", true);
     btnRepair.classList.toggle("need", running && damHp < damMax && wood < COST_REPAIR);
-    const canTune = towers.some(function (t) {
-      return t.type === "stick" || t.type === "sap";
-    });
-    shopHint.classList.toggle("hidden", !running || !canTune);
+    if (shopHint) {
+      shopHint.classList.remove("hidden");
+      shopHint.textContent = "Upgrade both lines to tier up.";
+    }
     btnPause.classList.toggle("on", paused);
     btnPause.textContent = paused ? "▶" : "⏸";
     btnPause.setAttribute("aria-label", paused ? "Resume" : "Pause");
@@ -1951,7 +1997,8 @@
     hpShown = damMax;
     damFlash = 0;
     wave = 0;
-    selected = "stick";
+    leftLv = 0;
+    rightLv = 0;
     enemies = [];
     towers = [];
     shots = [];
@@ -1978,14 +2025,11 @@
     document.getElementById("app").classList.remove("booting");
     layout();
     resetBober();
-    pads.forEach(function (p) { p.type = null; });
-    const freshPad = newPadIndex();
-    if (freshPad >= 0) {
-      banner = "NEW BUILD SITE UNLOCKED";
-      bannerT = 3.2;
-      padPulseI = freshPad;
-      padPulseT = 2.4;
-    } else if (pendingUnlock) {
+    towers = [
+      { pad: 0, type: "left", cd: 0, ang: -1.2, recoil: 0, rank: 0, lock: null },
+      { pad: 1, type: "right", cd: 0, ang: -1.9, recoil: 0, rank: 0, lock: null }
+    ];
+    if (pendingUnlock) {
       banner = pendingUnlock;
       bannerT = 3.4;
       pendingUnlock = "";
@@ -2070,19 +2114,12 @@
     const earned = starsFromHp(Math.max(0, damHp), damMax);
     if (earned > (save.stars[levelIndex] || 0)) save.stars[levelIndex] = earned;
     if (levelIndex + 1 < LEVELS.length) save.unlocked = Math.max(save.unlocked, levelIndex + 2);
-    const hadTruck = save.unlockTruck;
-    const hadFlame = save.unlockFlame;
-    if (levelIndex >= 3) save.unlockTruck = true;
-    if (levelIndex >= 7) save.unlockFlame = true;
-    if (!hadTruck && save.unlockTruck) pendingUnlock = "CYBERTRUCK UNLOCKED";
-    else if (!hadFlame && save.unlockFlame) pendingUnlock = "FLAME BEAVER UNLOCKED";
     const beat = cameoForClear(levelIndex);
     writeSave();
     endTitle.textContent = "DAM HELD";
     endStars.textContent = starString(earned);
     endMsg.textContent = starWhy(earned, Math.max(0, damHp), damMax, totalLeaks);
-    if (pendingUnlock === "CYBERTRUCK UNLOCKED") endMsg.textContent += "\nUpgrade Stick twice, then tap to evolve.";
-    if (pendingUnlock === "FLAME BEAVER UNLOCKED") endMsg.textContent += "\nUpgrade Sap twice, then tap to evolve.";
+    endMsg.textContent += "\nDam " + damSkin() + ".";
     if (levelIndex + 1 >= LEVELS.length) endMsg.textContent += "\nCampaign clear.";
     else endMsg.textContent += "\nNext level unlocked.";
     btnAgain.textContent = "LEVELS";
@@ -2116,7 +2153,7 @@
   }
 
   function spawnEnemy(ch) {
-    const kind = ch === "c" ? "crab" : ch === "o" ? "otter" : "rat";
+    const kind = KIND_CH[ch] || "snout";
     const k = KINDS[kind];
     enemies.push({
       kind: kind,
@@ -2124,11 +2161,13 @@
       hp: k.hp * hpMul,
       max: k.hp * hpMul,
       spd: k.spd * spdMul,
-      wood: k.wood + (kind === "rat" && levelIndex >= 2 && levelIndex <= 4 ? 1 : 0),
+      wood: k.wood,
       leak: k.leak,
       r: k.r,
       armor: k.armor,
       slowT: 0,
+      dotT: 0,
+      buff: k.buff || 0,
       bob: Math.random() * Math.PI * 2
     });
   }
@@ -2148,46 +2187,21 @@
     for (let i = 0; i < towers.length; i++) if (towers[i].type === type) n++;
     return n;
   }
-  function canEvolve(tw) {
-    if (!tw) return false;
-    if (tw.type === "truck" || tw.type === "flame") return false;
-    if ((tw.rank || 0) < MAX_RANK) return false;
-    const dest = evolvedType(tw.type);
-    if (!dest) return false;
-    if (dest === "truck" && !save.unlockTruck) return false;
-    if (dest === "flame" && !save.unlockFlame) return false;
-    return countType(dest) < 1;
-  }
-  function evolveHint(tw) {
-    if (!tw) return null;
-    if (tw.type === "truck" || tw.type === "flame") return { text: "MAX 1", big: false };
-    if ((tw.rank || 0) < MAX_RANK) {
-      const up = TOWERS[tw.type].upCost;
-      if (wood < up) return { text: "need $BOBER", big: false };
-      return { text: "UP · " + fmtCost(up), big: true };
-    }
-    const dest = evolvedType(tw.type);
-    if (!dest) return { text: "MAX 1", big: false };
-    const unlocked = dest === "truck" ? !!save.unlockTruck : !!save.unlockFlame;
-    if (!unlocked) return { text: "EVOLVE 🔒", big: false };
-    if (countType(dest) >= 1) return { text: "MAX 1", big: false };
-    const cost = evolveCostOf(tw.type);
-    if (wood < cost) return { text: "need $BOBER", big: false };
-    return { text: "EVOLVE · " + fmtCost(cost), big: true };
-  }
+  function canEvolve() { return false; }
+  function evolveHint() { return null; }
   function specFor(tw) {
-    const b = TOWERS[tw.type];
-    const evolved = tw.type === "truck" || tw.type === "flame";
-    const r = evolved ? 0 : (tw.rank || 0);
+    const spec = lineAt(tw.pad === 1 ? 1 : 0);
     return {
-      range: b.range + r * 8,
-      cd: b.cd,
-      dmg: b.dmg + r * (tw.type === "sap" ? 1 : 2),
-      splash: tw.type === "sap" ? b.splash + r * 6 : 0,
-      slow: tw.type === "sap" ? b.slow + r * 0.12 : 0,
-      pspd: b.pspd,
-      pierce: !!b.pierce,
-      cone: b.cone || 0
+      range: spec.range,
+      cd: spec.cd,
+      dmg: spec.dmg,
+      splash: spec.splash || 0,
+      slow: spec.slow || 0,
+      pspd: spec.pspd,
+      pierce: false,
+      cone: spec.cone || 0,
+      kind: spec.kind,
+      dot: spec.dot || 0
     };
   }
 
@@ -2240,56 +2254,33 @@
     SFX.tone(90, 0.1, "square", 0.04);
   }
 
+  function upgradeLine(side) {
+    if (!running || phase === "win" || phase === "lose") return;
+    const nxt = nextLine(side);
+    if (!nxt) return;
+    if (wood < nxt.cost) { cantAfford(); return; }
+    const before = damSkin();
+    wood -= nxt.cost;
+    if (side === 0) leftLv += 1;
+    else rightLv += 1;
+    const pad = pads[side];
+    if (pad) pad.rank = side === 0 ? leftLv : rightLv;
+    floaters.push({ x: pad ? pad.x : viewW / 2, y: (pad ? pad.y : dam.y) - 18, text: nxt.name, t: 0.9, col: YEL });
+    fx.push({ kind: "ring", x: pad ? pad.x : viewW / 2, y: pad ? pad.y : dam.y, t: 0.55, r: 18 });
+    SFX.tone(260, 0.07, "triangle", 0.05);
+    SFX.tone(340, 0.1, "triangle", 0.03);
+    const after = damSkin();
+    if (after !== before) {
+      banner = "DAM " + after.toUpperCase();
+      bannerT = 2.2;
+      floaters.push({ x: viewW / 2, y: dam.y - 8, text: after.toUpperCase(), t: 1.1, col: CREAM });
+    }
+    markPlaySeen();
+    hud();
+  }
   function tapPad(padIndex) {
     if (!running || phase === "win" || phase === "lose") return;
-    const pad = pads[padIndex];
-    if (pad.locked && !pad.type) return;
-    if (pad.type) {
-      const tw = towers.find(function (t) { return t.pad === padIndex; });
-      if (!tw) return;
-      if (tw.type === "truck" || tw.type === "flame") return;
-      const rank = tw.rank || 0;
-      if (rank < MAX_RANK) {
-        const cost = TOWERS[tw.type].upCost;
-        if (!cost) return;
-        if (wood < cost) { cantAfford(); return; }
-        wood -= cost;
-        tw.rank = rank + 1;
-        pad.rank = tw.rank;
-        floaters.push({ x: pad.x, y: pad.y - 18, text: "UP " + tw.rank, t: 0.8, col: YEL });
-        SFX.tone(260, 0.07, "triangle", 0.05);
-        SFX.tone(340, 0.1, "triangle", 0.03);
-        hud();
-        return;
-      }
-      if (!canEvolve(tw)) return;
-      const dest = evolvedType(tw.type);
-      const cost = evolveCostOf(tw.type);
-      if (wood < cost) { cantAfford(); return; }
-      wood -= cost;
-      tw.type = dest;
-      tw.rank = 0;
-      tw.cd = 0;
-      pad.type = dest;
-      pad.rank = 0;
-      fx.push({ kind: "ring", x: pad.x, y: pad.y, t: 0.55, r: 18 });
-      floaters.push({ x: pad.x, y: pad.y - 28, text: dest === "truck" ? "TRUCK" : "FLAME", t: 1.0, col: YEL });
-      SFX.tone(140, 0.1, "square", 0.05, 90);
-      SFX.tone(280, 0.12, "triangle", 0.04);
-      hud();
-      return;
-    }
-    if (selected !== "stick" && selected !== "sap") return;
-    const spec = TOWERS[selected];
-    if (!spec) return;
-    if (wood < spec.cost) { cantAfford(); return; }
-    wood -= spec.cost;
-    pad.type = selected;
-    pad.rank = 0;
-    towers.push({ pad: padIndex, type: selected, cd: 0, ang: -0.4, recoil: 0, rank: 0, lock: null });
-    SFX.tone(180, 0.07, "triangle", 0.05);
-    SFX.tone(240, 0.1, "triangle", 0.03);
-    hud();
+    upgradeLine(padIndex === 1 ? 1 : 0);
   }
 
   function repairDam() {
@@ -2344,17 +2335,26 @@
       }
     }
 
+    let choir = 1;
+    for (let i = 0; i < enemies.length; i++) {
+      if (enemies[i].kind === "foam") choir = Math.max(choir, 1.18);
+    }
     for (let i = enemies.length - 1; i >= 0; i--) {
       const e = enemies[i];
-      e.bob += dt * (e.kind === "crab" ? 6 : 14);
+      e.bob += dt * (e.kind === "rider" || e.kind === "maw" ? 4 : 14);
       if (e.slowT > 0) e.slowT -= dt;
+      if (e.dotT > 0) {
+        e.dotT -= dt;
+        e.hp -= (e.dotDps || 0) * dt;
+        if (e.hp <= 0) { hurt(e, 0); if (phase === "lose") return; continue; }
+      }
       const pNow = pointAt(e.dist);
       for (let p = 0; p < puddles.length; p++) {
         const u = puddles[p];
         if (Math.hypot(pNow.x - u.x, pNow.y - u.y) <= u.r + e.r) e.slowT = Math.max(e.slowT, 0.35);
       }
       const slow = e.slowT > 0 ? 0.42 : 1;
-      e.dist += e.spd * slow * dt;
+      e.dist += e.spd * slow * choir * dt;
       if (e.dist >= pathLen) {
         const leak = e.leak;
         const p = pointAt(pathLen);
@@ -2431,9 +2431,11 @@
               dmg: spec.dmg,
               splash: spec.splash,
               slow: spec.slow,
-              pierce: spec.pierce
+              pierce: spec.pierce,
+              dot: spec.dot || 0,
+              kind: spec.kind
             });
-            if (tw.type === "stick") SFX.tone(380, 0.04, "square", 0.035);
+            if (spec.kind === "arrow" || spec.kind === "bolt") SFX.tone(380, 0.04, "square", 0.035);
             else if (tw.type === "truck") {
               fx.push({
                 kind: "muzzle",
@@ -2467,6 +2469,7 @@
             const p = pointAt(e.dist);
             if (Math.hypot(p.x - s.tx, p.y - s.ty) <= s.splash + e.r) {
               e.slowT = Math.max(e.slowT, s.slow);
+              if (s.dot) { e.dotT = Math.max(e.dotT || 0, 2.2); e.dotDps = s.dot; }
               hurt(e, s.dmg);
             }
           }
@@ -2480,7 +2483,7 @@
             }
           }
         } else if (s.target && s.target.hp > 0) {
-          if (s.type === "stick") {
+          if (s.kind === "arrow" || s.kind === "bolt") {
             for (let n = 0; n < 3; n++) {
               fx.push({
                 kind: "star",
@@ -2595,7 +2598,7 @@
     }
     ctx.lineWidth = inkW;
     ctx.strokeStyle = INK;
-    if (e.kind === "rat") {
+    if (e.kind === "rat" || e.kind === "snout" || e.kind === "dart") {
       ctx.fillStyle = "#8B6A3A";
       ctx.beginPath(); ctx.ellipse(0, 1, 11, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.strokeStyle = "rgba(244,230,195,0.35)";
@@ -2619,7 +2622,7 @@
       ctx.strokeStyle = "rgba(196,160,106,0.55)";
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(-12, 0); ctx.quadraticCurveTo(-18, -5, -22, 1); ctx.stroke();
-    } else if (e.kind === "crab") {
+    } else if (e.kind === "crab" || e.kind === "rider" || e.kind === "biter" || e.kind === "maw") {
       ctx.fillStyle = "#C46A28";
       roundRect(ctx, -20, -10, 40, 20, 6); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "rgba(60, 28, 10, 0.32)";
@@ -2712,8 +2715,8 @@
   function drawTower(tw) {
     const pad = pads[tw.pad];
     const spec = specFor(tw);
-    const evolved = tw.type === "truck" || tw.type === "flame";
-    const rk = evolved ? 0 : (tw.rank || 0);
+    const evolved = spec.kind === "fan" || spec.kind === "rocket";
+    const rk = tw.pad === 1 ? rightLv : leftLv;
     ctx.save();
     ctx.fillStyle = "rgba(26, 16, 40, 0.32)";
     ctx.beginPath(); ctx.ellipse(pad.x + 2, pad.y + 20 + rk * 2, evolved ? 24 : 18 + rk * 3, evolved ? 9 : 7 + rk, 0, 0, Math.PI * 2); ctx.fill();
@@ -2727,20 +2730,18 @@
     ctx.strokeStyle = INK;
     ctx.lineWidth = evolved ? 3.4 : 3 + rk * 0.4;
 
-    if (tw.type === "stick" || tw.type === "sap" || tw.type === "flame") {
-      if (sprReady(SPR.idle)) {
-        const th = tw.type === "flame" ? 64 : 58;
-        const twid = th * (SPR.idle.naturalWidth / SPR.idle.naturalHeight);
-        ctx.drawImage(SPR.idle, -twid * 0.58, -th * 0.92, twid, th);
-      } else {
-        ctx.save();
-        ctx.translate(-6, -18);
-        drawYeetBeaver(ctx, tw.type === "flame" ? 1.15 : 1.05);
-        ctx.restore();
-      }
+    if (sprReady(SPR.idle)) {
+      const th = spec.kind === "fan" ? 64 : 58;
+      const twid = th * (SPR.idle.naturalWidth / SPR.idle.naturalHeight);
+      ctx.drawImage(SPR.idle, -twid * 0.58, -th * 0.92, twid, th);
+    } else {
+      ctx.save();
+      ctx.translate(-6, -18);
+      drawYeetBeaver(ctx, spec.kind === "fan" ? 1.15 : 1.05);
+      ctx.restore();
     }
 
-    if (tw.type === "stick") {
+    if (spec.kind === "arrow" || spec.kind === "bolt") {
       ctx.fillStyle = rk >= 2 ? YEL : "#C49A5A";
       roundRect(ctx, 8, 10, 20 + rk * 2, 6, 2); ctx.fill(); ctx.stroke();
       ctx.strokeStyle = "rgba(92,58,26,0.55)";
@@ -2754,7 +2755,7 @@
       }
       ctx.fillStyle = YEL;
       ctx.beginPath(); ctx.arc(10, 13, 3.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    } else if (tw.type === "sap") {
+    } else if (spec.kind === "glob" || spec.kind === "sbolt" || spec.kind === "bomb" || spec.kind === "ignite") {
       ctx.fillStyle = "#E0B400";
       ctx.beginPath(); ctx.arc(12, 14, 7 + rk, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "rgba(255, 236, 170, 0.85)";
@@ -2868,9 +2869,8 @@
 
   function drawBoberNpc() {
     if (!dam.h) return;
-    const logW = dam.w - 28;
-    const x = dam.x + Math.max(40, logW * 0.56);
-    const y = bober.y || (dam.y + dam.h * 0.45);
+    const x = bober.x || (viewW * 0.5);
+    const y = bober.y || (dam.y + 18);
     const stressed = damMax > 0 && damHp / damMax < 0.35;
     const bob = Math.sin(tWorld * (stressed ? 9.5 : 3.3)) * (stressed ? 3.2 : 1.6);
     let img = SPR.idle;
@@ -2981,6 +2981,68 @@
   }
 
   function drawDam() {
+    ctx.save();
+    const x = dam.x, y = dam.y, w = dam.w, h = dam.h;
+    const skin = damSkin();
+    const logs = 5;
+    const lh = Math.max(10, (h - 18) / logs);
+    ctx.fillStyle = "#120c08";
+    roundRect(ctx, x - 6, y - 6, w + 12, h + 10, 10);
+    ctx.fill();
+    for (let i = 0; i < logs; i++) {
+      const ly = y + 4 + i * lh;
+      if (skin === "Steel") {
+        ctx.fillStyle = i % 2 ? "#8a96a4" : "#6a7684";
+      } else if (skin === "Rock") {
+        ctx.fillStyle = i % 2 ? "#6a6460" : "#4a4642";
+      } else {
+        ctx.fillStyle = i % 2 ? FUR : WOOD;
+      }
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 2.4;
+      roundRect(ctx, x + 4, ly, w - 8, lh - 3, 4);
+      ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = skin === "Steel" ? "rgba(200,220,240,0.35)" : "rgba(244,230,195,0.22)";
+      ctx.lineWidth = 1.1;
+      ctx.beginPath();
+      ctx.moveTo(x + 14, ly + lh * 0.4);
+      ctx.lineTo(x + w - 14, ly + lh * 0.4);
+      ctx.stroke();
+    }
+    if (damTier() >= 1) {
+      ctx.strokeStyle = skin === "Steel" ? "#c8d4e0" : (skin === "Rock" ? "#9a948c" : "#c4a06a");
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(x + 10, y + 6);
+      ctx.lineTo(x + 10, y + h - 8);
+      ctx.moveTo(x + w - 10, y + 6);
+      ctx.lineTo(x + w - 10, y + h - 8);
+      ctx.stroke();
+    }
+    const spill = Math.max(0, 1 - damHp / Math.max(1, damMax));
+    if (spill > 0.15) {
+      ctx.fillStyle = "rgba(90,160,220," + (0.2 + spill * 0.35) + ")";
+      for (let i = 0; i < 5; i++) {
+        const sx = x + w * (0.2 + i * 0.15);
+        ctx.beginPath();
+        ctx.ellipse(sx, y + 4 + Math.sin(tWorld * 3 + i) * 2, 8, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    if (damHp / damMax < 0.55) drawCracks(x + 8, y + 6, w - 16, h - 14, damHp / damMax < 0.28 ? 2 : 1);
+    drawBoberNpc();
+    const bx = x + w - 22, by = y + 8, bh = h - 16;
+    ctx.fillStyle = "#1A1028";
+    roundRect(ctx, bx - 4, by - 4, 18, bh + 8, 6); ctx.fill();
+    ctx.strokeStyle = damFlash > 0 ? "#E85D4C" : CREAM; ctx.lineWidth = 2; ctx.stroke();
+    const pct = Math.max(0, hpShown / damMax);
+    const fh = bh * pct;
+    ctx.fillStyle = pct > 0.45 ? "#7ED957" : pct > 0.2 ? YEL : "#E85D4C";
+    ctx.fillRect(bx - 1, by + bh - fh, 12, fh);
+    ctx.restore();
+  }
+
+  function drawDamLEGACY_SKIP() {
     ctx.save();
     const x = dam.x, y = dam.y, w = dam.w, h = dam.h;
     const barW = 18;
@@ -3228,23 +3290,31 @@
         }
       }
     }
-    strokeRiver(riverW + 14, "#d8c8a8");
-    strokeRiver(riverW + 12, CREAM);
-    strokeRiver(riverW + 7, "#c9b896");
-    strokeRiver(riverW + 3, "#243a68");
+    const fallX = path[0].x, fallY = Math.max(8, path[0].y - 36);
+    ctx.fillStyle = "#2a3a28";
+    ctx.beginPath();
+    ctx.ellipse(fallX - 70, fallY + 8, 50, 22, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(fallX + 70, fallY + 8, 50, 22, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#5a6a52";
+    roundRect(ctx, fallX - 58, fallY - 28, 36, 40, 8); ctx.fill();
+    roundRect(ctx, fallX + 22, fallY - 32, 40, 44, 8); ctx.fill();
+    ctx.fillStyle = "#7a9ad0";
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    ctx.moveTo(fallX - 28, fallY - 18);
+    ctx.lineTo(fallX + 28, fallY - 18);
+    ctx.lineTo(fallX + 18, path[0].y + 8);
+    ctx.lineTo(fallX - 18, path[0].y + 8);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = CREAM;
+    ctx.globalAlpha = 0.45 + 0.2 * Math.sin(tWorld * 6);
+    ctx.beginPath(); ctx.ellipse(fallX, path[0].y + 6, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    strokeRiver(riverW + 10, "#1a2848");
+    strokeRiver(riverW + 4, "#2a4a7a");
     strokeRiver(riverW, "#3D5C9A");
-    strokeRiver(riverW * 0.58, "#6a8bc0");
-    strokeRiver(riverW * 0.28, "#1e3a6a");
-    ctx.save();
-    ctx.globalAlpha = 0.72;
-    ctx.setLineDash([11, 15]);
-    ctx.lineDashOffset = -tWorld * 40;
-    strokeRiver(3.6, CREAM);
-    ctx.globalAlpha = 0.35;
-    ctx.setLineDash([5, 20]);
-    ctx.lineDashOffset = -tWorld * 18;
-    strokeRiver(2.2, YEL);
-    ctx.restore();
+    strokeRiver(riverW * 0.45, "#6a8bc0");
     drawRiverFoam();
 
     drawDam();
@@ -3333,42 +3403,19 @@
       }
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      if (!p.type) {
-        if (p.locked) {
-          ctx.fillStyle = "#8a8498";
-          ctx.font = "bold 16px Trebuchet MS, sans-serif";
-          ctx.fillText("+", p.x, p.y - 2);
-          ctx.font = "bold 11px Trebuchet MS, sans-serif";
-          ctx.fillText("🔒", p.x, p.y + 12);
-        } else {
-          ctx.fillStyle = CREAM;
-          ctx.font = "bold 14px Trebuchet MS, sans-serif";
-          ctx.fillText("+", p.x, p.y - 6);
-          ctx.fillStyle = YEL;
-          ctx.font = "bold 10px Trebuchet MS, sans-serif";
-          ctx.fillText(fmtCost(TOWERS[selected].cost), p.x, p.y + 9);
-        }
-      } else {
-        const tw = towers.find(function (t) { return t.pad === i; });
-        const hint = evolveHint(tw);
-        if (hint) {
-          const locked = hint.text.indexOf("🔒") >= 0 || hint.text === "MAX 1";
-          const need = hint.text === "need $BOBER";
-          ctx.font = (locked || need) ? "bold 11px Trebuchet MS, sans-serif" : "bold 12px Trebuchet MS, sans-serif";
-          const twm = ctx.measureText(hint.text).width;
-          const pw = twm + (locked || need ? 12 : 18);
-          const ph = locked || need ? 18 : 22;
-          const px = p.x - pw / 2;
-          const py = p.y + p.r - 4 - ph / 2;
-          ctx.fillStyle = locked ? "#5a5068ee" : "#1A1028ee";
-          roundRect(ctx, px, py, pw, ph, 8); ctx.fill();
-          ctx.strokeStyle = need ? YEL : (locked ? "#8a8498" : INK);
-          ctx.lineWidth = locked ? 1.6 : 2.6;
-          ctx.stroke();
-          ctx.fillStyle = need ? YEL : (locked ? "#c8c2ce" : CREAM);
-          ctx.fillText(hint.text, p.x, p.y + p.r - 4);
-        }
-      }
+      const nxt = nextLine(i);
+      const label = nxt ? fmtCost(nxt.cost) : "MAX";
+      ctx.font = "bold 11px Trebuchet MS, sans-serif";
+      const twm = ctx.measureText(label).width;
+      const pw = twm + 14;
+      const ph = 18;
+      ctx.fillStyle = "#1A1028ee";
+      roundRect(ctx, p.x - pw / 2, p.y + p.r - 2, pw, ph, 8); ctx.fill();
+      ctx.strokeStyle = nxt && wood < nxt.cost ? YEL : INK;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = YEL;
+      ctx.fillText(label, p.x, p.y + p.r + 7);
     }
 
     for (let i = 0; i < towers.length; i++) drawTower(towers[i]);
@@ -3473,15 +3520,18 @@
       if (wave === 0) {
         ctx.fillStyle = YEL;
         ctx.font = "bold 14px Trebuchet MS, sans-serif";
-        ctx.fillText("Place towers, then Start Wave.", viewW / 2, viewH - 28);
+        ctx.fillText("Twin posts. Upgrade both. Start Wave.", viewW / 2, viewH - 28);
       }
       ctx.fillStyle = CREAM;
       ctx.font = "bold 13px Trebuchet MS, sans-serif";
       const next = WAVES[wave] || WAVES[WAVES.length - 1];
       const bits = [];
-      if (next.seq.indexOf("r") >= 0) bits.push("Twig Rats");
-      if (next.seq.indexOf("c") >= 0) bits.push("Log Crabs");
-      if (next.seq.indexOf("o") >= 0) bits.push("Otter Scouts");
+      if (next.seq.indexOf("r") >= 0 || next.seq.indexOf("s") >= 0) bits.push("Drift Snouts");
+      if (next.seq.indexOf("c") >= 0 || next.seq.indexOf("l") >= 0) bits.push("Log Riders");
+      if (next.seq.indexOf("o") >= 0 || next.seq.indexOf("d") >= 0) bits.push("Current Darts");
+      if (next.seq.indexOf("b") >= 0) bits.push("Oasis Biters");
+      if (next.seq.indexOf("f") >= 0) bits.push("Foam Choir");
+      if (next.seq.indexOf("m") >= 0) bits.push("Cataract Maw");
       ctx.fillText("Next: " + bits.join(" · "), viewW / 2, viewH - 10);
     }
 
@@ -3518,8 +3568,8 @@
     tipEl.addEventListener("click", function () { SFX.ensure(); dismissTip(); });
     tipEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissTip(); }, { passive: false });
   }
-  btnStick.addEventListener("click", function () { selected = "stick"; SFX.ensure(); hud(); });
-  btnSap.addEventListener("click", function () { selected = "sap"; SFX.ensure(); hud(); });
+  btnStick.addEventListener("click", function () { SFX.ensure(); upgradeLine(0); });
+  btnSap.addEventListener("click", function () { SFX.ensure(); upgradeLine(1); });
   btnRepair.addEventListener("click", function () { SFX.ensure(); repairDam(); });
   cameoEl.addEventListener("click", function () { SFX.ensure(); dismissCameo(); });
   cameoEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissCameo(); }, { passive: false });

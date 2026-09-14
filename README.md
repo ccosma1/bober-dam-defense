@@ -8,9 +8,9 @@ Splash shows a hub link: [More games · Green Home Games](https://ccosma1.github
 
 A mobile-first tower defense in **one HTML page**. 20-level campaign.
 
-Mission: Twin towers. Same fire. Upgrade the guns and the dam.
+Mission: Twin posts on the dam face. Hold the flood.
 
-Portrait waterfall → natural river → bottom dam wall. Two tower buildings share one gun ladder. Dam Wood → Rock → Steel is a separate $BOBER buy. Currency is $BOBER.
+Portrait waterfall → irregular river → bottom dam. Two posts share one gun ladder: Arrows → Bullets → Rockets → Flame. Dam Wood → Rock → Steel is a separate $BOBER buy. Repair Bober is the mascot, not a third gun. Currency is $BOBER.
 
 No install. No wallet. No login. No leaderboard.
 
@@ -22,29 +22,36 @@ Run `START.bat` or open `index.html` in a browser.
 
 1. Tap **HOLD THE DAM**, then pick a level. Level 1 is unlocked; beat a level to open the next.
 2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause**, **1x / 2x**, **Mute**, and **Restart** always work.
-3. Two tower buildings on the dam. Both auto-fire the **same** munition: Arrows → Bolts → Rockets → Flame. Upgrade guns once; both advance.
-4. **Dam Wood → Rock → Steel** is a separate $BOBER buy (armor + HP). Repair is an emergency sink, not a third gun.
-6. Leaks **flash the dam** and drop HP. Low HP shows cracks.
-7. Optional: **Repair Dam** (30 $BOBER) for HP back.
-8. Hold the dam. Stars (1–3) come from HP left. Win returns to the map. Lose does not unlock.
+3. Two posts on the dam. Both auto-fire the **same** munition: Arrows → Bullets → Rockets → Flame. Upgrade guns once; both advance.
+4. **Dam Wood → Rock → Steel** is a separate $BOBER buy (HP + leak resist). Both posts at Bullets also grants Rock; both at Rockets also grants Steel.
+5. **Repair Dam** (35 $BOBER) heals +22 HP. Dam only. Not a gun.
+6. Optional mascot help: **Scout Yell** (clear L5, 60 $BOBER, once/wave +15% fire rate 4s) and **Bober Laser** (clear L8 or both posts Bullets, 100 $BOBER, hold to carve). Hot Laser from L15 (150 $BOBER). Posts still do the job.
+7. Leaks flash the dam and drop HP. Stars: 3 if dam ≥70%, 2 if ≥40%, 1 for a clear.
 
-Pause, **1x / 2x**, mute, and restart sit in the top-right. 2× speeds the fight (waves, spawns, shots, enemies) and is saved. Mute still works. Footer is Stick, Sap, Repair, Start Wave.
+Pause, **1x / 2x**, mute, and restart sit in the top-right. 2× speeds the fight and is saved. Footer is Guns, Dam, Repair, then Yell / Laser.
 
 **Museum** (splash, map, or pause) is play cards: Towers, Foes, Dam. Tap a card for detail. Unlock by playing.
 
-**History** is a chapter list. Play never waits on it. Origin is always open; Pack Night, Flame, and Red Planet unlock as you hold the dam.
+**History** is a chapter list. Play never waits on it.
 
 ### Enemies
 
 | Unit | Role |
 |---|---|
-| Twig Rat | Fast, fragile |
-| Log Crab | Slow, armored |
-| Otter Scout | Fast scout |
+| Drift Snout | Fast, fragile. L1 |
+| Pebble Skip | Faster skip. L3 |
+| Log Rider | Slow armor. L4 |
+| Oasis Biter | Melee. L5 |
+| Current Dart | Fast current. L7 |
+| Reed Stalker | Stealthed until mid. L8 |
+| Barrel Crab | Heavy armor. L10 |
+| Spit Minnow | Spits from mid. L11 |
+| Foam Choir | Three voices. L12 |
+| Eddy Twin | Dies into two Snouts. L14 |
+| Splash Monk | Aura allies. L16 |
+| Cataract Maw | L20 boss. Telegraph. Never farms Bober |
 
-$BOBER drops from kills. Spend it on pads along the river.
-
-Evolved towers replace the Stick or Sap on that pad. Cybertruck pierces armor (max 1). Flame Beaver is a short cone (max 1). Neither upgrades further. Short skippable cartoon cameos; mute still kills their SFX.
+$BOBER drops from kills. Spend it on the shared gun ladder, the dam, repair, or mascot help.
 
 ## GitHub Pages
 
@@ -58,11 +65,12 @@ Repo: https://github.com/ccosma1/bober-dam-defense
 
 - `index.html` — the whole game (HTML, CSS, canvas JS)
 - `assets/splash.jpg` — title art
-- `assets/cameo-*.jpg` — skippable cartoon meme overlays (exact level clears: 2 sink, 4 truck, 7 mars, 8 flame, 10 tunnel, 12 starlink, 15 bot, 18 doge, 20 endgame)
+- `assets/cameo-*.jpg` — skippable cartoon meme overlays
 - `assets/history/` — History chapter frames
 - `assets/museum/` — foe portraits for Museum cards
-- `assets/sprites/bober-*.png` — Yeet Bober idle/fly/splat for the dam NPC and towers
+- `assets/sprites/bober-*.png` — Yeet Bober idle/fly/splat for the dam NPC and posts
 - `assets/icons/` — original dam-defense mark (not the Yeet slingshot)
+- `scripts/playtest.py` — headless GH-8 sim (tables, four strategies, Flame ≥ Rockets)
 - `scripts/make_icon.py` — regenerates the mark
 
 ## Note

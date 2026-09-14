@@ -21,7 +21,7 @@ Run `START.bat` or open `index.html` in a browser.
 ## How to play
 
 1. Tap **HOLD THE DAM**, then pick a level. Level 1 is unlocked; beat a level to open the next.
-2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause**, **Mute**, and **Restart** always work.
+2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause**, **1x / 2x**, **Mute**, and **Restart** always work.
 3. Tap a **bank pad** to place the selected tower (cost is on the pad). Tap an existing Stick or Sap to upgrade it (rank 1, then rank 2). Upgrade twice, then tap to evolve.
 4. **Stick Thrower** (50 $BOBER) — cheap single-target DPS. Upgrade twice, then **evolve to Cybertruck** (140 $BOBER, unlocks after clearing level 4, max 1).
 5. **Sap Sprayer** (70 $BOBER) — splash sap that slows a pack. Upgrade twice, then **evolve to Flame Beaver** (120 $BOBER, unlocks after clearing level 8, max 1).
@@ -29,7 +29,11 @@ Run `START.bat` or open `index.html` in a browser.
 7. Optional: **Repair Dam** (30 $BOBER) for HP back.
 8. Hold the dam. Stars (1–3) come from HP left. Win returns to the map. Lose does not unlock.
 
-Pause, mute, and restart sit in the top-right. Footer is Stick, Sap, Repair, Start Wave.
+Pause, **1x / 2x**, mute, and restart sit in the top-right. 2× speeds the fight (waves, spawns, shots, enemies) and is saved. Mute still works. Footer is Stick, Sap, Repair, Start Wave.
+
+**Museum** (splash, map, or pause) is play cards: Towers, Foes, Dam. Tap a card for detail. Unlock by playing.
+
+**History** is a chapter list. Play never waits on it. Origin is always open; Pack Night, Flame, and Red Planet unlock as you hold the dam.
 
 ### Enemies
 
@@ -56,7 +60,8 @@ Repo: https://github.com/ccosma1/bober-dam-defense
 - `index.html` — the whole game (HTML, CSS, canvas JS)
 - `assets/splash.jpg` — title art
 - `assets/cameo-*.jpg` — skippable cartoon meme overlays (exact level clears: 2 sink, 4 truck, 7 mars, 8 flame, 10 tunnel, 12 starlink, 15 bot, 18 doge, 20 endgame)
-- `assets/history/` — 30s skippable “Bober: A Short History” intro frames
+- `assets/history/` — History chapter frames
+- `assets/museum/` — foe portraits for Museum cards
 - `assets/sprites/bober-*.png` — Yeet Bober idle/fly/splat for the dam NPC and towers
 - `assets/icons/` — original dam-defense mark (not the Yeet slingshot)
 - `scripts/make_icon.py` — regenerates the mark

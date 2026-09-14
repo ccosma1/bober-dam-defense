@@ -85,17 +85,23 @@
     }
     .btns { display: flex; gap: 6px; flex: 0 0 auto; }
     .icon-btn {
-      width: 44px; height: 44px;
+      width: 40px; height: 40px;
+      min-width: 40px; min-height: 40px;
       border: 2px solid var(--cream);
       background: var(--fur);
       color: var(--cream);
       border-radius: 12px;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 800;
       cursor: pointer;
+      padding: 0;
     }
     .icon-btn:active { transform: translateY(1px); filter: brightness(0.85); }
     .icon-btn.on { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
+    #btn-speed {
+      width: auto; min-width: 44px; padding: 0 8px;
+      font-size: 13px; letter-spacing: 0.04em;
+    }
     #stage { flex: 1; min-height: 0; min-width: 0; position: relative; background: var(--sky); }
     canvas { width: 100%; height: 100%; display: block; cursor: pointer; touch-action: none; }
     #shop {
@@ -308,6 +314,11 @@
       box-shadow: none;
       margin-top: 8px;
     }
+    .ghost-row {
+      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+      margin-top: 8px; width: 100%; max-width: 22em;
+    }
+    .ghost-row .play { margin-top: 0; font-size: 14px; padding: 8px 16px; }
     .reset-sm {
       margin-top: 12px;
       font-size: 12px;
@@ -418,6 +429,124 @@
       text-shadow: 0 2px 0 #1A1028;
       text-align: center;
     }
+    #hist-n {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--cream);
+      opacity: 0.85;
+    }
+    #hist-menu {
+      justify-content: flex-start;
+      overflow: auto;
+      padding-top: 14px;
+      background: #1a1028;
+      z-index: 12;
+    }
+    #history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      max-width: 22em;
+      margin: 8px 0 16px;
+    }
+    #history-list button { width: 100%; margin-top: 0; }
+    #museum {
+      justify-content: flex-start;
+      overflow: auto;
+      padding-top: 14px;
+      z-index: 12;
+      background: #1a1028;
+    }
+    .museum-tabs {
+      display: flex; gap: 8px; justify-content: center;
+      margin: 0 0 10px; flex-wrap: wrap;
+    }
+    .museum-tabs button {
+      appearance: none; border: 2px solid var(--cream); background: transparent;
+      color: var(--cream); font-family: inherit; font-weight: 800; font-size: 13px;
+      padding: 6px 14px; border-radius: 10px; cursor: pointer;
+    }
+    .museum-tabs button.on {
+      background: var(--yellow); color: var(--ink); border-color: var(--yellow);
+    }
+    #museum-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      width: 100%; max-width: 22em; margin: 8px 0 16px;
+    }
+    .mcard {
+      appearance: none; -webkit-appearance: none; font-family: inherit;
+      background: #1a1028cc; border: 3px solid var(--yellow); border-radius: 14px;
+      padding: 8px 8px 10px; text-align: center; min-width: 0; min-height: 148px;
+      cursor: pointer; color: inherit; width: 100%;
+    }
+    .mcard:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+    .mcard img {
+      width: 100%; height: 84px; object-fit: contain; display: block;
+      pointer-events: none; background: #241848; border-radius: 8px;
+    }
+    .mcard.mile img { object-fit: cover; }
+    .mcard h3 {
+      margin: 7px 0 4px; font-size: 13px; color: var(--yellow);
+      text-shadow: 0 2px 0 #1A1028; line-height: 1.15;
+    }
+    .mcard p {
+      margin: 0; font-size: 11px; font-weight: 700; line-height: 1.3;
+      color: var(--cream); text-shadow: 0 1px 4px #000;
+    }
+    .mcard.lock { border-color: #5C3A1A; }
+    .mcard.lock img { filter: brightness(0); opacity: 0.4; }
+    .mcard.lock h3, .mcard.lock p { color: #a89878; }
+    #mus-detail {
+      position: absolute; inset: 0; z-index: 4;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: flex-start; overflow: auto;
+      -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+      padding: 12px 12px max(18px, env(safe-area-inset-bottom));
+      background: #1a1028;
+    }
+    #mus-detail.hidden { display: none !important; }
+    .mus-detail-wrap {
+      position: relative; width: 100%; max-width: 390px; margin: 0 auto;
+      padding-top: 48px;
+    }
+    .mus-x {
+      appearance: none; position: absolute; top: 0; right: 0; z-index: 2;
+      width: 44px; height: 44px; min-width: 44px; min-height: 44px;
+      border: 2px solid var(--yellow); background: #1A1028; color: var(--yellow);
+      border-radius: 12px; font-family: inherit; font-weight: 900; font-size: 16px;
+      cursor: pointer; padding: 0;
+    }
+    .mus-detail-card {
+      width: 100%; background: #2a1c4e; border: 3px solid var(--yellow);
+      border-radius: 16px; padding: 14px 12px 16px; text-align: center;
+    }
+    #mus-detail.locked .mus-detail-card { border-color: #5C3A1A; background: #241836; }
+    .mus-detail-art {
+      width: 100%; height: 220px; margin: 0 0 12px; border-radius: 12px;
+      overflow: hidden; background: #1A1028;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mus-detail-art img {
+      max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+    }
+    #mus-detail.mile .mus-detail-art { height: 240px; }
+    #mus-detail.mile .mus-detail-art img { width: 100%; height: 100%; object-fit: cover; }
+    #mus-detail.locked .mus-detail-art img { filter: brightness(0); opacity: 0.45; }
+    #mus-detail-name {
+      margin: 0 0 6px; font-size: 22px; line-height: 1.15; color: var(--yellow);
+      text-shadow: 0 2px 0 #1A1028;
+    }
+    #mus-detail.locked #mus-detail-name { color: #a89878; }
+    #mus-detail-body {
+      margin: 0 0 8px; font-size: 15px; font-weight: 700; line-height: 1.35;
+      color: var(--cream); overflow-wrap: anywhere;
+    }
+    #mus-detail-meta {
+      margin: 0 0 12px; font-size: 12px; font-weight: 800; color: var(--yellow);
+    }
+    #mus-detail-meta:empty { display: none; }
     #cameo {
       z-index: 20;
       justify-content: center;
@@ -499,6 +628,7 @@
       </div>
       <div class="btns">
         <button class="icon-btn" id="btn-pause" type="button" aria-label="Pause">⏸</button>
+        <button class="icon-btn" id="btn-speed" type="button" aria-label="1x">1x</button>
         <button class="icon-btn" id="btn-mute" type="button" aria-label="Mute">🔊</button>
         <button class="icon-btn" id="btn-restart" type="button" aria-label="Restart">↻</button>
       </div>
@@ -512,7 +642,10 @@
         <p class="how">Wave defense with clear builds. Win the night, not a wallet.</p>
         <p class="fan">Fan game by a holder.</p>
         <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
-        <button class="play ghost reset-sm" id="btn-history" type="button">HISTORY</button>
+        <div class="ghost-row">
+          <button class="play ghost" id="btn-history" type="button">HISTORY</button>
+          <button class="play ghost" id="btn-museum-splash" type="button">MUSEUM</button>
+        </div>
         <button class="play ghost reset-sm" id="btn-reset-splash" type="button">Reset</button>
       </div>
       <div id="levels" class="overlay hidden">
@@ -520,6 +653,10 @@
         <h2>LEVELS</h2>
         <p class="tagline">Fan game by a holder.</p>
         <div id="level-grid"></div>
+        <div class="ghost-row">
+          <button class="play ghost" id="btn-history-levels" type="button">HISTORY</button>
+          <button class="play ghost" id="btn-museum" type="button">MUSEUM</button>
+        </div>
         <button class="play ghost" id="btn-reset-levels" type="button">Reset progress</button>
       </div>
       <div id="endcard" class="overlay hidden">
@@ -535,6 +672,7 @@
         <p class="end-msg">Restart and Next Wave still work.</p>
         <button class="play" id="btn-resume" type="button">RESUME</button>
         <button class="play ghost" id="btn-pause-levels" type="button">LEVELS</button>
+        <button class="play ghost" id="btn-museum-pause" type="button">MUSEUM</button>
       </div>
       <div id="tip" class="overlay hidden" role="dialog" aria-label="How to play">
         <div class="tip-card">
@@ -542,13 +680,43 @@
           <p class="cameo-skip">tap to continue</p>
         </div>
       </div>
+      <div id="hist-menu" class="overlay hidden" role="dialog" aria-label="History">
+        <h2>HISTORY</h2>
+        <p class="how">Chapters from the dam. Play unlocks more.</p>
+        <div id="history-list"></div>
+        <button class="play ghost" id="btn-history-back" type="button">Back</button>
+      </div>
       <div id="history" class="overlay hidden" role="dialog" aria-label="A Short History">
         <div class="hist-stage">
           <img id="hist-img" alt="" />
           <div class="hist-bar">
             <p class="hist-sub" id="hist-sub"></p>
             <p class="hist-line" id="hist-line"></p>
-            <button type="button" id="hist-skip">tap to skip</button>
+            <p id="hist-n"></p>
+            <button type="button" id="hist-skip">Skip</button>
+          </div>
+        </div>
+      </div>
+      <div id="museum" class="overlay hidden" role="dialog" aria-label="Museum">
+        <h2>MUSEUM</h2>
+        <p class="how">Play cards. Unlock by holding the dam.</p>
+        <div class="museum-tabs">
+          <button type="button" id="mus-tab-towers" class="on">Towers</button>
+          <button type="button" id="mus-tab-foes">Foes</button>
+          <button type="button" id="mus-tab-dam">Dam</button>
+        </div>
+        <div id="museum-grid"></div>
+        <button class="play ghost" id="btn-museum-back" type="button">Back</button>
+        <div id="mus-detail" class="hidden" role="dialog" aria-label="Card detail">
+          <div class="mus-detail-wrap">
+            <button type="button" class="mus-x" id="mus-detail-x" aria-label="Close">X</button>
+            <div class="mus-detail-card" id="mus-detail-inner">
+              <div class="mus-detail-art"><img id="mus-detail-img" alt="" /></div>
+              <h3 id="mus-detail-name"></h3>
+              <p id="mus-detail-body"></p>
+              <p id="mus-detail-meta"></p>
+              <button class="play ghost" id="mus-detail-back" type="button">Back</button>
+            </div>
           </div>
         </div>
       </div>
@@ -607,6 +775,7 @@
   const MAX_RANK = 2;
   const SAVE_KEY = "bober-dam-campaign-v1";
   const HIST_SEEN_KEY = "bober-dam-history-seen";
+  const SPEED_KEY = "bober-dam-speed";
 
   const KINDS = {
     rat:   { hp: 24, spd: 92, wood: 6,  leak: 14, r: 14, armor: 0 },
@@ -809,6 +978,7 @@
   const chipWave = document.getElementById("chip-wave");
   const chipHp = document.getElementById("chip-hp");
   const btnMute = document.getElementById("btn-mute");
+  const btnSpeed = document.getElementById("btn-speed");
   const btnPause = document.getElementById("btn-pause");
   const btnRestart = document.getElementById("btn-restart");
   const btnResume = document.getElementById("btn-resume");
@@ -829,7 +999,14 @@
   const histLine = document.getElementById("hist-line");
   const histSub = document.getElementById("hist-sub");
   const histSkipBtn = document.getElementById("hist-skip");
+  const histN = document.getElementById("hist-n");
+  const histMenu = document.getElementById("hist-menu");
+  const historyList = document.getElementById("history-list");
   const btnHistory = document.getElementById("btn-history");
+  const btnHistoryLevels = document.getElementById("btn-history-levels");
+  const btnHistoryBack = document.getElementById("btn-history-back");
+  const museumEl = document.getElementById("museum");
+  const museumGrid = document.getElementById("museum-grid");
   const cameoEl = document.getElementById("cameo");
   const cameoImg = document.getElementById("cameo-img");
   const cameoLine = document.getElementById("cameo-line");
@@ -922,8 +1099,17 @@
   }
   syncMute();
 
+  let gameSpeed = localStorage.getItem(SPEED_KEY) === "2" ? 2 : 1;
+  function setSpeedLabel() {
+    if (!btnSpeed) return;
+    btnSpeed.textContent = gameSpeed === 2 ? "2x" : "1x";
+    btnSpeed.setAttribute("aria-label", gameSpeed === 2 ? "2x" : "1x");
+    btnSpeed.classList.toggle("on", gameSpeed === 2);
+  }
+  setSpeedLabel();
+
   function defaultSave() {
-    return { unlocked: 1, stars: Array(LEVELS.length).fill(0), cameos: {}, unlockTruck: false, unlockFlame: false, historySeen: false };
+    return { unlocked: 1, stars: Array(LEVELS.length).fill(0), cameos: {}, unlockTruck: false, unlockFlame: false, historySeen: false, seen: {} };
   }
   function loadSave() {
     try {
@@ -942,6 +1128,7 @@
           s.unlockTruck = !!s.unlockTruck;
           s.unlockFlame = !!s.unlockFlame;
           s.historySeen = !!s.historySeen || localStorage.getItem(HIST_SEEN_KEY) === "1";
+          s.seen = s.seen || {};
           if ("playerName" in s) delete s.playerName;
           return s;
         }
@@ -980,6 +1167,9 @@
     pausedEl.classList.add("hidden");
     cameoEl.classList.add("hidden");
     if (tipEl) tipEl.classList.add("hidden");
+    if (histMenu) histMenu.classList.add("hidden");
+    if (museumEl) museumEl.classList.add("hidden");
+    closeMusDetail();
   }
   function resetProgress() {
     if (!window.confirm("Wipe stars and unlocks?")) return;
@@ -1038,33 +1228,58 @@
     else if (kind === "doge") { SFX.tone(330, 0.12, "triangle", 0.04); SFX.tone(392, 0.16, "sine", 0.03); }
     else { SFX.tone(392, 0.12, "square", 0.05); SFX.tone(523, 0.18, "square", 0.05, 784); }
   }
-  const HIST_BEATS = [
-    { src: "assets/history/h0.jpg", line: "BOBER: A SHORT HISTORY", sub: "a fan game tale · not official", t: 0.0, chorus: false },
-    { src: "assets/history/h1.jpg", line: "Once, a beaver found a river worth protecting.", sub: "", t: 4.0, chorus: false },
-    { src: "assets/history/h2.jpg", line: "So he built. And built.", sub: "", t: 8.0, chorus: false },
-    { src: "assets/history/h3.jpg", line: "And yeeted a few sticks for luck.", sub: "", t: 12.0, chorus: false },
-    { src: "assets/history/h4.jpg", line: "Then the river got… ideas.", sub: "", t: 16.0, chorus: true },
-    { src: "assets/history/h5.jpg", line: "Mars sent a shiny truck. Nobody asked.", sub: "", t: 20.0, chorus: false },
-    { src: "assets/history/h6.jpg", line: "Otters got maps. Crabs flew a pirate mast.", sub: "", t: 24.0, chorus: false },
-    { src: "assets/history/h7.jpg", line: "Legends don’t wait. Beavers dig in.", sub: "", t: 28.0, chorus: false },
-    { src: "assets/history/h8.jpg", line: "This dam's our home. We ain't alone.", sub: "", t: 33.0, chorus: true },
-    { src: "assets/history/h9.jpg", line: "Fix the cracks. Keep the woodwork clean.", sub: "", t: 38.0, chorus: false },
-    { src: "assets/history/h10.jpg", line: "Still we stand where the timber stacks.", sub: "", t: 43.0, chorus: true },
-    { src: "assets/history/h11.jpg", line: "DEFEND THE DAM.", sub: "", t: 48.0, chorus: true }
+  const HIST_REELS = [
+    {
+      id: "origin", name: "A Short History", at: 1, always: true,
+      frames: [
+        { src: "assets/history/h0.jpg", sub: "A fan tale.", line: "Once, a river." },
+        { src: "assets/history/h1.jpg", sub: "The bank.", line: "He found a shore worth keeping." },
+        { src: "assets/history/h2.jpg", sub: "Timber.", line: "Log on log. Night on night." },
+        { src: "assets/history/h3.jpg", sub: "Yeet.", line: "A few sticks, thrown for luck." },
+        { src: "assets/history/h4.jpg", sub: "The leak.", line: "Then the water learned teeth.", chorus: true },
+        { src: "assets/history/h5.jpg", sub: "Mars.", line: "A shiny truck. The dam did not ask." },
+        { src: "assets/history/h6.jpg", sub: "The pack.", line: "Otters with maps. Crabs with armor." },
+        { src: "assets/history/h7.jpg", sub: "The watch.", line: "He stayed. He placed towers." },
+        { src: "assets/history/h8.jpg", sub: "Home.", line: "Home is timber. Home is the night.", chorus: true },
+        { src: "assets/history/h9.jpg", sub: "Cracks.", line: "Sap answers. Sticks answer." },
+        { src: "assets/history/h10.jpg", sub: "Still.", line: "The night keeps coming. So does he.", chorus: true },
+        { src: "assets/history/h11.jpg", sub: "The dam.", line: "Still standing.", chorus: true }
+      ]
+    },
+    {
+      id: "pack", name: "Pack Night", at: 4,
+      frames: [
+        { src: "assets/history/h4.jpg", sub: "L4.", line: "The river brought a crowd." },
+        { src: "assets/cameo-truck.jpg", sub: "Cybertruck.", line: "Roads? We have a river." },
+        { src: "assets/history/h6.jpg", sub: "Armor.", line: "Crabs on the current. Hold the pads." }
+      ]
+    },
+    {
+      id: "flame", name: "Flame on the timber", at: 8,
+      frames: [
+        { src: "assets/cameo-flame.jpg", sub: "L8.", line: "This is fine. Also on fire." },
+        { src: "assets/history/h9.jpg", sub: "Sap.", line: "Slow the pack. Then burn the line." }
+      ]
+    },
+    {
+      id: "red", name: "Red Planet Dam", at: 20,
+      frames: [
+        { src: "assets/cameo-mars.jpg", sub: "L20.", line: "Next stop: red planet dam." },
+        { src: "assets/cameo-endgame.jpg", sub: "Clear.", line: "Everyone is here. The dam holds." },
+        { src: "assets/history/h11.jpg", sub: "Night done.", line: "Still standing." }
+      ]
+    }
   ];
-  const HIST_END = 52.0;
   let histTimer = 0;
-  let histRaf = 0;
   let histI = -1;
-  let histAfter = null;
-  let histT0 = 0;
+  let histReel = null;
+  let histMenuFrom = "splash";
   let histStopping = false;
   let histSkipArmed = 0;
   function historyOpen() {
     return !!(histEl && !histEl.classList.contains("hidden"));
   }
   function haltHistory() {
-    if (histRaf) { cancelAnimationFrame(histRaf); histRaf = 0; }
     if (histTimer) { clearTimeout(histTimer); histTimer = 0; }
   }
   function closeHistorySilent() {
@@ -1073,7 +1288,50 @@
       histEl.classList.add("hidden");
       histEl.classList.remove("chorus");
     }
-    histAfter = null;
+    histReel = null;
+  }
+  function reelUnlocked(r) {
+    if (!r) return false;
+    if (r.always) return true;
+    if (r.id === "pack" && save.unlockTruck) return true;
+    if (r.id === "flame" && save.unlockFlame) return true;
+    if (r.id === "red" && (save.stars[19] || 0) > 0) return true;
+    return (save.unlocked | 0) >= (r.at || 1);
+  }
+  function fillHistoryList() {
+    if (!historyList) return;
+    historyList.innerHTML = "";
+    HIST_REELS.forEach(function (r) {
+      const on = reelUnlocked(r);
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = on ? "play" : "play ghost";
+      b.disabled = !on;
+      b.textContent = on ? r.name : (r.name + " · locked");
+      b.addEventListener("click", function () {
+        if (!on) return;
+        SFX.ensure();
+        playHistory(r.id);
+      });
+      historyList.appendChild(b);
+    });
+  }
+  function openHistory(from) {
+    histMenuFrom = from || "splash";
+    closeHistorySilent();
+    hideMenus();
+    fillHistoryList();
+    if (histMenu) histMenu.classList.remove("hidden");
+    document.getElementById("app").classList.add("booting");
+  }
+  function closeHistoryMenu() {
+    if (histMenu) histMenu.classList.add("hidden");
+    if (histMenuFrom === "levels") showLevels();
+    else {
+      hideMenus();
+      splash.classList.remove("hidden");
+      document.getElementById("app").classList.add("booting");
+    }
   }
   function stopHistory() {
     if (histStopping) return;
@@ -1084,10 +1342,11 @@
       histEl.classList.remove("chorus");
     }
     markHistorySeen();
-    const cb = histAfter;
-    histAfter = null;
+    histReel = null;
     histStopping = false;
-    if (cb) cb();
+    fillHistoryList();
+    if (histMenu) histMenu.classList.remove("hidden");
+    document.getElementById("app").classList.add("booting");
   }
   function requestSkipHistory(ev) {
     if (ev) {
@@ -1100,46 +1359,51 @@
     SFX.tone(330, 0.08, "square", 0.03);
     stopHistory();
   }
+  function currentFrames() {
+    return (histReel && histReel.frames) ? histReel.frames : [];
+  }
   function applyHistBeat(i) {
-    if (i < 0 || i >= HIST_BEATS.length) return;
+    const frames = currentFrames();
+    if (i < 0 || i >= frames.length) return;
     histI = i;
-    const b = HIST_BEATS[i];
+    const b = frames[i];
     histImg.src = b.src;
     histLine.textContent = b.line;
     histSub.textContent = b.sub || "";
+    if (histN) histN.textContent = (i + 1) + " / " + frames.length;
     if (histEl) histEl.classList.toggle("chorus", !!b.chorus);
   }
-  function histFrameAt(t) {
-    let i = 0;
-    for (let k = 0; k < HIST_BEATS.length; k++) {
-      if (t >= HIST_BEATS[k].t) i = k;
-    }
-    return i;
-  }
-  function histTick() {
-    if (!historyOpen()) {
-      haltHistory();
-      return;
-    }
-    const t = (performance.now() - histT0) / 1000;
-    const i = histFrameAt(t);
-    if (i !== histI) applyHistBeat(i);
-    if (t >= HIST_END - 0.05) {
+  function histNext() {
+    if (!historyOpen() || Date.now() < histSkipArmed) return;
+    const frames = currentFrames();
+    if (histI + 1 >= frames.length) {
       stopHistory();
       return;
     }
-    histRaf = requestAnimationFrame(histTick);
+    applyHistBeat(histI + 1);
+    scheduleHist();
   }
-  function playHistory(after) {
-    histAfter = after || null;
+  function scheduleHist() {
+    haltHistory();
+    histTimer = setTimeout(function () {
+      histTimer = 0;
+      histNext();
+    }, 3200);
+  }
+  function playHistory(id) {
+    let r = null;
+    for (let i = 0; i < HIST_REELS.length; i++) {
+      if (HIST_REELS[i].id === id) { r = HIST_REELS[i]; break; }
+    }
+    if (!r || !reelUnlocked(r) || !r.frames || !r.frames.length) return;
+    histReel = r;
     histStopping = false;
     histSkipArmed = Date.now() + 450;
     if (histSkipBtn) histSkipBtn.disabled = true;
-    if (histTimer) clearTimeout(histTimer);
-    histTimer = setTimeout(function () {
-      histTimer = 0;
-      if (histSkipBtn) histSkipBtn.disabled = false;
+    setTimeout(function () {
+      if (histSkipBtn && historyOpen()) histSkipBtn.disabled = false;
     }, 450);
+    if (histMenu) histMenu.classList.add("hidden");
     hideMenus();
     if (!histEl) return;
     histEl.classList.remove("hidden");
@@ -1147,13 +1411,163 @@
     SFX.ensure();
     SFX.tone(392, 0.08, "square", 0.03);
     applyHistBeat(0);
-    histT0 = performance.now();
-    if (!historyOpen()) {
-      haltHistory();
-      return;
+    scheduleHist();
+  }
+
+  const MUSEUM = [
+    { id: "stick", tab: "towers", name: "Stick Thrower", img: "assets/sprites/bober-idle.png", at: 1,
+      blurb: "50 $BOBER. Cheap single-target. Upgrade twice, then evolve.", tease: "A beaver with a stick." },
+    { id: "sap", tab: "towers", name: "Sap Sprayer", img: "assets/sprites/bober-idle.png", at: 1,
+      blurb: "70 $BOBER. Splash sap that slows a pack.", tease: "Something sticky on the bank." },
+    { id: "truck", tab: "towers", name: "Cybertruck", img: "assets/cameo-truck.jpg", at: 4,
+      blurb: "140 $BOBER. Pierce armor. Max 1. Evolve Stick twice.", tease: "Roads? The river has ideas." },
+    { id: "flame", tab: "towers", name: "Flame Beaver", img: "assets/cameo-flame.jpg", at: 8,
+      blurb: "120 $BOBER. Short cone. Max 1. Evolve Sap twice.", tease: "Heat on the timber." },
+    { id: "rat", tab: "foes", name: "Twig Rat", img: "assets/museum/rat.jpg", at: 1,
+      blurb: "Fast. Fragile. The first leak.", tease: "Something small on the current." },
+    { id: "crab", tab: "foes", name: "Log Crab", img: "assets/museum/crab.jpg", at: 2,
+      blurb: "Slow. Armored. Spend sap.", tease: "A log with claws." },
+    { id: "otter", tab: "foes", name: "Otter Scout", img: "assets/museum/otter.jpg", at: 3,
+      blurb: "Fast scout. Hits the dam if pads sleep.", tease: "Maps on the water." },
+    { id: "trickle", tab: "dam", name: "Trickle", img: "assets/splash.jpg", at: 1, mile: true,
+      blurb: "The first night. Two pads. Hold the wood.", tease: "A dam waiting." },
+    { id: "pack", tab: "dam", name: "Pack Night", img: "assets/history/h4.jpg", at: 4, mile: true,
+      blurb: "The river brings a crowd. Truck waits after.", tease: "The current thickens." },
+    { id: "thin", tab: "dam", name: "Thin Dam", img: "assets/history/h9.jpg", at: 6, mile: true,
+      blurb: "Less HP. Same river. Repair if you must.", tease: "Hairline cracks." },
+    { id: "night", tab: "dam", name: "Night Rush", img: "assets/history/h8.jpg", at: 10, mile: true,
+      blurb: "The long dark. Pads matter.", tease: "The night gets louder." },
+    { id: "red", tab: "dam", name: "Red Planet Dam", img: "assets/cameo-endgame.jpg", at: 20, mile: true,
+      blurb: "Campaign clear. Stars from HP left.", tease: "A red shore still waits." }
+  ];
+  let musTab = "towers";
+  let museumFrom = "splash";
+  let musDetailFrom = null;
+
+  function markPlaySeen() {
+    if (!save.seen) save.seen = {};
+    save.seen.stick = true;
+    save.seen.sap = true;
+    save.seen.rat = true;
+    save.seen.trickle = true;
+    const L = LEVELS[levelIndex];
+    if (L && L.waves) {
+      const seq = L.waves.map(function (w) { return w.seq; }).join("");
+      if (seq.indexOf("c") >= 0) save.seen.crab = true;
+      if (seq.indexOf("o") >= 0) save.seen.otter = true;
     }
-    if (histRaf) cancelAnimationFrame(histRaf);
-    histRaf = requestAnimationFrame(histTick);
+    if (levelIndex + 1 >= 4 || save.unlockTruck) save.seen.truck = true;
+    if (levelIndex + 1 >= 8 || save.unlockFlame) save.seen.flame = true;
+    if (levelIndex + 1 >= 4) save.seen.pack = true;
+    if (levelIndex + 1 >= 6) save.seen.thin = true;
+    if (levelIndex + 1 >= 10) save.seen.night = true;
+    if (levelIndex + 1 >= 20) save.seen.red = true;
+    writeSave();
+  }
+  function museumUnlocked(card) {
+    if (!card) return false;
+    if (save.seen && save.seen[card.id]) return true;
+    if (card.id === "truck") return !!save.unlockTruck;
+    if (card.id === "flame") return !!save.unlockFlame;
+    if ((card.at || 1) <= 1) return true;
+    return false;
+  }
+  function fillMuseum() {
+    if (!museumGrid) return;
+    museumGrid.innerHTML = "";
+    closeMusDetail();
+    MUSEUM.forEach(function (card) {
+      if (card.tab !== musTab) return;
+      const on = museumUnlocked(card);
+      const el = document.createElement("button");
+      el.type = "button";
+      el.className = "mcard" + (on ? "" : " lock") + (card.mile ? " mile" : "");
+      el.setAttribute("data-id", card.id);
+      const img = document.createElement("img");
+      img.src = card.img;
+      img.alt = "";
+      const h = document.createElement("h3");
+      h.textContent = on ? card.name : "????";
+      const p = document.createElement("p");
+      p.textContent = on ? card.blurb : (card.tease || "Hold further.");
+      el.appendChild(img);
+      el.appendChild(h);
+      el.appendChild(p);
+      el.addEventListener("click", function () { openMusDetail(card.id); });
+      museumGrid.appendChild(el);
+    });
+  }
+  function musDetailOpen() {
+    const el = document.getElementById("mus-detail");
+    return !!(el && !el.classList.contains("hidden"));
+  }
+  function closeMusDetail() {
+    const el = document.getElementById("mus-detail");
+    if (el) el.classList.add("hidden");
+    if (musDetailFrom && musDetailFrom.focus) {
+      try { musDetailFrom.focus(); } catch (e) {}
+    }
+    musDetailFrom = null;
+  }
+  function openMusDetail(id) {
+    let card = null;
+    for (let i = 0; i < MUSEUM.length; i++) if (MUSEUM[i].id === id) { card = MUSEUM[i]; break; }
+    if (!card) return;
+    const on = museumUnlocked(card);
+    const el = document.getElementById("mus-detail");
+    const img = document.getElementById("mus-detail-img");
+    const name = document.getElementById("mus-detail-name");
+    const body = document.getElementById("mus-detail-body");
+    const meta = document.getElementById("mus-detail-meta");
+    musDetailFrom = document.activeElement;
+    if (img) img.src = card.img;
+    if (name) name.textContent = on ? card.name : "????";
+    if (body) body.textContent = on ? card.blurb : (card.tease || "Hold further.");
+    if (meta) {
+      if (!on) meta.textContent = "Hold further.";
+      else if (card.mile) meta.textContent = "Dam from L" + (card.at || 1) + ".";
+      else if (card.tab === "towers") meta.textContent = card.id === "truck" || card.id === "flame" ? ("Evolve after L" + card.at + ".") : "Build from L1.";
+      else meta.textContent = "First at L" + (card.at || 1) + ".";
+    }
+    if (el) {
+      el.classList.toggle("locked", !on);
+      el.classList.toggle("mile", !!card.mile);
+      el.classList.remove("hidden");
+    }
+    const back = document.getElementById("mus-detail-back");
+    if (back) back.focus();
+  }
+  function setMusTab(tab) {
+    musTab = tab === "foes" ? "foes" : tab === "dam" ? "dam" : "towers";
+    const t = document.getElementById("mus-tab-towers");
+    const f = document.getElementById("mus-tab-foes");
+    const d = document.getElementById("mus-tab-dam");
+    if (t) t.classList.toggle("on", musTab === "towers");
+    if (f) f.classList.toggle("on", musTab === "foes");
+    if (d) d.classList.toggle("on", musTab === "dam");
+    fillMuseum();
+  }
+  function openMuseum(from) {
+    museumFrom = from || "splash";
+    closeHistorySilent();
+    hideMenus();
+    if (from === "paused") pausedEl.classList.add("hidden");
+    fillMuseum();
+    if (museumEl) museumEl.classList.remove("hidden");
+    document.getElementById("app").classList.add("booting");
+  }
+  function closeMuseum() {
+    closeMusDetail();
+    if (museumEl) museumEl.classList.add("hidden");
+    if (museumFrom === "paused") {
+      document.getElementById("app").classList.remove("booting");
+      pausedEl.classList.remove("hidden");
+    } else if (museumFrom === "levels") showLevels();
+    else {
+      hideMenus();
+      splash.classList.remove("hidden");
+      document.getElementById("app").classList.add("booting");
+    }
   }
 
   function dismissCameo() {
@@ -1528,6 +1942,7 @@
     if (!localStorage.getItem("bober-dam-tip-v1") && tipEl) {
       tipEl.classList.remove("hidden");
     }
+    markPlaySeen();
     hud();
   }
 
@@ -3035,27 +3450,68 @@
     }, { passive: false });
   }
   document.addEventListener("keydown", function (ev) {
-    if (ev.key === "Escape") requestSkipHistory(ev);
+    if (ev.key !== "Escape") return;
+    if (musDetailOpen()) { closeMusDetail(); return; }
+    if (museumEl && !museumEl.classList.contains("hidden")) { closeMuseum(); return; }
+    if (historyOpen()) { requestSkipHistory(ev); return; }
+    if (histMenu && !histMenu.classList.contains("hidden")) { closeHistoryMenu(); return; }
   });
+  if (histEl) {
+    histEl.addEventListener("click", function (ev) {
+      if (ev.target && ev.target.id === "hist-skip") return;
+      histNext();
+    });
+  }
   btnPlay.addEventListener("click", function (ev) {
     ev.stopPropagation();
     SFX.ensure();
     closeHistorySilent();
     showLevels();
   });
-  if (btnHistory) {
-    ["pointerdown", "touchend"].forEach(function (type) {
-      btnHistory.addEventListener(type, function (ev) { ev.stopPropagation(); }, type === "touchend" ? { passive: false } : false);
-    });
-    btnHistory.addEventListener("click", function (ev) {
+  function bindHistoryOpen(btn, from) {
+    if (!btn) return;
+    btn.addEventListener("click", function (ev) {
       ev.preventDefault();
       ev.stopPropagation();
       SFX.ensure();
-      playHistory(function () {
-        hideMenus();
-        splash.classList.remove("hidden");
-        document.getElementById("app").classList.add("booting");
-      });
+      openHistory(from);
+    });
+  }
+  bindHistoryOpen(btnHistory, "splash");
+  bindHistoryOpen(btnHistoryLevels, "levels");
+  if (btnHistoryBack) btnHistoryBack.addEventListener("click", function () {
+    SFX.ensure();
+    closeHistoryMenu();
+  });
+  function bindMuseumOpen(btn, from) {
+    if (!btn) return;
+    btn.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      SFX.ensure();
+      openMuseum(from);
+    });
+  }
+  bindMuseumOpen(document.getElementById("btn-museum-splash"), "splash");
+  bindMuseumOpen(document.getElementById("btn-museum"), "levels");
+  bindMuseumOpen(document.getElementById("btn-museum-pause"), "paused");
+  const btnMuseumBack = document.getElementById("btn-museum-back");
+  if (btnMuseumBack) btnMuseumBack.addEventListener("click", function () { SFX.ensure(); closeMuseum(); });
+  ["mus-detail-back", "mus-detail-x"].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("click", function () { SFX.ensure(); closeMusDetail(); });
+  });
+  const tabT = document.getElementById("mus-tab-towers");
+  const tabF = document.getElementById("mus-tab-foes");
+  const tabD = document.getElementById("mus-tab-dam");
+  if (tabT) tabT.addEventListener("click", function () { setMusTab("towers"); });
+  if (tabF) tabF.addEventListener("click", function () { setMusTab("foes"); });
+  if (tabD) tabD.addEventListener("click", function () { setMusTab("dam"); });
+  if (btnSpeed) {
+    btnSpeed.addEventListener("click", function () {
+      gameSpeed = gameSpeed === 2 ? 1 : 2;
+      localStorage.setItem(SPEED_KEY, String(gameSpeed));
+      setSpeedLabel();
     });
   }
   btnResetSplash.addEventListener("click", function (ev) { ev.stopPropagation(); resetProgress(); });
@@ -3065,6 +3521,10 @@
   btnResume.addEventListener("click", function () { SFX.ensure(); setPaused(false); });
   btnPause.addEventListener("click", function () {
     SFX.ensure();
+    if (musDetailOpen()) { closeMusDetail(); return; }
+    if (museumEl && !museumEl.classList.contains("hidden")) { closeMuseum(); return; }
+    if (historyOpen()) { requestSkipHistory(); return; }
+    if (histMenu && !histMenu.classList.contains("hidden")) { closeHistoryMenu(); return; }
     if (!running || phase === "splash" || phase === "levels" || phase === "win" || phase === "lose") return;
     setPaused(!paused);
   });
@@ -3087,10 +3547,12 @@
   function loop(now) {
     const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
     last = now;
+    const playing = running && !paused && (phase === "build" || phase === "wave");
+    const sim = playing ? dt * (gameSpeed === 2 ? 2 : 1) : dt;
     if (damFlash > 0) damFlash = Math.max(0, damFlash - dt * 2.4);
     if (hpShown > damHp) hpShown = Math.max(damHp, hpShown - 420 * dt);
     else hpShown += (damHp - hpShown) * Math.min(1, 10 * dt);
-    if (running && !paused && (phase === "build" || phase === "wave")) update(dt);
+    if (playing) update(sim);
     else {
       tWorld += dt;
       if (shake > 0) shake = Math.max(0, shake - dt * 6);

@@ -4,9 +4,13 @@ Fan game by a holder. Not affiliated with any token, studio, or official Bober p
 
 **Play online:** https://ccosma1.github.io/bober-dam-defense/
 
-Splash, level select, and endcard show a cream line: Also play · [Yeet](https://ccosma1.github.io/bober-yeet/) · [Frost Lodge](https://ccosma1.github.io/bober-frost-lodge/). Hidden during a fight so it does not cover the tower shop. Dam Defense is standalone; other games are not required.
+Splash shows a hub link: [More games · Green Home Games](https://ccosma1.github.io/green-home-games/). Hidden during a fight so it does not cover the tower shop. Dam Defense is standalone; other games are not required.
 
-A mobile-first tower defense in **one HTML page**. 20-level campaign. Hold the wooden dam.
+A mobile-first tower defense in **one HTML page**. 20-level campaign.
+
+Mission: Hold the wooden dam. Place towers. Stop the leak.
+
+Wave defense with clear builds. Win the night, not a wallet.
 
 No install. No wallet. No login. No leaderboard.
 
@@ -19,10 +23,10 @@ Run `START.bat` or open `index.html` in a browser.
 1. Tap **HOLD THE DAM**, then pick a level. Level 1 is unlocked; beat a level to open the next.
 2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause**, **Mute**, and **Restart** always work.
 3. Tap a **bank pad** to place the selected tower (cost is on the pad). Tap an existing Stick or Sap to upgrade it (rank 1, then rank 2). Upgrade twice, then tap to evolve.
-4. **Stick Thrower** (50 wood) — cheap single-target DPS. Upgrade twice, then **evolve to Cybertruck** (140 wood, unlocks after clearing level 4, max 1).
-5. **Sap Sprayer** (70 wood) — splash sap that slows a pack. Upgrade twice, then **evolve to Flame Beaver** (120 wood, unlocks after clearing level 8, max 1).
+4. **Stick Thrower** (50 $BOBER) — cheap single-target DPS. Upgrade twice, then **evolve to Cybertruck** (140 $BOBER, unlocks after clearing level 4, max 1).
+5. **Sap Sprayer** (70 $BOBER) — splash sap that slows a pack. Upgrade twice, then **evolve to Flame Beaver** (120 $BOBER, unlocks after clearing level 8, max 1).
 6. Leaks **flash the dam** and drop HP. Low HP shows cracks.
-7. Optional: **Repair Dam** (30 wood) for HP back.
+7. Optional: **Repair Dam** (30 $BOBER) for HP back.
 8. Hold the dam. Stars (1–3) come from HP left. Win returns to the map. Lose does not unlock.
 
 Pause, mute, and restart sit in the top-right. Footer is Stick, Sap, Repair, Start Wave.
@@ -35,7 +39,7 @@ Pause, mute, and restart sit in the top-right. Footer is Stick, Sap, Repair, Sta
 | Log Crab | Slow, armored |
 | Otter Scout | Fast scout |
 
-Wood drops from kills. Spend it on pads along the river.
+$BOBER drops from kills. Spend it on pads along the river.
 
 Evolved towers replace the Stick or Sap on that pad. Cybertruck pierces armor (max 1). Flame Beaver is a short cone (max 1). Neither upgrades further. Short skippable cartoon cameos; mute still kills their SFX.
 

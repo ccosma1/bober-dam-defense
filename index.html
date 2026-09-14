@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#3A2A6A" />
-  <meta name="description" content="Bober Dam Defense — fan game by a holder. Hold the wooden dam." />
+  <meta name="description" content="Bober Dam Defense — fan game by a holder. Hold the wooden dam. Place towers. Stop the leak." />
   <title>Bober Dam Defense</title>
   <link rel="icon" href="assets/icons/bober-dam.ico" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
@@ -144,7 +144,7 @@
     }
     #btn-sap .ico { filter: saturate(1.15) hue-rotate(-8deg); }
     .card .name { font-size: 10px; letter-spacing: 0.01em; line-height: 1.15; text-align: center; }
-    .card .cost { font-size: 13px; color: var(--yellow); }
+    .card .cost { font-size: 12px; color: var(--yellow); white-space: nowrap; }
     .card.on { border-color: var(--yellow); box-shadow: 0 0 0 2px #F5C40088; background: #a06a34; }
     .card:disabled { opacity: 0.45; }
     .card.repair { background: #4a3a28; }
@@ -211,19 +211,30 @@
       text-shadow: 0 3px 0 #1A1028;
     }
     .tagline {
-      margin: 0 0 14px;
+      margin: 0 0 8px;
+      max-width: 20em;
+      padding: 0 12px;
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
+      line-height: 1.25;
       color: var(--cream);
       text-shadow: 0 2px 8px #000;
     }
     .how {
-      margin: 0 0 16px;
+      margin: 0 0 10px;
       max-width: 22em;
       font-size: 13px;
       line-height: 1.4;
+      font-weight: 700;
       color: var(--cream);
       text-shadow: 0 1px 6px #000;
+    }
+    .fan {
+      margin: 0 0 14px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--cream);
+      text-shadow: 0 2px 8px #000;
     }
     .play {
       appearance: none;
@@ -472,7 +483,8 @@
     @media (orientation: landscape) and (max-height: 500px) {
       .card { min-height: 48px; padding: 4px; }
       .overlay h1 { font-size: 26px; }
-      .how { display: none; }
+      .how { font-size: 12px; margin-bottom: 6px; }
+      .fan { margin-bottom: 8px; }
       .lvl { min-height: 64px; }
     }
   </style>
@@ -481,7 +493,7 @@
   <div id="app" class="booting">
     <header>
       <div class="chips">
-        <div class="chip wood" id="chip-wood">Wood 100</div>
+        <div class="chip wood" id="chip-wood">$BOBER 100</div>
         <div class="chip" id="chip-wave">Wave 0/5</div>
         <div class="chip" id="chip-hp">Dam 100</div>
       </div>
@@ -494,23 +506,24 @@
     <div id="stage">
       <canvas id="game"></canvas>
       <div id="splash" class="overlay">
-        <img class="hero" src="assets/splash.jpg" alt="" />
+        <img class="hero" src="assets/splash.jpg?v=gh1" alt="" />
         <h1>BOBER DAM<br>DEFENSE</h1>
-        <p class="tagline">Fan game by a holder.</p>
-        <p class="how">20 levels. Stick Thrower is cheap DPS. Sap Sprayer slows packs. Upgrade twice, then tap to evolve. Earn 1–3 stars from dam HP left. Beat a level to unlock the next.</p>
+        <p class="tagline">Hold the wooden dam. Place towers. Stop the leak.</p>
+        <p class="how">Wave defense with clear builds. Win the night, not a wallet.</p>
+        <p class="fan">Fan game by a holder.</p>
         <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
         <button class="play ghost reset-sm" id="btn-history" type="button">HISTORY</button>
         <button class="play ghost reset-sm" id="btn-reset-splash" type="button">Reset</button>
       </div>
       <div id="levels" class="overlay hidden">
-        <img class="hero" src="assets/splash.jpg" alt="" />
+        <img class="hero" src="assets/splash.jpg?v=gh1" alt="" />
         <h2>LEVELS</h2>
         <p class="tagline">Fan game by a holder.</p>
         <div id="level-grid"></div>
         <button class="play ghost" id="btn-reset-levels" type="button">Reset progress</button>
       </div>
       <div id="endcard" class="overlay hidden">
-        <img class="hero" src="assets/splash.jpg" alt="" />
+        <img class="hero" src="assets/splash.jpg?v=gh1" alt="" />
         <h2 id="end-title">DAM HELD</h2>
         <div id="end-stars" class="end-stars"></div>
         <p class="end-msg" id="end-msg"></p>
@@ -554,16 +567,16 @@
       <button class="card on" id="btn-stick" type="button">
         <img class="ico" src="assets/sprites/bober-idle.png" alt="" />
         <span class="name">Stick Thrower</span>
-        <span class="cost">50 wood</span>
+        <span class="cost">50 $BOBER</span>
       </button>
       <button class="card" id="btn-sap" type="button">
         <img class="ico" src="assets/sprites/bober-idle.png" alt="" />
         <span class="name">Sap Sprayer</span>
-        <span class="cost">70 wood</span>
+        <span class="cost">70 $BOBER</span>
       </button>
       <button class="card repair" id="btn-repair" type="button">
         <span class="name">Repair Dam</span>
-        <span class="cost">30 wood</span>
+        <span class="cost">30 $BOBER</span>
       </button>
       <div id="shop-hint" class="hidden">Tap your tower to upgrade / evolve</div>
     </footer>
@@ -583,6 +596,7 @@
   const COST_STICK = 50;
   const COST_SAP = 70;
   const COST_REPAIR = 30;
+  function fmtCost(n) { return n + " $BOBER"; }
   const COST_UP_STICK = 120;
   const COST_UP_SAP = 70;
   const COST_EVOLVE_TRUCK = 140;
@@ -1437,7 +1451,7 @@
   }
 
   function hud() {
-    chipWood.textContent = "Wood " + wood;
+    chipWood.textContent = "$BOBER " + wood;
     const waveShown = phase === "build" ? Math.min(WAVES.length, wave + 1) : Math.max(1, wave);
     chipWave.textContent = "L" + (levelIndex + 1) + " · " + waveShown + "/" + WAVES.length;
     chipHp.textContent = "Dam " + Math.max(0, Math.ceil(damHp));
@@ -1678,8 +1692,8 @@
     if (tw.type === "truck" || tw.type === "flame") return { text: "MAX 1", big: false };
     if ((tw.rank || 0) < MAX_RANK) {
       const up = TOWERS[tw.type].upCost;
-      if (wood < up) return { text: "need wood", big: false };
-      return { text: "UP · " + up, big: true };
+      if (wood < up) return { text: "need $BOBER", big: false };
+      return { text: "UP · " + fmtCost(up), big: true };
     }
     const dest = evolvedType(tw.type);
     if (!dest) return { text: "MAX 1", big: false };
@@ -1687,8 +1701,8 @@
     if (!unlocked) return { text: "EVOLVE 🔒", big: false };
     if (countType(dest) >= 1) return { text: "MAX 1", big: false };
     const cost = evolveCostOf(tw.type);
-    if (wood < cost) return { text: "need wood", big: false };
-    return { text: "EVOLVE · " + cost, big: true };
+    if (wood < cost) return { text: "need $BOBER", big: false };
+    return { text: "EVOLVE · " + fmtCost(cost), big: true };
   }
   function specFor(tw) {
     const b = TOWERS[tw.type];
@@ -1815,7 +1829,7 @@
       btnRepair.classList.remove("flash");
       void btnRepair.offsetWidth;
       btnRepair.classList.add("flash");
-      floaters.push({ x: dam.x + dam.w * 0.35, y: dam.y + 36, text: "need wood", t: 0.9, col: "#E85D4C" });
+      floaters.push({ x: dam.x + dam.w * 0.35, y: dam.y + 36, text: "need $BOBER", t: 0.9, col: "#E85D4C" });
       return;
     }
     wood -= COST_REPAIR;
@@ -2091,26 +2105,45 @@
     ctx.lineWidth = 3.2;
     ctx.strokeStyle = INK;
     if (e.kind === "rat") {
-      ctx.fillStyle = "#C9B89A";
+      ctx.fillStyle = "#8B6A3A";
       ctx.beginPath(); ctx.ellipse(0, 1, 11, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = "rgba(70, 50, 30, 0.3)";
+      ctx.strokeStyle = "rgba(244,230,195,0.35)";
+      ctx.lineWidth = 1.1;
+      ctx.beginPath(); ctx.ellipse(0, 1, 7, 4, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = "rgba(50, 32, 16, 0.35)";
       ctx.beginPath(); ctx.ellipse(-3, 2, 5, 6, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#8A7A5C";
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 3.2;
+      ctx.fillStyle = "#6A4A24";
       ctx.beginPath(); ctx.moveTo(8, -3); ctx.lineTo(20, 0); ctx.lineTo(8, 3); ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.fillStyle = YEL;
       roundRect(ctx, 16, -2.4, 8, 2.6, 1); ctx.fill(); ctx.stroke();
       ctx.fillStyle = INK;
       ctx.beginPath(); ctx.arc(3, -2, 1.5, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "#5A4A32";
-      ctx.lineWidth = 2;
+      ctx.fillStyle = YEL;
+      ctx.beginPath(); ctx.arc(3.4, -2.3, 0.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#5A3A1A";
+      ctx.lineWidth = 2.4;
       ctx.beginPath(); ctx.moveTo(-10, 1); ctx.quadraticCurveTo(-20, -8, -26, 3); ctx.stroke();
+      ctx.strokeStyle = "rgba(196,160,106,0.55)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(-12, 0); ctx.quadraticCurveTo(-18, -5, -22, 1); ctx.stroke();
     } else if (e.kind === "crab") {
-      ctx.fillStyle = "#E07030";
+      ctx.fillStyle = "#C46A28";
       roundRect(ctx, -20, -10, 40, 20, 6); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = "rgba(90, 30, 10, 0.28)";
+      ctx.fillStyle = "rgba(60, 28, 10, 0.32)";
       roundRect(ctx, -20, -10, 16, 20, 6); ctx.fill();
-      ctx.fillStyle = "#B44A18";
-      ctx.fillRect(-12, -5, 24, 4);
+      ctx.strokeStyle = "rgba(244,230,195,0.28)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(-14, -4); ctx.lineTo(14, -4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-14, 2); ctx.lineTo(14, 2); ctx.stroke();
+      ctx.fillStyle = "#8A4A18";
+      ctx.beginPath(); ctx.ellipse(0, 0, 7, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "rgba(196,160,106,0.5)";
+      ctx.beginPath(); ctx.ellipse(0, 0, 4, 3.4, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 3.2;
+      ctx.fillStyle = "#A05018";
       ctx.beginPath(); ctx.arc(-22, -2, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.beginPath(); ctx.arc(22, -2, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = YEL;
@@ -2120,13 +2153,15 @@
       ctx.fillRect(-7, -7, 4, 4);
       ctx.fillRect(3, -7, 4, 4);
     } else {
-      ctx.fillStyle = "#3A2214";
+      ctx.fillStyle = "#4A2C18";
       ctx.beginPath(); ctx.ellipse(0, 0, 18, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "rgba(244,230,195,0.18)";
+      ctx.beginPath(); ctx.ellipse(2, -2, 10, 3.2, 0.2, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "rgba(20, 8, 4, 0.35)";
       ctx.beginPath(); ctx.ellipse(-6, 0, 8, 7, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = CREAM;
       ctx.beginPath(); ctx.ellipse(3, 3, 12, 4.5, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#3A2214";
+      ctx.fillStyle = "#4A2C18";
       ctx.beginPath(); ctx.arc(14, -2, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#2A8A8A";
       ctx.beginPath(); ctx.arc(16, -6, 3.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -2208,8 +2243,13 @@
     }
 
     if (tw.type === "stick") {
-      ctx.fillStyle = rk >= 2 ? YEL : "#E8C07A";
+      ctx.fillStyle = rk >= 2 ? YEL : "#C49A5A";
       roundRect(ctx, 8, 10, 20 + rk * 2, 6, 2); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = "rgba(92,58,26,0.55)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(10, 12); ctx.lineTo(24 + rk * 2, 13.2); ctx.stroke();
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = evolved ? 3.4 : 3 + rk * 0.4;
       if (rk) {
         ctx.fillStyle = FUR;
         roundRect(ctx, 10, 7, 12, 3.5, 1.5); ctx.fill(); ctx.stroke();
@@ -2217,12 +2257,18 @@
       ctx.fillStyle = YEL;
       ctx.beginPath(); ctx.arc(10, 13, 3.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     } else if (tw.type === "sap") {
-      ctx.fillStyle = YEL;
+      ctx.fillStyle = "#E0B400";
       ctx.beginPath(); ctx.arc(12, 14, 7 + rk, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = CREAM;
+      ctx.fillStyle = "rgba(255, 236, 170, 0.85)";
+      ctx.beginPath(); ctx.arc(10, 12, 3.2 + rk * 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#d4f06a";
       ctx.beginPath(); ctx.arc(12, 14, 4 + rk * 0.4, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = WOOD;
       roundRect(ctx, 16, 11, 12 + rk, 6, 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = YEL;
+      ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.ellipse(28 + rk, 16, 2.2, 3.4, 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
     } else if (tw.type === "truck") {
       ctx.fillStyle = "#9AA4AE";
       ctx.beginPath();
@@ -2243,6 +2289,9 @@
       ctx.fill();
       ctx.fillStyle = YEL;
       ctx.fillRect(-16, 5, 34, 4);
+      ctx.fillStyle = "#6A7278";
+      ctx.beginPath(); ctx.arc(-6, -2, 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2, -4, 1.6, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = INK;
       ctx.beginPath(); ctx.arc(-10, 12, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.beginPath(); ctx.arc(12, 12, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -2262,13 +2311,15 @@
         ctx.closePath();
         ctx.fill();
       }
-      ctx.fillStyle = WOOD;
+      ctx.fillStyle = "#3a2412";
       roundRect(ctx, 8, 8, 14, 8, 3); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#E85D4C";
       roundRect(ctx, 12, 9, 12, 6, 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = YEL;
       ctx.beginPath(); ctx.arc(24, 12, 4, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(28, 8, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#FF8A3A";
+      ctx.beginPath(); ctx.arc(22, 10, 2.2, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
   }
@@ -2401,6 +2452,36 @@
     }
   }
 
+  function drawRiverFoam() {
+    if (pathLen <= 8) return;
+    for (let i = 0; i < 18; i++) {
+      const t = (i + 0.4) / 18;
+      const p = pointAt(pathLen * t);
+      const ang = tangentAt(pathLen * t);
+      const nx = -Math.sin(ang), ny = Math.cos(ang);
+      const wob = Math.sin(tWorld * 2.4 + i * 1.7);
+      if (inDamKeepout(p.x, p.y)) continue;
+      ctx.fillStyle = "rgba(244,230,195,0.22)";
+      ctx.beginPath();
+      ctx.ellipse(p.x + nx * (riverW * 0.4), p.y + ny * (riverW * 0.4) + wob, 7, 3.2, ang, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(p.x - nx * (riverW * 0.4), p.y - ny * (riverW * 0.4) - wob, 6, 2.8, ang, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    for (let i = 0; i < 8; i++) {
+      const t = (i * 0.11 + (tWorld * 0.07) % 0.12) % 1;
+      const p = pointAt(pathLen * t);
+      if (inDamKeepout(p.x, p.y)) continue;
+      ctx.globalAlpha = 0.35 + 0.2 * Math.sin(tWorld * 3 + i);
+      ctx.fillStyle = CREAM;
+      ctx.beginPath();
+      ctx.arc(p.x + Math.sin(i * 2.1) * 8, p.y + Math.cos(i) * 3, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
   function drawDam() {
     ctx.save();
     const x = dam.x, y = dam.y, w = dam.w, h = dam.h;
@@ -2408,54 +2489,98 @@
     const logW = w - barW - 10;
     const logs = 9;
     const lh = h / logs;
-    ctx.fillStyle = "#2a1810";
-    roundRect(ctx, x - 6, y - 8, logW + 16, h + 16, 10);
+    ctx.fillStyle = "#1a120c";
+    roundRect(ctx, x - 8, y - 10, logW + 20, h + 20, 12);
+    ctx.fill();
+    const wet = ctx.createLinearGradient(x - 8, y, x + 40, y);
+    wet.addColorStop(0, "rgba(45,80,140,0.38)");
+    wet.addColorStop(1, "rgba(45,80,140,0)");
+    ctx.fillStyle = wet;
+    roundRect(ctx, x - 8, y - 4, 40, h + 10, 8);
     ctx.fill();
     for (let i = 0; i < logs; i++) {
       const ly = y + i * lh;
+      const dark = i >= logs - 2;
       const lg = ctx.createLinearGradient(x, ly, x + logW, ly + lh);
-      lg.addColorStop(0, i % 2 ? "#A06A3A" : FUR);
-      lg.addColorStop(0.22, i % 2 ? FUR : "#6e4622");
-      lg.addColorStop(0.55, i % 2 ? "#7a4a24" : WOOD);
-      lg.addColorStop(1, "#3a2412");
+      lg.addColorStop(0, i % 2 ? "#B07844" : "#9a6434");
+      lg.addColorStop(0.18, i % 2 ? FUR : "#6e4622");
+      lg.addColorStop(0.52, i % 2 ? "#7a4a24" : WOOD);
+      lg.addColorStop(0.82, dark ? "#2a1810" : "#3a2412");
+      lg.addColorStop(1, "#24160c");
       ctx.fillStyle = lg;
       ctx.strokeStyle = INK;
       ctx.lineWidth = 3;
       roundRect(ctx, x, ly, logW, lh - 4, 8);
       ctx.fill(); ctx.stroke();
       ctx.strokeStyle = "rgba(244,230,195,0.22)";
-      ctx.lineWidth = 1.2;
-      for (let g = 0; g < 3; g++) {
-        const gy = ly + 6 + g * (lh - 14) / 2;
+      ctx.lineWidth = 1.15;
+      for (let g = 0; g < 4; g++) {
+        const gy = ly + 5 + g * (lh - 12) / 3;
         ctx.beginPath();
-        ctx.moveTo(x + 16, gy);
-        ctx.quadraticCurveTo(x + logW * 0.45, gy + (g % 2 ? 2 : -2), x + logW - 16, gy + 1);
+        ctx.moveTo(x + 20, gy);
+        ctx.quadraticCurveTo(x + logW * 0.42, gy + (g % 2 ? 2.4 : -2.4), x + logW - 18, gy + 1);
         ctx.stroke();
       }
       ctx.fillStyle = CREAM;
-      ctx.globalAlpha = 0.16;
-      roundRect(ctx, x + 8, ly + 3, logW - 16, 5, 3); ctx.fill();
+      ctx.globalAlpha = 0.14;
+      roundRect(ctx, x + 10, ly + 3, logW - 22, 4.5, 3); ctx.fill();
       ctx.globalAlpha = 1;
+      const ey = ly + lh * 0.42;
+      ctx.fillStyle = "#4a3018";
+      ctx.beginPath(); ctx.ellipse(x + 11, ey, 7.5, Math.max(4, (lh - 8) * 0.38), 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = INK; ctx.lineWidth = 1.8; ctx.stroke();
+      ctx.strokeStyle = "rgba(196,160,106,0.55)"; ctx.lineWidth = 1.1;
+      ctx.beginPath(); ctx.ellipse(x + 11, ey, 4.4, Math.max(2.2, (lh - 8) * 0.22), 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(x + 11, ey, 2, Math.max(1, (lh - 8) * 0.1), 0, 0, Math.PI * 2); ctx.stroke();
       ctx.fillStyle = "#2a1810";
-      ctx.beginPath(); ctx.arc(x + 14, ly + lh * 0.42, 5, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(x + logW - 14, ly + lh * 0.42, 5, 0, Math.PI * 2); ctx.fill();
-      if (i % 3 === 1) {
-        ctx.beginPath(); ctx.arc(x + logW * 0.38, ly + lh * 0.5, 4, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "rgba(244,230,195,0.35)"; ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.arc(x + logW * 0.38, ly + lh * 0.5, 2.2, 0, Math.PI * 2); ctx.stroke();
-      }
+      ctx.beginPath(); ctx.arc(x + logW - 14, ey, 5, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = "rgba(244,230,195,0.4)"; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(x + 14, ly + lh * 0.42, 3, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.arc(x + logW - 14, ly + lh * 0.42, 3, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x + logW - 14, ey, 3, 0, Math.PI * 2); ctx.stroke();
+      if (i % 2 === 0) {
+        ctx.fillStyle = "rgba(74, 110, 48, 0.5)";
+        ctx.beginPath();
+        ctx.ellipse(x + logW * (0.24 + (i % 3) * 0.16), ly + 5, 10, 3.1, 0.12, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     ctx.strokeStyle = "#c4a06a";
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 4.2;
+    ctx.lineCap = "round";
     ctx.beginPath();
     ctx.moveTo(x + 10, y + 6);
     ctx.lineTo(x + 10, y + h - 6);
     ctx.moveTo(x + logW - 10, y + 6);
     ctx.lineTo(x + logW - 10, y + h - 6);
     ctx.stroke();
+    ctx.strokeStyle = "#8a6230";
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y + 6);
+    ctx.lineTo(x + 8, y + h - 6);
+    ctx.moveTo(x + logW - 8, y + 6);
+    ctx.lineTo(x + logW - 8, y + h - 6);
+    ctx.stroke();
+    function kingPost(px, py) {
+      ctx.fillStyle = "#6e4622";
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 2.4;
+      roundRect(ctx, px, py, 11, 22, 3); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#4a3018";
+      ctx.beginPath(); ctx.ellipse(px + 5.5, py + 3, 5.5, 3.2, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+    kingPost(x - 4, y - 6);
+    kingPost(x + logW - 8, y - 6);
+    kingPost(x - 4, y + h - 16);
+    kingPost(x + logW - 8, y + h - 16);
+    for (let i = 0; i < 7; i++) {
+      const wy = y + 10 + i * (h - 20) / 6 + Math.sin(tWorld * 2.4 + i * 1.1) * 3.5;
+      ctx.globalAlpha = 0.38 + 0.18 * Math.sin(tWorld * 3 + i);
+      ctx.fillStyle = "#c8d8ee";
+      ctx.beginPath();
+      ctx.ellipse(x - 2, wy, 9 + (i % 3) * 3, 4.2, 0.15, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
 
     const pctHp = Math.max(0, damHp / damMax);
     if (pctHp <= 0.66) drawCracks(x, y, logW, h, pctHp <= 0.33 ? 2 : 1);
@@ -2605,11 +2730,13 @@
         }
       }
     }
+    strokeRiver(riverW + 14, "#d8c8a8");
     strokeRiver(riverW + 12, CREAM);
     strokeRiver(riverW + 7, "#c9b896");
-    strokeRiver(riverW + 3, "#2a4680");
+    strokeRiver(riverW + 3, "#243a68");
     strokeRiver(riverW, "#3D5C9A");
     strokeRiver(riverW * 0.58, "#6a8bc0");
+    strokeRiver(riverW * 0.28, "#1e3a6a");
     ctx.save();
     ctx.globalAlpha = 0.72;
     ctx.setLineDash([11, 15]);
@@ -2620,6 +2747,7 @@
     ctx.lineDashOffset = -tWorld * 18;
     strokeRiver(2.2, YEL);
     ctx.restore();
+    drawRiverFoam();
 
     drawDam();
 
@@ -2636,6 +2764,8 @@
       const p = pads[i];
       ctx.fillStyle = "rgba(26, 16, 40, 0.34)";
       ctx.beginPath(); ctx.ellipse(p.x + 2, p.y + 10, p.r + 10, 7, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(50, 72, 38, 0.32)";
+      ctx.beginPath(); ctx.ellipse(p.x, p.y + 12, p.r + 8, 5, 0, 0, Math.PI * 2); ctx.fill();
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(i * 0.18);
@@ -2717,16 +2847,16 @@
           ctx.font = "bold 14px Trebuchet MS, sans-serif";
           ctx.fillText("+", p.x, p.y - 6);
           ctx.fillStyle = YEL;
-          ctx.font = "bold 11px Trebuchet MS, sans-serif";
-          ctx.fillText(String(TOWERS[selected].cost), p.x, p.y + 9);
+          ctx.font = "bold 10px Trebuchet MS, sans-serif";
+          ctx.fillText(fmtCost(TOWERS[selected].cost), p.x, p.y + 9);
         }
       } else {
         const tw = towers.find(function (t) { return t.pad === i; });
         const hint = evolveHint(tw);
         if (hint) {
           const locked = hint.text.indexOf("🔒") >= 0 || hint.text === "MAX 1";
-          const need = hint.text === "need wood";
-          ctx.font = (locked || need) ? "bold 12px Trebuchet MS, sans-serif" : "bold 15px Trebuchet MS, sans-serif";
+          const need = hint.text === "need $BOBER";
+          ctx.font = (locked || need) ? "bold 11px Trebuchet MS, sans-serif" : "bold 12px Trebuchet MS, sans-serif";
           const twm = ctx.measureText(hint.text).width;
           const pw = twm + (locked || need ? 12 : 18);
           const ph = locked || need ? 18 : 22;

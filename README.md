@@ -8,9 +8,9 @@ Splash shows a hub link: [More games · Green Home Games](https://ccosma1.github
 
 A mobile-first tower defense in **one HTML page**. 20-level campaign.
 
-Mission: Hold the dam. Twin turrets. Upgrade together — wood becomes rock becomes steel.
+Mission: Twin towers. Same fire. Upgrade the guns and the dam.
 
-Portrait waterfall → stream → bottom dam. Exactly two evolving posts. Currency is $BOBER.
+Portrait waterfall → natural river → bottom dam wall. Two tower buildings share one gun ladder. Dam Wood → Rock → Steel is a separate $BOBER buy. Currency is $BOBER.
 
 No install. No wallet. No login. No leaderboard.
 
@@ -22,9 +22,8 @@ Run `START.bat` or open `index.html` in a browser.
 
 1. Tap **HOLD THE DAM**, then pick a level. Level 1 is unlocked; beat a level to open the next.
 2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause**, **1x / 2x**, **Mute**, and **Restart** always work.
-3. Two posts only: **Left Stick line** (Bow → Reed Bolt → Rocket Reed → Flame Fan) and **Right Sap line** (Glob → Sap Bolt → Sticky Bomb → Ignited Sap). Tap a post or its shop card to upgrade.
-4. Dam **Wood → Rock → Steel** uses the **min** of the two line levels. One side can lead; the dam waits on the lagging post.
-5. **Repair Dam** (30 $BOBER) is an emergency sink, not a third turret.
+3. Two tower buildings on the dam. Both auto-fire the **same** munition: Arrows → Bolts → Rockets → Flame. Upgrade guns once; both advance.
+4. **Dam Wood → Rock → Steel** is a separate $BOBER buy (armor + HP). Repair is an emergency sink, not a third gun.
 6. Leaks **flash the dam** and drop HP. Low HP shows cracks.
 7. Optional: **Repair Dam** (30 $BOBER) for HP back.
 8. Hold the dam. Stars (1–3) come from HP left. Win returns to the map. Lose does not unlock.

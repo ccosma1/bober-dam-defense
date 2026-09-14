@@ -256,7 +256,16 @@
       box-shadow: 0 4px 0 #8a6a00;
     }
     .play:active { transform: translateY(2px); box-shadow: 0 2px 0 #8a6a00; }
-    .end-msg { margin: 0 0 16px; font-size: 15px; color: var(--cream); text-shadow: 0 2px 6px #000; }
+    .end-msg {
+      margin: 0 0 16px;
+      max-width: 22em;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--cream);
+      text-shadow: 0 2px 6px #000;
+      white-space: pre-line;
+    }
     .end-stars {
       margin: 0 0 12px;
       min-height: 34px;
@@ -785,7 +794,7 @@
 
   const TOWERS = {
     stick: { cost: COST_STICK, range: 135, cd: 0.52, dmg: 12, splash: 0, slow: 0, pspd: 820, upCost: COST_UP_STICK },
-    sap:   { cost: COST_SAP,   range: 118, cd: 0.85, dmg: 6,  splash: 72,  slow: 1.9, pspd: 640, upCost: COST_UP_SAP },
+    sap:   { cost: COST_SAP,   range: 118, cd: 0.85, dmg: 6,  splash: 60,  slow: 1.55, pspd: 640, upCost: COST_UP_SAP },
     truck: { cost: COST_EVOLVE_TRUCK, range: 175, cd: 0.78, dmg: 55, splash: 0, slow: 0, pspd: 900, upCost: 0, pierce: true, max: 1 },
     flame: { cost: COST_EVOLVE_FLAME, range: 118, cd: 0.20, dmg: 7,  splash: 0, slow: 0, pspd: 0,   upCost: 0, cone: 0.70, max: 1 }
   };
@@ -1063,6 +1072,8 @@
   let padPulseI = -1;
   let padPulseT = 0;
   let leakWarn = false;
+  let waveLeaks = 0;
+  let totalLeaks = 0;
   let pendingUnlock = "";
   const bober = {
     y: 0, tilt: 0, peek: -0.16, peekT: 1.8,
@@ -1159,6 +1170,18 @@
     if (p >= 0.7) return 3;
     if (p >= 0.35) return 2;
     return 1;
+  }
+  function leakWords(n) {
+    if (n <= 0) return "no leaks";
+    return n + " leak" + (n === 1 ? "" : "s");
+  }
+  function starWhy(earned, hp, maxHp, leaks) {
+    const pct = maxHp > 0 ? Math.round(100 * hp / maxHp) : 0;
+    const name = LEVELS[levelIndex] ? LEVELS[levelIndex].name : "Dam";
+    const leaksLine = leakWords(leaks);
+    if (earned >= 3) return name + "\n3★ · dam " + pct + "% · " + leaksLine + ".";
+    if (earned === 2) return name + "\n2★ · dam " + pct + "% · " + leaksLine + ".\n70% HP for 3★.";
+    return name + "\n1★ · dam " + pct + "% · " + leaksLine + ".\n35% HP for 2★.";
   }
   function hideMenus() {
     splash.classList.add("hidden");
@@ -1918,6 +1941,8 @@
     phase = "build";
     buildT = 0;
     leakWarn = false;
+    waveLeaks = 0;
+    totalLeaks = 0;
     running = true;
     closeHistorySilent();
     hideMenus();
@@ -1984,6 +2009,7 @@
     if (wave >= WAVES.length) return win();
     if (phase === "wave" && (spawnQ.length || enemies.length)) return;
     wave += 1;
+    waveLeaks = 0;
     const w = WAVES[wave - 1];
     spawnQ = w.seq.split("");
     spawnT = 0.25;
@@ -2025,10 +2051,11 @@
     writeSave();
     endTitle.textContent = "DAM HELD";
     endStars.textContent = starString(earned);
-    endMsg.textContent = LEVELS[levelIndex].name + " · " + earned + " star" + (earned === 1 ? "" : "s") + ". Next level unlocked.";
-    if (pendingUnlock === "CYBERTRUCK UNLOCKED") endMsg.textContent += " Upgrade Stick twice, then tap to evolve.";
-    if (pendingUnlock === "FLAME BEAVER UNLOCKED") endMsg.textContent += " Upgrade Sap twice, then tap to evolve.";
-    if (levelIndex + 1 >= LEVELS.length) endMsg.textContent = LEVELS[levelIndex].name + " held. " + earned + " star" + (earned === 1 ? "" : "s") + ". Campaign clear.";
+    endMsg.textContent = starWhy(earned, Math.max(0, damHp), damMax, totalLeaks);
+    if (pendingUnlock === "CYBERTRUCK UNLOCKED") endMsg.textContent += "\nUpgrade Stick twice, then tap to evolve.";
+    if (pendingUnlock === "FLAME BEAVER UNLOCKED") endMsg.textContent += "\nUpgrade Sap twice, then tap to evolve.";
+    if (levelIndex + 1 >= LEVELS.length) endMsg.textContent += "\nCampaign clear.";
+    else endMsg.textContent += "\nNext level unlocked.";
     btnAgain.textContent = "LEVELS";
     document.getElementById("app").classList.add("booting");
     if (beat) {
@@ -2272,7 +2299,6 @@
   function update(dt) {
     tWorld += dt;
     if (shake > 0) shake = Math.max(0, shake - dt * 6);
-    if (bannerT > 0) bannerT -= dt;
     if (padPulseT > 0) padPulseT = Math.max(0, padPulseT - dt);
     tickBober(dt);
 
@@ -2315,6 +2341,8 @@
         }
         floaters.push({ x: p.x, y: p.y - 18, text: "-" + leak, t: 0.9, col: "#E85D4C" });
         enemies.splice(i, 1);
+        waveLeaks += 1;
+        totalLeaks += 1;
         hitDam(leak);
         if (phase === "lose") return;
       }
@@ -2472,9 +2500,11 @@
       else {
         phase = "build";
         buildT = BUILD_NEXT;
-        banner = "BUILD";
-        bannerT = 1.6;
+        banner = "WAVE CLEAR · " + leakWords(waveLeaks);
+        bannerT = 2.6;
         bober.celebT = 0.6;
+        SFX.tone(392, 0.1, "square", 0.045);
+        SFX.tone(523, 0.16, "triangle", 0.04, 660);
         hud();
       }
     }
@@ -2507,17 +2537,34 @@
     const p = pointAt(e.dist);
     const ang = tangentAt(e.dist);
     const bob = Math.sin(e.bob) * (e.kind === "crab" ? 1 : 2.6);
+    const fast = gameSpeed === 2;
+    const inkW = fast ? 4.8 : 3.2;
     ctx.save();
     ctx.fillStyle = "rgba(20, 10, 24, 0.38)";
-    ctx.beginPath(); ctx.ellipse(p.x + 2, p.y + e.r * 0.7, e.r * 0.9, e.r * 0.38, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(p.x + 2, p.y + e.r * 0.7, e.r * (fast ? 1.05 : 0.9), e.r * 0.38, 0, 0, Math.PI * 2); ctx.fill();
     ctx.translate(p.x, p.y + bob);
+    if (fast) ctx.scale(1.14, 1.14);
     if (e.kind === "crab") ctx.rotate(ang * 0.15);
     else ctx.rotate(ang);
     if (e.slowT > 0) {
       ctx.fillStyle = "rgba(245,196,0,0.32)";
       ctx.beginPath(); ctx.arc(0, 0, e.r + 10, 0, Math.PI * 2); ctx.fill();
     }
-    ctx.lineWidth = 3.2;
+    if (fast) {
+      ctx.save();
+      ctx.strokeStyle = CREAM;
+      ctx.lineWidth = 8;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.globalAlpha = 0.95;
+      ctx.beginPath();
+      if (e.kind === "crab") roundRect(ctx, -23, -13, 46, 26, 8);
+      else if (e.kind === "rat") ctx.ellipse(0, 1, 15, 10, 0, 0, Math.PI * 2);
+      else ctx.ellipse(0, 0, 22, 12, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.lineWidth = inkW;
     ctx.strokeStyle = INK;
     if (e.kind === "rat") {
       ctx.fillStyle = "#8B6A3A";
@@ -2528,7 +2575,7 @@
       ctx.fillStyle = "rgba(50, 32, 16, 0.35)";
       ctx.beginPath(); ctx.ellipse(-3, 2, 5, 6, 0, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = INK;
-      ctx.lineWidth = 3.2;
+      ctx.lineWidth = inkW;
       ctx.fillStyle = "#6A4A24";
       ctx.beginPath(); ctx.moveTo(8, -3); ctx.lineTo(20, 0); ctx.lineTo(8, 3); ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.fillStyle = YEL;
@@ -2557,7 +2604,7 @@
       ctx.strokeStyle = "rgba(196,160,106,0.5)";
       ctx.beginPath(); ctx.ellipse(0, 0, 4, 3.4, 0, 0, Math.PI * 2); ctx.stroke();
       ctx.strokeStyle = INK;
-      ctx.lineWidth = 3.2;
+      ctx.lineWidth = inkW;
       ctx.fillStyle = "#A05018";
       ctx.beginPath(); ctx.arc(-22, -2, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.beginPath(); ctx.arc(22, -2, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -2587,10 +2634,17 @@
     }
     ctx.restore();
     const hpPct = Math.max(0, e.hp / e.max);
-    ctx.fillStyle = "#1A1028cc";
-    ctx.fillRect(p.x - 14, p.y - e.r - 12, 28, 5);
+    const barW = gameSpeed === 2 ? 34 : 28;
+    const barY = p.y - e.r - (gameSpeed === 2 ? 16 : 12);
+    ctx.fillStyle = "#1A1028ee";
+    ctx.fillRect(p.x - barW / 2, barY, barW, gameSpeed === 2 ? 6 : 5);
+    if (gameSpeed === 2) {
+      ctx.strokeStyle = CREAM;
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(p.x - barW / 2, barY, barW, 6);
+    }
     ctx.fillStyle = hpPct > 0.4 ? "#7ED957" : "#E85D4C";
-    ctx.fillRect(p.x - 14, p.y - e.r - 12, 28 * hpPct, 5);
+    ctx.fillRect(p.x - barW / 2, barY, barW * hpPct, gameSpeed === 2 ? 6 : 5);
   }
 
   function drawYeetBeaver(c, s) {
@@ -3368,14 +3422,14 @@
 
     if (bannerT > 0 && running && banner !== "BUILD") {
       const long = banner.length > 12;
-      const bw = long ? Math.min(viewW - 20, 310) : 180;
-      const bh = long ? 44 : 40;
+      const bw = long ? Math.min(viewW - 16, 340) : 180;
+      const bh = long ? 46 : 40;
       ctx.globalAlpha = Math.min(1, bannerT);
-      ctx.fillStyle = "#1A1028cc";
+      ctx.fillStyle = "#1A1028ee";
       roundRect(ctx, viewW / 2 - bw / 2, 16, bw, bh, 12); ctx.fill();
       ctx.strokeStyle = YEL; ctx.lineWidth = 3; ctx.stroke();
       ctx.fillStyle = YEL;
-      ctx.font = (long ? "bold 15px" : "bold 22px") + " Trebuchet MS, sans-serif";
+      ctx.font = (long ? "bold 16px" : "bold 22px") + " Trebuchet MS, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(banner, viewW / 2, 16 + bh / 2);
@@ -3549,6 +3603,7 @@
     last = now;
     const playing = running && !paused && (phase === "build" || phase === "wave");
     const sim = playing ? dt * (gameSpeed === 2 ? 2 : 1) : dt;
+    if (bannerT > 0) bannerT = Math.max(0, bannerT - dt);
     if (damFlash > 0) damFlash = Math.max(0, damFlash - dt * 2.4);
     if (hpShown > damHp) hpShown = Math.max(damHp, hpShown - 420 * dt);
     else hpShown += (damHp - hpShown) * Math.min(1, 10 * dt);

@@ -1,4 +1,4 @@
-"""Headless GH-8: tables, targeting, four strategies, Flame >= Rockets."""
+"""Headless GH-9: win-all-dead, ease dial, four strategies, Flame >= Rockets."""
 from __future__ import annotations
 
 import math
@@ -98,7 +98,7 @@ KINDS = _kinds()
 LEVELS = _levels()
 PATH_N = _path_n()
 W, H = 390.0, 640.0
-COST_REPAIR, REPAIR_HP = 35, 22
+COST_REPAIR, REPAIR_HP = 28, 22
 COST_LASER, COST_HOT, COST_YELL = 100, 150, 60
 
 
@@ -420,7 +420,7 @@ class Run:
                         if math.floor(self.laser_fire / 0.18) > math.floor(prev / 0.18):
                             self.hurt(lt, 12 if self.hot else 8, enemies)
                         if self.laser_fire >= 1.0:
-                            self.laser_cd = 1.9 if self.hot else 2.4
+                            self.laser_cd = 1.6 if self.hot else 2.0
                             self.laser_fire = 0.0
                     else:
                         self.laser_fire = 0.0
@@ -466,7 +466,7 @@ def next_rung(start_wood: int) -> int:
 
 def main():
     assert len(LEVELS) == 20, len(LEVELS)
-    assert START_WOOD == [180, 170, 160, 150, 140, 130, 125, 120, 115, 110, 120, 115, 110, 105, 100, 110, 105, 100, 95, 100]
+    assert START_WOOD == [200, 190, 180, 170, 160, 150, 145, 140, 135, 130, 140, 135, 130, 125, 120, 130, 125, 120, 115, 120]
     assert [g["name"] for g in GUNS] == ["Arrows", "Bullets", "Rockets", "Flame"]
     assert GUNS[1]["cost"] == 90 and GUNS[1]["range"] == 145 and GUNS[1]["cd"] == 0.42 and GUNS[1]["dmg"] == 14
     assert GUNS[2]["cost"] == 140 and GUNS[2]["range"] == 155 and GUNS[2]["cd"] == 0.70 and GUNS[2]["dmg"] == 28
@@ -480,14 +480,23 @@ def main():
     assert DAM_TIERS[1]["cost"] == 120 and DAM_TIERS[2]["cost"] == 180
     assert abs(DAM_TIERS[1]["leakMul"] - 0.85) < 1e-6
     assert abs(DAM_TIERS[2]["leakMul"] - 0.70) < 1e-6
-    assert KINDS["snout"]["hp"] == 24 and KINDS["maw"]["hp"] == 400
+    assert KINDS["snout"]["hp"] == 20 and KINDS["maw"]["hp"] == 340
     assert KINDS["barrel"]["armor"] == 0.45
-    assert "COST_REPAIR = 35" in HTML and "REPAIR_HP = 22" in HTML
+    assert KINDS["snout"]["leak"] == 11
+    assert "COST_REPAIR = 28" in HTML and "REPAIR_HP = 22" in HTML
+    assert "28 $BOBER" in HTML
     assert "Twin posts on the dam face. Hold the flood." in HTML
     assert "Defend the dam." in HTML
-    assert "bober-dam-campaign-v4" in HTML
-    assert "Never farms Bober" in HTML or "never farms Bober" in HTML.lower() or "Never farms Bober" in HTML
-    assert "Mascot help. Hold to carve. Posts still do the job." in HTML
+    assert "bober-dam-campaign-v5" in HTML
+    assert "canWinLevel" in HTML and "remainingEnemies" in HTML
+    assert "Not a third tower" in HTML
+    assert "Bolts" not in HTML
+    mus_imgs = re.findall(r'img: "(assets/museum/[^"]+)"', HTML)
+    assert mus_imgs, "museum thumbs missing"
+    assert len(mus_imgs) == len(set(mus_imgs)), mus_imgs
+    for p in mus_imgs:
+        assert (ROOT / p).is_file(), p
+    assert "Never farms Bober" in HTML or "never farms Bober" in HTML.lower()
 
     pts, cum, plen, pads, laser_o, _ = build_path()
     up = {"hp": 10, "max": 10, "dist": max(0, plen - 90), "r": 10, "stealth": False, "ally": False}

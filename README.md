@@ -24,9 +24,9 @@ Run `START.bat` or open `index.html` in a browser.
 2. **START WAVE** / **NEXT WAVE** begins the next wave. **Pause**, **1x / 2x**, **Mute**, and **Restart** always work.
 3. Two posts on the dam. Both auto-fire the **same** munition: Arrows → Bullets → Rockets → Flame. Upgrade guns once; both advance.
 4. **Dam Wood → Rock → Steel** is a separate $BOBER buy (HP + leak resist). Both posts at Bullets also grants Rock; both at Rockets also grants Steel.
-5. **Repair Dam** (35 $BOBER) heals +22 HP. Dam only. Not a gun.
-6. Optional mascot help: **Scout Yell** (clear L5, 60 $BOBER, once/wave +15% fire rate 4s) and **Bober Laser** (clear L8 or both posts Bullets, 100 $BOBER, hold to carve). Hot Laser from L15 (150 $BOBER). Posts still do the job.
-7. Leaks flash the dam and drop HP. Stars: 3 if dam ≥70%, 2 if ≥40%, 1 for a clear.
+5. **Repair Dam** (28 $BOBER) heals +22 HP. Dam only. Not a gun.
+6. Optional mascot help: **Scout Yell** (clear L5, 60 $BOBER, once/wave +15% fire rate 4s) and **Bober Laser** (clear L8 or both posts Bullets, 100 $BOBER, hold to carve, CD 2.0). Hot Laser from L15. Laser assists; it is not a third post and does not replace gun upgrades.
+7. A level clears only when the dam still stands **and every foe is dead**. Remaining count is on the HUD. Stars: 3 if dam ≥70% after that clear, 2 if ≥40%, 1 for a clear. No star if foes remain.
 
 Pause, **1x / 2x**, mute, and restart sit in the top-right. 2× speeds the fight and is saved. Footer is Guns, Dam, Repair, then Yell / Laser.
 
@@ -70,7 +70,7 @@ Repo: https://github.com/ccosma1/bober-dam-defense
 - `assets/museum/` — foe portraits for Museum cards
 - `assets/sprites/bober-*.png` — Yeet Bober idle/fly/splat for the dam NPC and posts
 - `assets/icons/` — original dam-defense mark (not the Yeet slingshot)
-- `scripts/playtest.py` — headless GH-8 sim (tables, four strategies, Flame ≥ Rockets)
+- `scripts/playtest.py` — headless GH-9 sim (win-all-dead, ease dial, four strategies, Flame ≥ Rockets)
 - `scripts/make_icon.py` — regenerates the mark
 
 ## Note

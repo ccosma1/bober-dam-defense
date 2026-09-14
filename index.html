@@ -148,7 +148,7 @@
       image-rendering: auto;
       pointer-events: none;
     }
-    #btn-sap .ico { filter: saturate(1.15) hue-rotate(-8deg); }
+    #btn-dam .ico { filter: saturate(1.15) hue-rotate(-8deg); }
     .card .name { font-size: 10px; letter-spacing: 0.01em; line-height: 1.15; text-align: center; }
     .card .cost { font-size: 12px; color: var(--yellow); white-space: nowrap; }
     .card.on { border-color: var(--yellow); box-shadow: 0 0 0 2px #F5C40088; background: #a06a34; }
@@ -686,6 +686,7 @@
       <div class="chips">
         <div class="chip wood" id="chip-wood">$BOBER 100</div>
         <div class="chip" id="chip-wave">Wave 0/5</div>
+        <div class="chip" id="chip-left">0 left</div>
         <div class="chip" id="chip-hp">DAM Wood 100</div>
       </div>
       <div class="btns">
@@ -742,7 +743,7 @@
       </div>
       <div id="tip" class="overlay hidden" role="dialog" aria-label="How to play">
         <div class="tip-card">
-          <p class="tip-line">Twin towers. Same fire. Upgrade the guns and the dam.</p>
+          <p class="tip-line">Twin posts. Same fire. Kill every foe. Upgrade guns and dam.</p>
           <p class="cameo-skip">tap to continue</p>
         </div>
       </div>
@@ -798,17 +799,17 @@
     </div>
     <footer id="shop">
       <button id="btn-go" type="button">START WAVE</button>
-      <button class="card on" id="btn-stick" type="button">
+      <button class="card on" id="btn-gun" type="button">
         <span class="name" id="gun-name">Arrows</span>
         <span class="cost" id="gun-cost">90 $BOBER</span>
       </button>
-      <button class="card" id="btn-sap" type="button">
+      <button class="card" id="btn-dam" type="button">
         <span class="name" id="dam-name">DAM Wood</span>
         <span class="cost" id="dam-cost">120 $BOBER</span>
       </button>
       <button class="card repair" id="btn-repair" type="button">
         <span class="name">Repair Dam</span>
-        <span class="cost">35 $BOBER</span>
+        <span class="cost">28 $BOBER</span>
       </button>
       <div id="bober-row">
         <button class="card" id="btn-yell" type="button">
@@ -835,12 +836,12 @@
   const INK = "#1A1028";
   const WOOD = "#5C3A1A";
 
-  const COST_REPAIR = 35;
+  const COST_REPAIR = 28;
   function fmtCost(n) { return n + " $BOBER"; }
   const REPAIR_HP = 22;
   const BUILD_NEXT = 15;
-  const SAVE_KEY = "bober-dam-campaign-v4";
-  const START_WOOD = [180,170,160,150,140,130,125,120,115,110,120,115,110,105,100,110,105,100,95,100];
+  const SAVE_KEY = "bober-dam-campaign-v5";
+  const START_WOOD = [200,190,180,170,160,150,145,140,135,130,140,135,130,125,120,130,125,120,115,120];
   const COST_YELL = 60;
   const COST_LASER = 100;
   const COST_HOT = 150;
@@ -848,18 +849,18 @@
   const SPEED_KEY = "bober-dam-speed";
 
   const KINDS = {
-    snout:   { hp: 24,  spd: 92,  wood: 8,  leak: 14, r: 13, armor: 0 },
-    pebble:  { hp: 18,  spd: 130, wood: 9,  leak: 16, r: 11, armor: 0 },
-    rider:   { hp: 90,  spd: 40,  wood: 14, leak: 24, r: 20, armor: 0.35 },
-    biter:   { hp: 48,  spd: 100, wood: 12, leak: 18, r: 16, armor: 0 },
-    dart:    { hp: 22,  spd: 140, wood: 10, leak: 20, r: 12, armor: 0 },
-    stalker: { hp: 55,  spd: 88,  wood: 13, leak: 18, r: 15, armor: 0, stealth: true },
-    barrel:  { hp: 140, spd: 36,  wood: 16, leak: 28, r: 22, armor: 0.45 },
-    minnow:  { hp: 36,  spd: 95,  wood: 11, leak: 14, r: 13, armor: 0, spit: true },
-    foam:    { hp: 40,  spd: 70,  wood: 8,  leak: 12, r: 14, armor: 0, buff: 1.12 },
-    eddy:    { hp: 50,  spd: 85,  wood: 12, leak: 16, r: 15, armor: 0, split: true },
-    monk:    { hp: 70,  spd: 60,  wood: 15, leak: 20, r: 17, armor: 0.2, aura: true },
-    maw:     { hp: 400, spd: 45,  wood: 40, leak: 40, r: 28, armor: 0.25, boss: true }
+    snout:   { hp: 20,  spd: 92,  wood: 8,  leak: 11, r: 13, armor: 0 },
+    pebble:  { hp: 15,  spd: 130, wood: 9,  leak: 13, r: 11, armor: 0 },
+    rider:   { hp: 77,  spd: 40,  wood: 14, leak: 19, r: 20, armor: 0.35 },
+    biter:   { hp: 41,  spd: 100, wood: 12, leak: 14, r: 16, armor: 0 },
+    dart:    { hp: 19,  spd: 140, wood: 10, leak: 16, r: 12, armor: 0 },
+    stalker: { hp: 47,  spd: 88,  wood: 13, leak: 14, r: 15, armor: 0, stealth: true },
+    barrel:  { hp: 119, spd: 36,  wood: 16, leak: 22, r: 22, armor: 0.45 },
+    minnow:  { hp: 31,  spd: 95,  wood: 11, leak: 11, r: 13, armor: 0, spit: true },
+    foam:    { hp: 34,  spd: 70,  wood: 8,  leak: 10, r: 14, armor: 0, buff: 1.12 },
+    eddy:    { hp: 43,  spd: 85,  wood: 12, leak: 13, r: 15, armor: 0, split: true },
+    monk:    { hp: 60,  spd: 60,  wood: 15, leak: 16, r: 17, armor: 0.2, aura: true },
+    maw:     { hp: 340, spd: 45,  wood: 40, leak: 32, r: 28, armor: 0.25, boss: true }
   };
   const KIND_CH = {
     s: "snout", r: "snout", p: "pebble", l: "rider", c: "rider", b: "biter",
@@ -869,7 +870,7 @@
 
   const GUNS = [
     { id: "arrow",  name: "Arrows",  cost: 0,   range: 130, cd: 0.55, dmg: 10, splash: 0,  slow: 0, pspd: 880, kind: "arrow" },
-    { id: "bullet", name: "Bullets", cost: 90,  range: 145, cd: 0.42, dmg: 14, splash: 0,  slow: 0, pspd: 980, kind: "bolt" },
+    { id: "bullet", name: "Bullets", cost: 90,  range: 145, cd: 0.42, dmg: 14, splash: 0,  slow: 0, pspd: 980, kind: "bullet" },
     { id: "rocket", name: "Rockets", cost: 140, range: 155, cd: 0.70, dmg: 28, splash: 36, slow: 0, pspd: 740, kind: "rocket" },
     { id: "flame",  name: "Flame",   cost: 200, range: 170, cd: 0.18, dmg: 9,  splash: 0,  slow: 0, pspd: 0, cone: 0.72, kind: "flame" }
   ];
@@ -895,102 +896,102 @@
   }
 
   const LEVELS = [
-    { name: "Oasis Drip", wood: 180, dam: 100, waves: [
+    { name: "Oasis Drip", wood: 200, dam: 100, waves: [
       wv(1.15, 1.00, 1.00, "ssss"),
       wv(1.05, 1.00, 1.00, "sssss"),
-      wv(0.95, 1.00, 1.00, "sssss")
+      wv(0.95, 1.00, 1.00, "ssss")
     ]},
-    { name: "Driftwood", wood: 170, dam: 100, waves: [
+    { name: "Driftwood", wood: 190, dam: 100, waves: [
       wv(1.05, 1.00, 1.00, "sssss"),
       wv(0.95, 1.00, 1.00, "ssssss"),
-      wv(0.88, 1.02, 1.00, "sssssss")
+      wv(0.88, 1.02, 1.00, "ssssss")
     ]},
-    { name: "Scout Line", wood: 160, dam: 100, waves: [
+    { name: "Scout Line", wood: 180, dam: 100, waves: [
       wv(0.95, 1.00, 1.00, "ssssss"),
       wv(0.85, 1.00, 1.02, "sspssps"),
-      wv(0.75, 1.04, 1.04, "ppsssppss")
+      wv(0.75, 1.04, 1.04, "ppssspps")
     ]},
-    { name: "Pack Night", wood: 150, dam: 100, waves: [
+    { name: "Pack Night", wood: 170, dam: 100, waves: [
       wv(0.92, 1.00, 1.00, "ssslsss"),
-      wv(0.78, 1.04, 1.02, "sslsslss"),
+      wv(0.78, 1.04, 1.02, "sslssls"),
       wv(0.64, 1.08, 1.04, "slslsls")
     ]},
-    { name: "Low Timber", wood: 140, dam: 100, waves: [
+    { name: "Low Timber", wood: 160, dam: 100, waves: [
       wv(0.88, 1.02, 1.02, "ssbsss"),
       wv(0.72, 1.06, 1.04, "sbsbss"),
-      wv(0.58, 1.10, 1.06, "lsbsbs")
+      wv(0.58, 1.10, 1.06, "lsbsb")
     ]},
-    { name: "Thin Dam", wood: 130, dam: 100, waves: [
+    { name: "Thin Dam", wood: 150, dam: 100, waves: [
       wv(0.90, 1.00, 1.00, "ssssssss"),
       wv(0.70, 1.06, 1.04, "sblsbls"),
       wv(0.56, 1.10, 1.06, "blssbls")
     ]},
-    { name: "Crab Walk", wood: 125, dam: 100, waves: [
+    { name: "Crab Walk", wood: 145, dam: 100, waves: [
       wv(0.80, 1.04, 1.06, "sddsds"),
       wv(0.62, 1.08, 1.10, "dsdsdsd"),
       wv(0.48, 1.12, 1.14, "sddsdsd")
     ]},
-    { name: "Fast Water", wood: 120, dam: 100, waves: [
+    { name: "Fast Water", wood: 140, dam: 100, waves: [
       wv(0.92, 1.02, 1.02, "sskkss"),
       wv(0.74, 1.06, 1.04, "sksksks"),
       wv(0.60, 1.08, 1.06, "kssksks")
     ]},
-    { name: "Pocket Wood", wood: 115, dam: 100, waves: [
+    { name: "Pocket Wood", wood: 135, dam: 100, waves: [
       wv(0.74, 1.06, 1.04, "sskkss"),
       wv(0.56, 1.10, 1.06, "sksksks"),
       wv(0.44, 1.14, 1.08, "kksskkss")
     ]},
-    { name: "Night Rush", wood: 110, dam: 100, waves: [
+    { name: "Night Rush", wood: 130, dam: 100, waves: [
       wv(0.80, 1.04, 1.02, "sssksss"),
       wv(0.64, 1.08, 1.04, "sksasks"),
       wv(0.50, 1.12, 1.06, "saksaks")
     ]},
-    { name: "Hairline", wood: 120, dam: 100, waves: [
+    { name: "Hairline", wood: 140, dam: 100, waves: [
       wv(0.88, 1.02, 1.02, "ssssssssss"),
       wv(0.58, 1.08, 1.04, "ysysys"),
       wv(0.46, 1.12, 1.06, "syaysy")
     ]},
-    { name: "Last Stand", wood: 115, dam: 100, waves: [
+    { name: "Last Stand", wood: 135, dam: 100, waves: [
       wv(0.72, 1.04, 1.02, "ssfss"),
       wv(0.56, 1.08, 1.04, "sfsfs"),
       wv(0.44, 1.10, 1.06, "ssfsy")
     ]},
-    { name: "Spring Leak", wood: 110, dam: 100, waves: [
+    { name: "Spring Leak", wood: 130, dam: 100, waves: [
       wv(0.64, 1.06, 1.04, "ssyyss"),
       wv(0.50, 1.10, 1.06, "ysfys"),
       wv(0.38, 1.12, 1.08, "syfysy")
     ]},
-    { name: "Twin Bend", wood: 105, dam: 100, waves: [
+    { name: "Twin Bend", wood: 125, dam: 100, waves: [
       wv(0.60, 1.08, 1.06, "sseess"),
       wv(0.46, 1.12, 1.08, "eseses"),
       wv(0.34, 1.16, 1.10, "seesees")
     ]},
-    { name: "Armor Night", wood: 100, dam: 100, waves: [
+    { name: "Armor Night", wood: 120, dam: 100, waves: [
       wv(0.66, 1.08, 1.04, "sseess"),
       wv(0.50, 1.12, 1.06, "easaes"),
       wv(0.38, 1.14, 1.08, "eeaass")
     ]},
-    { name: "Timber Tax", wood: 110, dam: 100, waves: [
+    { name: "Timber Tax", wood: 130, dam: 100, waves: [
       wv(0.64, 1.08, 1.04, "ssnnss"),
       wv(0.50, 1.12, 1.06, "nsnsns"),
       wv(0.38, 1.16, 1.08, "snnsnns")
     ]},
-    { name: "Flood Gate", wood: 105, dam: 100, waves: [
+    { name: "Flood Gate", wood: 125, dam: 100, waves: [
       wv(0.56, 1.10, 1.06, "nnyynn"),
       wv(0.42, 1.14, 1.08, "nynyny"),
       wv(0.32, 1.18, 1.10, "nnyanyn")
     ]},
-    { name: "Cone Drill", wood: 100, dam: 100, waves: [
+    { name: "Cone Drill", wood: 120, dam: 100, waves: [
       wv(0.56, 1.10, 1.06, "ssnens"),
       wv(0.42, 1.12, 1.08, "nenens"),
       wv(0.32, 1.16, 1.10, "nneess")
     ]},
-    { name: "Cracked Wall", wood: 95, dam: 100, waves: [
+    { name: "Cracked Wall", wood: 115, dam: 100, waves: [
       wv(0.82, 1.00, 1.00, "sssssssssssssssss"),
       wv(0.50, 1.10, 1.06, "nanans"),
       wv(0.38, 1.14, 1.08, "annaans")
     ]},
-    { name: "Cataract Maw", wood: 100, dam: 100, waves: [
+    { name: "Cataract Maw", wood: 120, dam: 100, waves: [
       wv(0.80, 1.00, 1.00, "sssssssssssssssss"),
       wv(0.50, 1.06, 1.04, "nanaen"),
       wv(0.38, 1.10, 1.06, "aannaann"),
@@ -1031,8 +1032,9 @@
   const btnResetLevels = document.getElementById("btn-reset-levels");
   const btnAgain = document.getElementById("btn-again");
   const btnPauseLevels = document.getElementById("btn-pause-levels");
-  const btnStick = document.getElementById("btn-stick");
-  const btnSap = document.getElementById("btn-sap");
+  const btnGun = document.getElementById("btn-gun");
+  const btnDam = document.getElementById("btn-dam");
+  const chipLeft = document.getElementById("chip-left");
   const btnRepair = document.getElementById("btn-repair");
   const shopHint = document.getElementById("shop-hint");
   const btnGo = document.getElementById("btn-go");
@@ -1097,7 +1099,7 @@
   let damFlash = 0;
   let wave = 0;
   let buildT = 0;
-  let selected = "stick";
+  let selected = "gun";
   let spawnQ = [];
   let spawnT = 0;
   let hpMul = 1;
@@ -1222,9 +1224,9 @@
     const pct = maxHp > 0 ? Math.round(100 * hp / maxHp) : 0;
     const name = LEVELS[levelIndex] ? LEVELS[levelIndex].name : "Dam";
     const leaksLine = leakWords(leaks);
-    if (earned >= 3) return name + "\n3★ · dam " + pct + "% · " + leaksLine + ".";
-    if (earned === 2) return name + "\n2★ · dam " + pct + "% · " + leaksLine + ".\n70% HP for 3★.";
-    return name + "\n1★ · dam " + pct + "% · " + leaksLine + ".\n40% HP for 2★.";
+    if (earned >= 3) return name + "\n3★ · dam " + pct + "% · all foes down · " + leaksLine + ".";
+    if (earned === 2) return name + "\n2★ · dam " + pct + "% · all foes down · " + leaksLine + ".\n70% HP for 3★.";
+    return name + "\n1★ · dam " + pct + "% · all foes down · " + leaksLine + ".\n40% HP for 2★.";
   }
   function hideMenus() {
     splash.classList.add("hidden");
@@ -1297,43 +1299,43 @@
     {
       id: "oasis", name: "Oasis Opens", at: 1, always: true,
       frames: [
-        { src: "assets/splash.jpg?v=gh7", sub: "Oasis Opens.", line: "Pretty water. Ugly intentions." }
+        { src: "assets/history/gh9-oasis.jpg", sub: "Oasis Opens.", line: "Pretty water. Ugly intentions." }
       ]
     },
     {
-      id: "twin", name: "Twin Towers Raised", at: 1, always: true,
+      id: "twin", name: "Twin Posts Same Bite", at: 1, always: true,
       frames: [
-        { src: "assets/splash.jpg?v=gh7", sub: "Twin Towers.", line: "Two guns. Same fire. No third." }
+        { src: "assets/history/gh9-twin.jpg", sub: "Twin Posts.", line: "Two posts. Same bite. No third." }
       ]
     },
     {
-      id: "stream", name: "Stream Hits the Face", at: 2,
+      id: "guns", name: "Arrows → Bullets → Rockets → Flame", at: 4,
       frames: [
-        { src: "assets/history/h4.jpg", sub: "The Face.", line: "The river hits the wall first." }
-      ]
-    },
-    {
-      id: "guns", name: "Guns Evolve Together", at: 4,
-      frames: [
-        { src: "assets/history/h7.jpg", sub: "Same Fire.", line: "Arrows, then bullets, then rockets, then flame." }
+        { src: "assets/history/gh9-guns.jpg", sub: "Same Fire.", line: "Arrows, then Bullets, then Rockets, then Flame." }
       ]
     },
     {
       id: "harden", name: "Wood → Rock → Steel", at: 6,
       frames: [
-        { src: "assets/history/h9.jpg", sub: "The Wall.", line: "Spend $BOBER. Harden the dam." }
+        { src: "assets/history/gh9-wall.jpg", sub: "The Wall.", line: "Wood, then Rock 120, then Steel 180." }
+      ]
+    },
+    {
+      id: "pests", name: "New Pests", at: 8,
+      frames: [
+        { src: "assets/history/gh9-pests.jpg", sub: "New Pests.", line: "Skip, stalk, barrel, spit, twin, monk." }
+      ]
+    },
+    {
+      id: "beam", name: "Bober Beam", at: 9,
+      frames: [
+        { src: "assets/history/gh9-beam.jpg", sub: "Assist.", line: "Bober beam is help. Not a third post." }
       ]
     },
     {
       id: "holds", name: "Dam Holds", at: 12,
       frames: [
-        { src: "assets/history/h11.jpg", sub: "Dam Holds.", line: "River blinks first.", chorus: true }
-      ]
-    },
-    {
-      id: "lodge", name: "Toward Lodge", at: 20,
-      frames: [
-        { src: "assets/history/h10.jpg", sub: "Toward Lodge.", line: "Winter’s next; this wood must stand." }
+        { src: "assets/history/gh9-holds.jpg", sub: "Dam Holds.", line: "Kill every foe. The wall still stands.", chorus: true }
       ]
     }
   ];
@@ -1481,56 +1483,56 @@
   }
 
   const MUSEUM = [
-    { id: "arrow", tab: "towers", name: "Arrows", img: "assets/sprites/bober-idle.png", at: 1,
-      blurb: "Shared guns, tier 0. Both posts fire arrows.", tease: "Two bows. One ladder." },
-    { id: "bullet", tab: "towers", name: "Bullets", img: "assets/sprites/bober-idle.png", at: 2,
-      blurb: "Shared guns, tier 1. 90 $BOBER. Range 145.", tease: "The wall learns to snap." },
-    { id: "rocket", tab: "towers", name: "Rockets", img: "assets/cameo-truck.jpg", at: 4,
-      blurb: "Shared guns, tier 2. 140 $BOBER. Splash 36. ~40 DPS.", tease: "Both muzzles boom together." },
-    { id: "flame", tab: "towers", name: "Flame", img: "assets/cameo-flame.jpg", at: 8,
-      blurb: "Shared guns, tier 3. 200 $BOBER. Range 170. ~50 DPS.", tease: "The stream burns." },
-    { id: "yell", tab: "towers", name: "Scout Yell", img: "assets/sprites/bober-idle.png", at: 6,
-      blurb: "Clear L5. 60 $BOBER. Once/wave +15% fire rate 4s.", tease: "A shout from the wall." },
-    { id: "laser", tab: "towers", name: "Bober Laser", img: "assets/sprites/bober-idle.png", at: 8,
-      blurb: "Mascot help. Hold to carve. Posts still do the job.", tease: "A green line from the face." },
-    { id: "twin", tab: "towers", name: "Twin Tower", img: "assets/splash.jpg?v=gh7", at: 1,
-      blurb: "Two log towers on the dam. Same fire. Crew on top.", tease: "Buildings, not beaver-guns." },
-    { id: "snout", tab: "foes", name: "Drift Snout", img: "assets/museum/rat.jpg", at: 1,
-      blurb: "Fast. Spawns at the oasis. Wants wood.", tease: "Something small in the foam." },
-    { id: "pebble", tab: "foes", name: "Pebble Skip", img: "assets/museum/rat.jpg", at: 3,
-      blurb: "Faster. Skips the surface. L3.", tease: "A stone that runs." },
-    { id: "rider", tab: "foes", name: "Log Rider", img: "assets/museum/crab.jpg", at: 4,
-      blurb: "Tank. Rides a log down the stream.", tease: "A log with legs." },
-    { id: "biter", tab: "foes", name: "Oasis Biter", img: "assets/museum/otter.jpg", at: 5,
-      blurb: "Melee. Chews the dam if posts sleep. L5.", tease: "Teeth from the oasis." },
-    { id: "dart", tab: "foes", name: "Current Dart", img: "assets/museum/otter.jpg", at: 7,
-      blurb: "Ranged-fast. Rides the current. L7.", tease: "A streak in the stream." },
-    { id: "foam", tab: "foes", name: "Foam Choir", img: "assets/museum/rat.jpg", at: 12,
-      blurb: "Three voices. Speeds the pack. L12.", tease: "Singing foam." },
-    { id: "stalker", tab: "foes", name: "Reed Stalker", img: "assets/museum/otter.jpg", at: 8,
-      blurb: "Stealthed until mid-stream. L8.", tease: "Empty reeds." },
-    { id: "barrel", tab: "foes", name: "Barrel Crab", img: "assets/museum/crab.jpg", at: 10,
+    { id: "arrow", tab: "towers", name: "Arrows", img: "assets/museum/arrow.jpg", at: 1,
+      blurb: "Tier 0. Both posts fire wood arrows.", tease: "Two bows. One ladder." },
+    { id: "bullet", tab: "towers", name: "Bullets", img: "assets/museum/bullet.jpg", at: 2,
+      blurb: "Tier 1. 90 $BOBER. Range 145.", tease: "The wall learns to snap." },
+    { id: "rocket", tab: "towers", name: "Rockets", img: "assets/museum/rocket.jpg", at: 4,
+      blurb: "Tier 2. 140 $BOBER. Splash 36.", tease: "Both muzzles boom together." },
+    { id: "flame", tab: "towers", name: "Flame", img: "assets/museum/flame.jpg", at: 8,
+      blurb: "Tier 3. 200 $BOBER. Range 170. Cone DPS beats Rockets.", tease: "The stream burns." },
+    { id: "twin", tab: "towers", name: "Twin Tower", img: "assets/museum/twin.jpg", at: 1,
+      blurb: "Two log posts on the dam. Same fire. Crew on top.", tease: "Buildings, not beaver-guns." },
+    { id: "snout", tab: "foes", name: "Drift Snout", img: "assets/museum/snout.jpg", at: 1,
+      blurb: "Fast. Spawns at the oasis.", tease: "Something small in the foam." },
+    { id: "pebble", tab: "foes", name: "Pebble Skip", img: "assets/museum/pebble.jpg", at: 3,
+      blurb: "Faster skip. L3.", tease: "A stone that runs." },
+    { id: "rider", tab: "foes", name: "Log Rider", img: "assets/museum/rider.jpg", at: 4,
+      blurb: "Tank. Rides a log. L4.", tease: "A log with legs." },
+    { id: "biter", tab: "foes", name: "Oasis Biter", img: "assets/museum/biter.jpg", at: 5,
+      blurb: "Melee. L5.", tease: "Teeth from the oasis." },
+    { id: "dart", tab: "foes", name: "Current Dart", img: "assets/museum/dart.jpg", at: 7,
+      blurb: "Ranged-fast. L7.", tease: "A streak in the stream." },
+    { id: "foam", tab: "foes", name: "Foam Choir", img: "assets/museum/foam.jpg", at: 12,
+      blurb: "Three voices. L12.", tease: "Singing foam." },
+    { id: "stalker", tab: "foes", name: "Reed Stalker", img: "assets/museum/stalker.jpg", at: 8,
+      blurb: "Stealthed until mid. L8.", tease: "Empty reeds." },
+    { id: "barrel", tab: "foes", name: "Barrel Crab", img: "assets/museum/barrel.jpg", at: 10,
       blurb: "Heavy armor. L10.", tease: "A barrel with claws." },
-    { id: "minnow", tab: "foes", name: "Spit Minnow", img: "assets/museum/otter.jpg", at: 11,
+    { id: "minnow", tab: "foes", name: "Spit Minnow", img: "assets/museum/minnow.jpg", at: 11,
       blurb: "Spits from mid. L11.", tease: "A spit in the current." },
-    { id: "eddy", tab: "foes", name: "Eddy Twin", img: "assets/museum/rat.jpg", at: 14,
+    { id: "eddy", tab: "foes", name: "Eddy Twin", img: "assets/museum/eddy.jpg", at: 14,
       blurb: "Dies into two Snouts. L14.", tease: "One becomes two." },
-    { id: "monk", tab: "foes", name: "Splash Monk", img: "assets/museum/otter.jpg", at: 16,
+    { id: "monk", tab: "foes", name: "Splash Monk", img: "assets/museum/monk.jpg", at: 16,
       blurb: "Aura allies. L16.", tease: "A hymn in the foam." },
-    { id: "maw", tab: "foes", name: "Cataract Maw", img: "assets/museum/crab.jpg", at: 20,
-      blurb: "Finale boss. Telegraph, then charge. Never farms Bober.", tease: "Something huge behind the fall." },
-    { id: "wood", tab: "dam", name: "Dam Wood", img: "assets/splash.jpg?v=gh7", at: 1, mile: true,
-      blurb: "Buy the wall. Spend $BOBER to go Rock, then Steel.", tease: "Timber across the mouth." },
-    { id: "rock", tab: "dam", name: "Dam Rock", img: "assets/history/h9.jpg", at: 2, mile: true,
-      blurb: "Dam upgrade. 120 $BOBER. Armor on leaks.", tease: "The wood wants to be stone." },
-    { id: "steel", tab: "dam", name: "Dam Steel", img: "assets/history/h11.jpg", at: 4, mile: true,
-      blurb: "Dam upgrade. 180 $BOBER. Steel brace.", tease: "Metal in the night." },
-    { id: "oasis", tab: "dam", name: "Waterfall Oasis", img: "assets/splash.jpg?v=gh7", at: 1, mile: true,
-      blurb: "Spawn is only the oasis. Pretty water. Ugly intentions.", tease: "The fall has a mouth." },
-    { id: "stream", tab: "dam", name: "Big Stream", img: "assets/splash.jpg?v=gh7", at: 1, mile: true,
+    { id: "maw", tab: "foes", name: "Cataract Maw", img: "assets/museum/maw.jpg", at: 20,
+      blurb: "Finale boss. Telegraph. Never farms Bober.", tease: "Something huge behind the fall." },
+    { id: "wood", tab: "dam", name: "Dam Wood", img: "assets/museum/wood.jpg", at: 1, mile: true,
+      blurb: "Starter wall. Then Rock 120, Steel 180.", tease: "Timber across the mouth." },
+    { id: "rock", tab: "dam", name: "Dam Rock", img: "assets/museum/rock.jpg", at: 2, mile: true,
+      blurb: "Dam upgrade. 120 $BOBER.", tease: "The wood wants to be stone." },
+    { id: "steel", tab: "dam", name: "Dam Steel", img: "assets/museum/steel.jpg", at: 4, mile: true,
+      blurb: "Dam upgrade. 180 $BOBER.", tease: "Metal in the night." },
+    { id: "oasis", tab: "dam", name: "Waterfall Oasis", img: "assets/museum/oasis.jpg", at: 1, mile: true,
+      blurb: "Spawn only. Pretty water. Ugly intentions.", tease: "The fall has a mouth." },
+    { id: "stream", tab: "dam", name: "Big Stream", img: "assets/museum/stream.jpg", at: 1, mile: true,
       blurb: "Natural river. Hits the wall.", tease: "A road of water." },
-    { id: "crew", tab: "dam", name: "Repair Crew Bober", img: "assets/sprites/bober-idle.png", at: 1, mile: true,
-      blurb: "Mascot on the wall. Repair spends $BOBER. Not a gun.", tease: "A hammer behind the wall." }
+    { id: "crew", tab: "dam", name: "Repair Crew Bober", img: "assets/museum/crew.jpg", at: 1, mile: true,
+      blurb: "Repair 28 $BOBER. +22 HP. Not a gun.", tease: "A hammer behind the wall." },
+    { id: "yell", tab: "dam", name: "Scout Yell", img: "assets/museum/yell.jpg", at: 6,
+      blurb: "Cost 60. Short buff both posts. Once per wave.", tease: "A shout from the wall." },
+    { id: "laser", tab: "dam", name: "Bober Laser", img: "assets/museum/laser.jpg", at: 8,
+      blurb: "Hold-to-carve. CD 2.0. Not a third tower. Does not replace gun upgrades.", tease: "A green line from the face." }
   ];
   let musTab = "towers";
   let museumFrom = "splash";
@@ -1634,7 +1636,7 @@
     if (meta) {
       if (!on) meta.textContent = "Hold further.";
       else if (card.mile) meta.textContent = "Dam from L" + (card.at || 1) + ".";
-      else if (card.tab === "towers") meta.textContent = card.id === "truck" || card.id === "flame" ? ("Evolve after L" + card.at + ".") : "Build from L1.";
+      else if (card.tab === "towers") meta.textContent = "Shared ladder. Cost in $BOBER.";
       else meta.textContent = "First at L" + (card.at || 1) + ".";
     }
     if (el) {
@@ -1960,10 +1962,38 @@
     if (damLv >= DAM_TIERS.length - 1) return null;
     return DAM_TIERS[damLv + 1];
   }
+  function seqSpawnCount(seq) {
+    let n = 0;
+    if (!seq) return 0;
+    for (let i = 0; i < seq.length; i++) n += seq.charAt(i) === "f" ? 3 : 1;
+    return n;
+  }
+  function remainingEnemies() {
+    if (phase === "win") return 0;
+    if (phase === "lose") return enemies.length;
+    if (!running || phase === "splash" || phase === "levels") return 0;
+    let n = enemies.length;
+    for (let i = 0; i < spawnQ.length; i++) n += spawnQ[i] === "f" ? 3 : 1;
+    if (!WAVES || !WAVES.length) return n;
+    const startI = (phase === "wave" || phase === "build") ? wave : 0;
+    for (let i = startI; i < WAVES.length; i++) n += seqSpawnCount(WAVES[i].seq);
+    return n;
+  }
+  function levelFullySpawned() {
+    return wave >= WAVES.length && spawnQ.length === 0;
+  }
+  function canWinLevel() {
+    return damHp > 0 && enemies.length === 0 && spawnQ.length === 0 && levelFullySpawned();
+  }
   function hud() {
     chipWood.textContent = "$BOBER " + wood;
     const waveShown = phase === "build" ? Math.min(WAVES.length, wave + 1) : Math.max(1, wave);
     chipWave.textContent = "L" + (levelIndex + 1) + " · " + waveShown + "/" + WAVES.length;
+    if (chipLeft) {
+      const left = remainingEnemies();
+      chipLeft.textContent = left + " left";
+      chipLeft.classList.toggle("danger", running && left > 0 && damDanger());
+    }
     chipHp.textContent = "DAM " + damSkin() + " " + Math.max(0, Math.ceil(damHp));
     chipHp.classList.toggle("danger", running && damDanger());
     const gn = document.getElementById("gun-name");
@@ -1976,12 +2006,12 @@
     if (dn) dn.textContent = "DAM " + damSkin();
     const nd = nextDam();
     if (dc) dc.textContent = nd ? fmtCost(nd.cost) : "MAX";
-    btnStick.classList.toggle("on", selectedTower >= 0);
-    btnSap.classList.toggle("on", false);
+    if (btnGun) btnGun.classList.toggle("on", selectedTower >= 0);
+    if (btnDam) btnDam.classList.toggle("on", false);
     btnRepair.classList.toggle("need", running && damHp < damMax && wood < COST_REPAIR);
     if (shopHint) {
       shopHint.classList.remove("hidden");
-      shopHint.textContent = "Twin posts. Same fire. Harden the dam.";
+      shopHint.textContent = "Twin posts. Same fire. Laser assists, not a third post.";
     }
     const yellBtn = document.getElementById("btn-yell");
     const laserBtn = document.getElementById("btn-laser");
@@ -1996,7 +2026,7 @@
       const lc = document.getElementById("laser-cost");
       if (!laserUnlocked()) {
         if (ln) ln.textContent = "Bober Laser";
-        if (lc) lc.textContent = "L8 / Bullets";
+        if (lc) lc.textContent = "L8–10 / Bullets";
         laserBtn.disabled = true;
       } else if (!laserArmed) {
         if (ln) ln.textContent = hotLaser ? "Hot Laser" : "Arm Laser";
@@ -2110,8 +2140,8 @@
     setPaused(false);
     if (phase === "build") startWave();
     else if (phase === "wave" && spawnQ.length === 0 && enemies.length === 0 && shots.length === 0) {
-      if (wave >= WAVES.length) win();
-      else startWave();
+      if (canWinLevel()) win();
+      else if (wave < WAVES.length) startWave();
     }
   }
 
@@ -2122,7 +2152,10 @@
 
   function startWave() {
     dismissTip();
-    if (wave >= WAVES.length) return win();
+    if (wave >= WAVES.length) {
+      if (canWinLevel()) win();
+      return;
+    }
     if (phase === "wave" && (spawnQ.length || enemies.length)) return;
     wave += 1;
     waveLeaks = 0;
@@ -2149,6 +2182,8 @@
     hud();
   }
   function win() {
+    if (damHp <= 0) return;
+    if (enemies.length > 0 || spawnQ.length > 0 || wave < WAVES.length) return;
     phase = "win";
     running = false;
     paused = false;
@@ -2160,7 +2195,7 @@
     if (levelIndex + 1 < LEVELS.length) save.unlocked = Math.max(save.unlocked, levelIndex + 2);
     const beat = cameoForClear(levelIndex);
     writeSave();
-    endTitle.textContent = "DAM HELD";
+    endTitle.textContent = "LEVEL CLEAR";
     endStars.textContent = starString(earned);
     endMsg.textContent = starWhy(earned, Math.max(0, damHp), damMax, totalLeaks);
     endMsg.textContent += "\nDam " + damSkin() + ".";
@@ -2358,7 +2393,7 @@
   }
   function laserRange() { return 120; }
   function laserDmg() { return hotLaser ? 12 : 8; }
-  function laserCool() { return hotLaser ? 1.9 : 2.4; }
+  function laserCool() { return hotLaser ? 1.6 : 2.0; }
   function laserUnlocked() {
     return towerLv >= 1 || (save.unlocked | 0) >= 9;
   }
@@ -2491,7 +2526,7 @@
         e.spitT -= dt;
         if (e.spitT <= 0) {
           e.spitT = 1.8;
-          hitDam(6);
+          hitDam(5);
           const dp = pointAt(e.dist);
           fx.push({ kind: "flame", x: dp.x, y: dam.y, t: 0.2, col: "#8ab4ff" });
           if (phase === "lose") return;
@@ -2595,8 +2630,8 @@
               dot: spec.dot || 0,
               kind: spec.kind
             });
-            if (spec.kind === "arrow" || spec.kind === "bolt") SFX.tone(380, 0.04, "square", 0.035);
-            else if (tw.type === "truck") {
+            if (spec.kind === "arrow" || spec.kind === "bullet") SFX.tone(380, 0.04, "square", 0.035);
+            else if (spec.kind === "rocket") {
               fx.push({
                 kind: "muzzle",
                 x: pad.x + Math.cos(tw.ang) * 26,
@@ -2643,7 +2678,7 @@
             }
           }
         } else if (s.target && s.target.hp > 0) {
-          if (s.kind === "arrow" || s.kind === "bolt") {
+          if (s.kind === "arrow" || s.kind === "bullet") {
             for (let n = 0; n < 3; n++) {
               fx.push({
                 kind: "star",
@@ -2688,8 +2723,8 @@
     }
 
     if (phase === "wave" && spawnQ.length === 0 && enemies.length === 0 && shots.length === 0) {
-      if (wave >= WAVES.length) win();
-      else {
+      if (canWinLevel()) win();
+      else if (wave < WAVES.length) {
         phase = "build";
         buildT = BUILD_NEXT;
         banner = "WAVE CLEAR · " + leakWords(waveLeaks);
@@ -2985,7 +3020,7 @@
       roundRect(ctx, 2, -4, 22, 8, 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = YEL; ctx.fillRect(20, -2, 6, 4);
     } else {
-      ctx.fillStyle = spec.kind === "bolt" ? "#8a9aaa" : "#C49A5A";
+      ctx.fillStyle = spec.kind === "bullet" ? "#8a9aaa" : "#C49A5A";
       roundRect(ctx, 2, -3, 22, 6, 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = YEL;
       ctx.beginPath(); ctx.arc(6, 0, 2.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -3539,17 +3574,8 @@
       }
       if (p.type) {
         const twRing = towers.find(function (t) { return t.pad === i; });
-        const evolvedPad = p.type === "truck" || p.type === "flame";
-        const rk = twRing && !evolvedPad ? (twRing.rank || 0) : 0;
-        if (p.type === "truck") {
-          ctx.strokeStyle = "#5AD0FF";
-          ctx.lineWidth = 4;
-          ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 6, 0, Math.PI * 2); ctx.stroke();
-        } else if (p.type === "flame") {
-          ctx.strokeStyle = "#E85D4C";
-          ctx.lineWidth = 4;
-          ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 6, 0, Math.PI * 2); ctx.stroke();
-        } else if (rk >= 1) {
+        const rk = twRing ? (twRing.rank || 0) : 0;
+        if (rk >= 1) {
           ctx.strokeStyle = YEL;
           ctx.lineWidth = 2 + rk;
           ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 4, 0, Math.PI * 2); ctx.stroke();
@@ -3615,20 +3641,27 @@
       ctx.save();
       ctx.translate(s.x, s.y);
       ctx.rotate(Math.atan2(s.ty - s.y, s.tx - s.x));
-      if (s.type === "stick") {
+      if (s.kind === "arrow") {
         ctx.fillStyle = "#E8C07A";
         ctx.strokeStyle = INK;
         ctx.lineWidth = 2;
         roundRect(ctx, -16, -4, 32, 8, 3); ctx.fill(); ctx.stroke();
         ctx.fillStyle = CREAM;
         roundRect(ctx, 8, -3, 10, 6, 2); ctx.fill();
-      } else if (s.type === "truck") {
+      } else if (s.kind === "bullet") {
         ctx.fillStyle = "#C8D0D8";
         ctx.strokeStyle = INK;
         ctx.lineWidth = 2;
-        roundRect(ctx, -14, -5, 28, 10, 1); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#5AD0FF";
-        ctx.fillRect(6, -3, 8, 6);
+        roundRect(ctx, -14, -3, 28, 6, 1); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = YEL;
+        ctx.fillRect(8, -2, 8, 4);
+      } else if (s.kind === "rocket") {
+        ctx.fillStyle = "#6A7278";
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = 2;
+        roundRect(ctx, -14, -5, 28, 10, 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = YEL;
+        ctx.fillRect(8, -3, 8, 6);
       } else {
         ctx.fillStyle = YEL;
         ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.fill();
@@ -3766,8 +3799,8 @@
     tipEl.addEventListener("click", function () { SFX.ensure(); dismissTip(); });
     tipEl.addEventListener("touchend", function (ev) { ev.preventDefault(); SFX.ensure(); dismissTip(); }, { passive: false });
   }
-  btnStick.addEventListener("click", function () { SFX.ensure(); upgradeGuns(); });
-  btnSap.addEventListener("click", function () { SFX.ensure(); upgradeDam(); });
+  btnGun.addEventListener("click", function () { SFX.ensure(); upgradeGuns(); });
+  btnDam.addEventListener("click", function () { SFX.ensure(); upgradeDam(); });
   btnRepair.addEventListener("click", function () { SFX.ensure(); repairDam(); });
   (function () {
     const yb = document.getElementById("btn-yell");

@@ -10,9 +10,9 @@ KINDS = {
 }
 TOWERS = {
     "stick": {"cost": 50, "range": 135, "cd": 0.52, "dmg": 12, "splash": 0, "slow": 0, "pspd": 820},
-    "sap": {"cost": 85, "range": 118, "cd": 0.85, "dmg": 6, "splash": 60, "slow": 1.55, "pspd": 640},
+    "sap": {"cost": 75, "range": 118, "cd": 0.85, "dmg": 9, "splash": 90, "slow": 1.9, "pspd": 640},
     "truck": {"cost": 140, "range": 175, "cd": 0.78, "dmg": 55, "splash": 0, "slow": 0, "pspd": 900, "pierce": True},
-    "flame": {"cost": 120, "range": 118, "cd": 0.20, "dmg": 7, "splash": 0, "slow": 0, "pspd": 0, "cone": 0.70},
+    "flame": {"cost": 120, "range": 138, "cd": 0.20, "dmg": 7, "splash": 0, "slow": 0, "pspd": 0, "cone": 0.70},
 }
 PATH_N = [
     [-0.08, 0.13], [0.16, 0.14], [0.38, 0.17], [0.56, 0.25],

@@ -193,6 +193,34 @@
       text-align: center;
     }
     .overlay.hidden { display: none; }
+    #splash {
+      justify-content: flex-end;
+      padding: 0;
+      background: none;
+    }
+    #splash img.hero { object-position: center 18%; }
+    #splash .cta-band {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      padding: 14px 16px max(20px, env(safe-area-inset-bottom));
+      background: #1A1028;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    #splash .cta-band h1 {
+      margin: 0 0 6px;
+      text-shadow: 0 3px 0 #0a0614;
+    }
+    #splash .cta-band .tagline {
+      margin-bottom: 4px;
+      max-width: none;
+      padding: 0 8px;
+      font-size: 15px;
+    }
+    #splash .cta-band .fan { margin-bottom: 12px; }
     #paused { justify-content: center; background: #1a1028e6; }
     .overlay img.hero {
       position: absolute;
@@ -645,20 +673,21 @@
     <div id="stage">
       <canvas id="game"></canvas>
       <div id="splash" class="overlay">
-        <img class="hero" src="assets/splash.jpg?v=gh1" alt="" />
-        <h1>BOBER DAM<br>DEFENSE</h1>
-        <p class="tagline">Hold the wooden dam. Place towers. Stop the leak.</p>
-        <p class="how">Wave defense with clear builds. Win the night, not a wallet.</p>
-        <p class="fan">Fan game by a holder.</p>
-        <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
-        <div class="ghost-row">
-          <button class="play ghost" id="btn-history" type="button">HISTORY</button>
-          <button class="play ghost" id="btn-museum-splash" type="button">MUSEUM</button>
+        <img class="hero" src="assets/splash.jpg?v=gh5" alt="" />
+        <div class="cta-band">
+          <h1>BOBER DAM<br>DEFENSE</h1>
+          <p class="tagline">Hold the dam. Place towers. Stop the leak.</p>
+          <p class="fan">Fan game by a holder.</p>
+          <button class="play" id="btn-play" type="button">HOLD THE DAM</button>
+          <div class="ghost-row">
+            <button class="play ghost" id="btn-history" type="button">HISTORY</button>
+            <button class="play ghost" id="btn-museum-splash" type="button">MUSEUM</button>
+          </div>
+          <button class="play ghost reset-sm" id="btn-reset-splash" type="button">Reset</button>
         </div>
-        <button class="play ghost reset-sm" id="btn-reset-splash" type="button">Reset</button>
       </div>
       <div id="levels" class="overlay hidden">
-        <img class="hero" src="assets/splash.jpg?v=gh1" alt="" />
+        <img class="hero" src="assets/splash.jpg?v=gh5" alt="" />
         <h2>LEVELS</h2>
         <p class="tagline">Fan game by a holder.</p>
         <div id="level-grid"></div>
@@ -669,7 +698,7 @@
         <button class="play ghost" id="btn-reset-levels" type="button">Reset progress</button>
       </div>
       <div id="endcard" class="overlay hidden">
-        <img class="hero" src="assets/splash.jpg?v=gh1" alt="" />
+        <img class="hero" src="assets/splash.jpg?v=gh5" alt="" />
         <h2 id="end-title">DAM HELD</h2>
         <div id="end-stars" class="end-stars"></div>
         <p class="end-msg" id="end-msg"></p>
@@ -749,7 +778,7 @@
       <button class="card" id="btn-sap" type="button">
         <img class="ico" src="assets/sprites/bober-idle.png" alt="" />
         <span class="name">Sap Sprayer</span>
-        <span class="cost">85 $BOBER</span>
+        <span class="cost">75 $BOBER</span>
       </button>
       <button class="card repair" id="btn-repair" type="button">
         <span class="name">Repair Dam</span>
@@ -771,7 +800,7 @@
   const WOOD = "#5C3A1A";
 
   const COST_STICK = 50;
-  const COST_SAP = 85;
+  const COST_SAP = 75;
   const COST_REPAIR = 30;
   function fmtCost(n) { return n + " $BOBER"; }
   const COST_UP_STICK = 120;
@@ -794,9 +823,9 @@
 
   const TOWERS = {
     stick: { cost: COST_STICK, range: 135, cd: 0.52, dmg: 12, splash: 0, slow: 0, pspd: 820, upCost: COST_UP_STICK },
-    sap:   { cost: COST_SAP,   range: 118, cd: 0.85, dmg: 6,  splash: 60,  slow: 1.55, pspd: 640, upCost: COST_UP_SAP },
+    sap:   { cost: COST_SAP,   range: 118, cd: 0.85, dmg: 9,  splash: 90,  slow: 1.9, pspd: 640, upCost: COST_UP_SAP },
     truck: { cost: COST_EVOLVE_TRUCK, range: 175, cd: 0.78, dmg: 55, splash: 0, slow: 0, pspd: 900, upCost: 0, pierce: true, max: 1 },
-    flame: { cost: COST_EVOLVE_FLAME, range: 118, cd: 0.20, dmg: 7,  splash: 0, slow: 0, pspd: 0,   upCost: 0, cone: 0.70, max: 1 }
+    flame: { cost: COST_EVOLVE_FLAME, range: 138, cd: 0.20, dmg: 7,  splash: 0, slow: 0, pspd: 0,   upCost: 0, cone: 0.70, max: 1 }
   };
   const CAMEOS = {
     sink:     { src: "assets/cameo-sink.jpg",     line: "The Sink Special. Holds water. Barely.", sfx: "sink" },
@@ -1441,7 +1470,7 @@
     { id: "stick", tab: "towers", name: "Stick Thrower", img: "assets/sprites/bober-idle.png", at: 1,
       blurb: "50 $BOBER. Cheap single-target. Upgrade twice, then evolve.", tease: "A beaver with a stick." },
     { id: "sap", tab: "towers", name: "Sap Sprayer", img: "assets/sprites/bober-idle.png", at: 1,
-      blurb: "85 $BOBER. Splash sap that slows a pack.", tease: "Something sticky on the bank." },
+      blurb: "75 $BOBER. Splash sap that slows a pack.", tease: "Something sticky on the bank." },
     { id: "truck", tab: "towers", name: "Cybertruck", img: "assets/cameo-truck.jpg", at: 4,
       blurb: "140 $BOBER. Pierce armor. Max 1. Evolve Stick twice.", tease: "Roads? The river has ideas." },
     { id: "flame", tab: "towers", name: "Flame Beaver", img: "assets/cameo-flame.jpg", at: 8,
@@ -2154,7 +2183,7 @@
       range: b.range + r * 8,
       cd: b.cd,
       dmg: b.dmg + r * (tw.type === "sap" ? 1 : 2),
-      splash: tw.type === "sap" ? b.splash + r * 5 : 0,
+      splash: tw.type === "sap" ? b.splash + r * 6 : 0,
       slow: tw.type === "sap" ? b.slow + r * 0.12 : 0,
       pspd: b.pspd,
       pierce: !!b.pierce,
